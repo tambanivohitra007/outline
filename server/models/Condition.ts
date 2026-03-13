@@ -9,6 +9,7 @@ import {
   Default,
 } from "sequelize-typescript";
 import Collection from "./Collection";
+import ConditionSection from "./ConditionSection";
 import Document from "./Document";
 import Team from "./Team";
 import User from "./User";
@@ -67,8 +68,8 @@ class Condition extends ParanoidModel<
   @Column(DataType.UUID)
   teamId: string;
 
-  @HasMany(() => require("./ConditionSection").default, "conditionId")
-  sections: import("./ConditionSection").default[];
+  @HasMany(() => ConditionSection, "conditionId")
+  sections: ConditionSection[];
 }
 
 export default Condition;

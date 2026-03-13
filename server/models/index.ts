@@ -72,3 +72,14 @@ export { default as Subscription } from "./Subscription";
 
 export { default as Emoji } from "./Emoji";
 export { default as UserPasskey } from "./UserPasskey";
+
+// Medical domain models
+export { default as CareDomain } from "./CareDomain";
+export { default as Condition } from "./Condition";
+export { default as ConditionSection } from "./ConditionSection";
+export { default as Intervention } from "./Intervention";
+export { default as ConditionIntervention } from "./ConditionIntervention";
+export { default as EvidenceEntry } from "./EvidenceEntry";
+export { default as Scripture } from "./Scripture";
+export { default as Recipe } from "./Recipe";
+export { default as ConditionRecipe } from "./ConditionRecipe";
