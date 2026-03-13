@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { LeafIcon, PlusIcon } from "outline-icons";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Action } from "~/components/Actions";
 import Button from "~/components/Button";
@@ -22,13 +22,23 @@ function Recipes() {
     void recipes.fetchPage();
   }, [recipes]);
 
+  const handleCreate = useCallback(async () => {
+    const name = window.prompt(t("Enter the recipe name:"));
+    if (!name?.trim()) {
+      return;
+    }
+    await recipes.create({
+      name: name.trim(),
+    });
+  }, [recipes, t]);
+
   return (
     <Scene
       icon={<LeafIcon />}
       title={t("Recipes")}
       actions={
         <Action>
-          <Button icon={<PlusIcon />} onClick={() => {}}>
+          <Button icon={<PlusIcon />} onClick={handleCreate}>
             {t("New recipe")}
           </Button>
         </Action>
