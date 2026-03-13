@@ -58,6 +58,7 @@ import interventions from "./interventions/interventions";
 import evidenceEntries from "./evidenceEntries/evidenceEntries";
 import scriptures from "./scriptures/scriptures";
 import recipes from "./recipes/recipes";
+import medical from "./medical/medical";
 
 const api = new Koa<AppState, AppContext>();
 const router = new Router();
@@ -132,6 +133,7 @@ router.use("/", interventions.routes());
 router.use("/", evidenceEntries.routes());
 router.use("/", scriptures.routes());
 router.use("/", recipes.routes());
+router.use("/", medical.routes());
 
 if (!env.isCloudHosted) {
   router.use("/", installation.routes());
