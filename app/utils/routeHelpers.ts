@@ -189,6 +189,24 @@ export function desktopify(path: string): string {
   return urlify(path).replace(/^https?:\/\//, "outline://");
 }
 
+// Medical domain paths
+
+export function conditionsPath(): string {
+  return "/conditions";
+}
+
+export function conditionPath(idOrSlug: string): string {
+  return `/conditions/${idOrSlug}`;
+}
+
+export function interventionsPath(): string {
+  return "/interventions";
+}
+
+export function recipesPath(): string {
+  return "/recipes";
+}
+
 export const matchCollectionSlug =
   ":collectionSlug([0-9a-zA-Z-_~]*-[a-zA-z0-9]{10,15})";
 
