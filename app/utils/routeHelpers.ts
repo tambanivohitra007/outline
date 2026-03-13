@@ -207,6 +207,14 @@ export function recipesPath(): string {
   return "/recipes";
 }
 
+export function knowledgeGraphPath(): string {
+  return "/knowledge-graph";
+}
+
+export function analyticsPath(): string {
+  return "/analytics";
+}
+
 export const matchCollectionSlug =
   ":collectionSlug([0-9a-zA-Z-_~]*-[a-zA-z0-9]{10,15})";
 

@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { SearchIcon, HomeIcon, SidebarIcon, BeakerIcon, ToolsIcon, LeafIcon } from "outline-icons";
+import { SearchIcon, HomeIcon, SidebarIcon, BeakerIcon, ToolsIcon, LeafIcon, GlobeIcon, SettingsIcon } from "outline-icons";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -19,6 +19,8 @@ import {
   conditionsPath,
   interventionsPath,
   recipesPath,
+  knowledgeGraphPath,
+  analyticsPath,
 } from "~/utils/routeHelpers";
 import TeamLogo from "../TeamLogo";
 import Tooltip from "../Tooltip";
@@ -135,6 +137,18 @@ function AppSidebar() {
                 to={recipesPath()}
                 icon={<LeafIcon />}
                 label={t("Recipes")}
+                exact={false}
+              />
+              <SidebarLink
+                to={knowledgeGraphPath()}
+                icon={<GlobeIcon />}
+                label={t("Knowledge Graph")}
+                exact={false}
+              />
+              <SidebarLink
+                to={analyticsPath()}
+                icon={<SettingsIcon />}
+                label={t("Analytics")}
                 exact={false}
               />
             </Section>
