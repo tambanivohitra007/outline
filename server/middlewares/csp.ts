@@ -40,7 +40,11 @@ export default function createCSPMiddleware() {
   // Construct scripts CSP based on options in use
   const defaultSrc: string[] = ["'self'"];
   const scriptSrc: string[] = [];
-  const styleSrc: string[] = ["'self'", "'unsafe-inline'"];
+  const styleSrc: string[] = [
+    "'self'",
+    "'unsafe-inline'",
+    "https://fonts.googleapis.com",
+  ];
   const objectSrc: string[] = [env.URL, "'self'"];
 
   if (env.isCloudHosted) {
@@ -91,6 +95,7 @@ export default function createCSPMiddleware() {
         imgSrc: ["*", "data:", "blob:"],
         frameSrc: ["*", "data:"],
         objectSrc,
+        fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
         // Do not use connect-src: because self + websockets does not work in
         // Safari, ref: https://bugs.webkit.org/show_bug.cgi?id=201591
         connectSrc: ["*"],
