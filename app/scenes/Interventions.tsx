@@ -1,4 +1,3 @@
-import invariant from "invariant";
 import { observer } from "mobx-react";
 import { ToolsIcon, PlusIcon } from "outline-icons";
 import { useEffect, useCallback, useState } from "react";
@@ -25,6 +24,16 @@ function Interventions() {
     void careDomains.fetchPage();
   }, [interventions, careDomains]);
 
+  const handleCreate = useCallback(async () => {
+    const name = window.prompt(t("Enter the intervention name:"));
+    if (!name?.trim()) {
+      return;
+    }
+    await interventions.create({
+      name: name.trim(),
+    });
+  }, [interventions, t]);
+
   const filtered = selectedDomain
     ? interventions.byCareDomain(selectedDomain)
     : interventions.orderedData;
@@ -35,7 +44,7 @@ function Interventions() {
       title={t("Interventions")}
       actions={
         <Action>
-          <Button icon={<PlusIcon />} onClick={() => {}}>
+          <Button icon={<PlusIcon />} onClick={handleCreate}>
             {t("New intervention")}
           </Button>
         </Action>

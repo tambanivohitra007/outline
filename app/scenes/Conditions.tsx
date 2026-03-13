@@ -27,8 +27,12 @@ function Conditions() {
   }, [conditions]);
 
   const handleCreate = useCallback(async () => {
+    const name = window.prompt(t("Enter the condition name:"));
+    if (!name?.trim()) {
+      return;
+    }
     const res = await conditions.create({
-      name: t("New Condition"),
+      name: name.trim(),
       status: "draft",
     });
     invariant(res, "Condition should be created");
