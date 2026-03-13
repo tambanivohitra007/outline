@@ -120,11 +120,11 @@ function SidebarLink(
 
   const activeStyle = React.useMemo(
     () => ({
-      color: theme.text,
+      color: theme.white,
       background: theme.sidebarActiveBackground,
       ...style,
     }),
-    [theme.text, theme.sidebarActiveBackground, style]
+    [theme.white, theme.sidebarActiveBackground, style]
   );
 
   const handleClick = React.useCallback(
@@ -218,13 +218,13 @@ const Actions = styled(EventBoundary)<{ $showActions?: boolean }>`
   top: 3px;
   right: 4px;
   gap: 4px;
-  color: ${s("textTertiary")};
+  color: ${s("sidebarText")};
   transition: opacity 50ms;
   height: 24px;
   background: var(--background);
 
   svg {
-    color: ${s("textSecondary")};
+    color: ${s("sidebarText")};
     fill: currentColor;
     opacity: 0.5;
   }
@@ -336,7 +336,7 @@ const Link = styled(NavLink)<{
 
     &:hover {
       color: ${(props) =>
-        props.$isActiveDrop ? props.theme.white : props.theme.text};
+        props.$isActiveDrop ? props.theme.white : props.theme.white};
     }
   }
 
@@ -375,7 +375,8 @@ const Label = styled.div<{ $ellipsis: boolean }>`
 const Description = styled.div`
   font-size: 12px;
   line-height: 16px;
-  color: ${s("textTertiary")};
+  color: ${s("sidebarText")};
+  opacity: 0.6;
   margin-left: 2px;
   white-space: normal;
   ${ellipsis()}

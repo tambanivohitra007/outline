@@ -86,7 +86,7 @@ const Button = styled.button`
 
   &:not(:disabled):hover,
   &:not(:disabled):active {
-    color: ${s("textSecondary")};
+    color: ${s("sidebarText")};
     cursor: var(--pointer);
   }
 `;

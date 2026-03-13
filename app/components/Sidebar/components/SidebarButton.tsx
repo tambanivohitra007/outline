@@ -87,7 +87,7 @@ const Button = styled(Flex)<{
   $position: "top" | "bottom";
 }>`
   flex: 1;
-  color: ${s("textTertiary")};
+  color: ${s("sidebarText")};
   align-items: center;
   padding: ${isMobile() ? 12 : 4}px 4px;
   font-size: 15px;
