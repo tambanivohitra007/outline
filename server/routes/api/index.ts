@@ -60,6 +60,7 @@ import scriptures from "./scriptures/scriptures";
 import recipes from "./recipes/recipes";
 import medical from "./medical/medical";
 import analytics from "./analytics/analytics";
+import ai from "./ai/ai";
 
 const api = new Koa<AppState, AppContext>();
 const router = new Router();
@@ -136,6 +137,7 @@ router.use("/", scriptures.routes());
 router.use("/", recipes.routes());
 router.use("/", medical.routes());
 router.use("/", analytics.routes());
+router.use("/", ai.routes());
 
 if (!env.isCloudHosted) {
   router.use("/", installation.routes());
