@@ -2,7 +2,8 @@
 /* oxlint-disable @typescript-oxlint/no-var-requires */
 /* oxlint-disable no-undef */
 const { exec } = require("child_process");
-const { readdirSync, existsSync } = require("fs");
+const { readdirSync, existsSync, mkdirSync, copyFileSync } = require("fs");
+const path = require("path");
 
 const getDirectories = (source) =>
   readdirSync(source, { withFileTypes: true })
@@ -26,14 +27,36 @@ function execAsync(cmd) {
   });
 }
 
+/**
+ * Recursively removes a directory (cross-platform).
+ * @param {string} dir
+ */
+function rmrf(dir) {
+  const fs = require("fs");
+  if (fs.existsSync(dir)) {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Copies a file, creating the destination directory if needed (cross-platform).
+ * @param {string} src
+ * @param {string} dest
+ */
+function cpFile(src, dest) {
+  if (!existsSync(src)) {
+    return;
+  }
+  mkdirSync(path.dirname(dest), { recursive: true });
+  copyFileSync(src, dest);
+}
+
 async function build() {
   // Clean previous build
   console.log("Clean previous build…");
 
-  await Promise.all([
-    execAsync("rm -rf ./build/server"),
-    execAsync("rm -rf ./build/plugins"),
-  ]);
+  rmrf("./build/server");
+  rmrf("./build/plugins");
 
   const d = getDirectories("./plugins");
 
@@ -68,23 +91,20 @@ async function build() {
 
   // Copy static files
   console.log("Copying static files…");
-  await Promise.all([
-    execAsync(
-      "cp ./server/collaboration/Procfile ./build/server/collaboration/Procfile"
-    ),
-    execAsync(
-      "cp ./server/static/error.dev.html ./build/server/error.dev.html"
-    ),
-    execAsync(
-      "cp ./server/static/error.prod.html ./build/server/error.prod.html"
-    ),
-    execAsync("cp package.json ./build"),
-    ...d.map(async (plugin) =>
-      execAsync(
-        `mkdir -p ./build/plugins/${plugin} && cp ./plugins/${plugin}/plugin.json ./build/plugins/${plugin}/plugin.json 2>/dev/null || :`
-      )
-    ),
-  ]);
+  cpFile(
+    "./server/collaboration/Procfile",
+    "./build/server/collaboration/Procfile"
+  );
+  cpFile("./server/static/error.dev.html", "./build/server/error.dev.html");
+  cpFile("./server/static/error.prod.html", "./build/server/error.prod.html");
+  cpFile("./package.json", "./build/package.json");
+
+  for (const plugin of d) {
+    const src = `./plugins/${plugin}/plugin.json`;
+    if (existsSync(src)) {
+      cpFile(src, `./build/plugins/${plugin}/plugin.json`);
+    }
+  }
 
   console.log("Done!");
 }

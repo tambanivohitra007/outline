@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --version 2>&1; yarn --version 2>&1; docker --version 2>&1; docker compose version 2>&1)",
+      "Bash(where node:*)",
+      "Bash(corepack enable:*)",
+      "Bash(npm install:*)",
+      "Bash(yarn --version 2>&1)",
+      "Bash(corepack use:*)",
+      "Bash(node .yarn/releases/yarn-4.11.0.cjs --version 2>&1)",
+      "Bash(npm uninstall:*)",
+      "Bash(yarn build:server)",
+      "Bash(NODE_ENV=development node build/server/index.js --services=cron,collaboration,websockets,admin,web,worker)",
+      "Read(//mnt/c/Users/rindra/Projects/**)",
+      "Bash(make up:*)",
+      "Bash(docker compose:*)",
+      "Bash(yarn dev:watch)",
+      "Bash(grep -r \"ThemeProvider\\\\|buildLight\\\\|buildDark\" /c/Users/rindra/Projects/outline/app --include=*.tsx --include=*.ts)",
+      "Bash(grep -r \"customTheme\\\\|avatarUrl\" /c/Users/rindra/Projects/outline/server --include=*.ts)",
+      "Bash(ls -la /c/Users/rindra/Projects/outline/server/migrations/*.ts)",
+      "Bash(grep -l \"authorize.*pin\\\\|authorize.*star\" /c/Users/rindra/Projects/outline/server/policies/*.ts)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}
