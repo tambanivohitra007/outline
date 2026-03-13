@@ -1516,7 +1516,6 @@ export const applyTemplateFactory = ({
 
 export const rootDocumentActions = [
   openDocument,
-  archiveDocument,
   createDocument,
   createDraftDocument,
   createNewDocument,
@@ -1529,7 +1528,6 @@ export const rootDocumentActions = [
   downloadDocumentAsHTML,
   downloadDocumentAsPDF,
   copyDocumentLink,
-  copyDocumentShareLink,
   copyDocumentAsMarkdown,
   copyDocumentAsPlainText,
   starDocument,
@@ -1540,12 +1538,9 @@ export const rootDocumentActions = [
   unsubscribeDocument,
   searchInDocument,
   duplicateDocument,
-  leaveDocument,
   moveDocumentToCollection,
   openRandomDocument,
   permanentlyDeleteDocument,
-  permanentlyDeleteDocumentsInTrash,
-  presentDocument,
   printDocument,
   pinDocumentToCollection,
   pinDocumentToHome,
@@ -1553,5 +1548,4 @@ export const rootDocumentActions = [
   openDocumentHistory,
   openDocumentInsights,
   openDocumentInDesktop,
-  shareDocument,
 ];

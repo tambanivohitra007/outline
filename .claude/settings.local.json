@@ -29,7 +29,21 @@
       "Bash(ls c:/Users/rindra/Projects/outline/server/migrations/20260313*)",
       "Bash(taskkill //F //IM node.exe 2>/dev/null; echo \"done\")",
       "Bash(grep -r \"Outline\" /c/Users/rindra/Projects/outline/app/components/Breadcrumb* | head -10)",
-      "Bash(find /c/Users/rindra/Projects/outline -name \"*.json\" -path \"*/package.json\" | head -1 | xargs head -20)"
+      "Bash(find /c/Users/rindra/Projects/outline -name \"*.json\" -path \"*/package.json\" | head -1 | xargs head -20)",
+      "Bash(grep -r \"getoutline\" /c/Users/rindra/Projects/outline/app --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.json\" 2>/dev/null | head -20)",
+      "Bash(grep -r \"ArchiveLink\\\\|TrashLink\\\\|SharedWithMe\" /c/Users/rindra/Projects/outline/app --include=\"*.tsx\" 2>/dev/null | head -10)",
+      "Bash(grep -r \"ArchiveLink\\\\|TrashLink\\\\|SharedWithMe\\\\>\" /c/Users/rindra/Projects/outline/app/components/Sidebar --include=\"*.tsx\" 2>/dev/null | grep -v \"\\\\.tsx:.*export\\\\|\\\\.tsx:import.*from\\\\|SharedWithMeLink\\\\|ArchivedCollection\")",
+      "Bash(grep -r \"ArchiveLink\\\\|TrashLink\\\\|SharedWithMe\\\\|DraftsLink\" /c/Users/rindra/Projects/outline/app/scenes --include=\"*.tsx\" 2>/dev/null | head -15)",
+      "Bash(grep -l \"StarredLink\\\\|DraftsLink\\\\|ArchiveLink\\\\|TrashLink\" /c/Users/rindra/Projects/outline/app/scenes/Document/*.tsx 2>/dev/null)",
+      "Bash(grep -l \"StarredLink\\\\|DraftsLink\\\\|ArchiveLink\\\\|TrashLink\" /c/Users/rindra/Projects/outline/app/scenes/*.tsx /c/Users/rindra/Projects/outline/app/components/*.tsx 2>/dev/null)",
+      "Bash(grep -r \"Starred\\\\|Drafts\\\\|Archive\\\\|Trash\" /c/Users/rindra/Projects/outline/app/components/Sidebar --include=\"*.tsx\" 2>/dev/null | grep -i \"import\\\\|from\" | head -20)",
+      "Bash(grep -r \"title\\\\|meta.*description\" /c/Users/rindra/Projects/outline/server/static/*.html 2>/dev/null | head -10)",
+      "Bash(grep -l \"archive\\\\|trash\\\\|share\\\\|present\" /c/Users/rindra/Projects/outline/app/scenes/Settings/*.tsx 2>/dev/null)",
+      "Bash(grep -r \"archivePath\\\\|trashPath\\\\|Archive\\\\|Trash\" /c/Users/rindra/Projects/outline/app --include=\"*route*\" --include=\"*Route*\" 2>/dev/null | head -20)",
+      "Bash(find /c/Users/rindra/Projects/outline/app -name \"Routes.tsx\" -o -name \"*Router*\" -o -name \"index.tsx\" | xargs grep -l \"Archive\\\\|Trash\\\\|/archive\\\\|/trash\" 2>/dev/null | head -5)",
+      "Bash(grep -r \"PresentationMode\\\\|present\" /c/Users/rindra/Projects/outline/app/scenes/Document --include=\"*.tsx\" 2>/dev/null | head -10)",
+      "Bash(grep -r \"SharePopover\\\\|shareDocument\" /c/Users/rindra/Projects/outline/app/components --include=\"*.tsx\" 2>/dev/null | head -10)",
+      "Read(//tmp/**)"
     ]
   }
 }
