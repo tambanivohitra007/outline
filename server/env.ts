@@ -807,6 +807,26 @@ export class Environment {
   public POPULARITY_UPDATE_INTERVAL_HOURS =
     this.toOptionalNumber(environment.POPULARITY_UPDATE_INTERVAL_HOURS) ?? 12;
 
+  // Medical API integrations
+
+  /**
+   * SNOMED CT API base URL.
+   */
+  @IsOptional()
+  public SNOMED_API_URL = this.toOptionalString(environment.SNOMED_API_URL);
+
+  /**
+   * NCBI PubMed API key for higher rate limits.
+   */
+  @IsOptional()
+  public PUBMED_API_KEY = this.toOptionalString(environment.PUBMED_API_KEY);
+
+  /**
+   * API.Bible API key for scripture lookups.
+   */
+  @IsOptional()
+  public BIBLE_API_KEY = this.toOptionalString(environment.BIBLE_API_KEY);
+
   /**
    * Returns true if the current installation is the cloud hosted version at
    * getoutline.com
