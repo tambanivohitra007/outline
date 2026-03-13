@@ -14,8 +14,12 @@ import usePolicy from "~/hooks/usePolicy";
 import lazy from "~/utils/lazyWithRetry";
 import {
   archivePath,
+  conditionsPath,
+  conditionPath,
   draftsPath,
   homePath,
+  interventionsPath,
+  recipesPath,
   searchPath,
   settingsPath,
   matchDocumentSlug as documentSlug,
@@ -35,6 +39,10 @@ const Search = lazy(() => import("~/scenes/Search"));
 const Trash = lazy(() => import("~/scenes/Trash"));
 const Debug = lazy(() => import("~/scenes/Developer/Debug"));
 const Changesets = lazy(() => import("~/scenes/Developer/Changesets"));
+const Conditions = lazy(() => import("~/scenes/Conditions"));
+const ConditionEditor = lazy(() => import("~/scenes/ConditionEditor"));
+const Interventions = lazy(() => import("~/scenes/Interventions"));
+const RecipesScene = lazy(() => import("~/scenes/Recipes"));
 
 const RedirectDocument = ({
   match,
@@ -125,6 +133,10 @@ function AuthenticatedRoutes() {
                 component={Changesets}
               />
             )}
+            <Route exact path={conditionsPath()} component={Conditions} />
+            <Route exact path={`${conditionsPath()}/:id`} component={ConditionEditor} />
+            <Route exact path={interventionsPath()} component={Interventions} />
+            <Route exact path={recipesPath()} component={RecipesScene} />
             <Route exact path="/404" component={Error404} />
             <SettingsRoutes />
             <Route component={Error404} />
