@@ -1,7 +1,7 @@
 import invariant from "invariant";
 import { observer } from "mobx-react";
 import { BeakerIcon, PlusIcon } from "outline-icons";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { Action } from "~/components/Actions";
@@ -9,6 +9,7 @@ import Button from "~/components/Button";
 import Empty from "~/components/Empty";
 import Flex from "~/components/Flex";
 import Heading from "~/components/Heading";
+import Input from "~/components/Input";
 import Scene from "~/components/Scene";
 import Subheading from "~/components/Subheading";
 import Text from "~/components/Text";
@@ -22,9 +23,29 @@ function Conditions() {
   const { conditions } = useStores();
   const history = useHistory();
 
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+
   useEffect(() => {
     void conditions.fetchPage();
   }, [conditions]);
+
+  const filtered = useMemo(() => {
+    let data = conditions.orderedData;
+    if (statusFilter) {
+      data = data.filter((c) => c.status === statusFilter);
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      data = data.filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.snomedCode?.toLowerCase().includes(q) ||
+          c.icdCode?.toLowerCase().includes(q)
+      );
+    }
+    return data;
+  }, [conditions.orderedData, search, statusFilter]);
 
   const handleCreate = useCallback(async () => {
     const name = window.prompt(t("Enter the condition name:"));
@@ -58,13 +79,55 @@ function Conditions() {
         )}
       </Text>
 
-      <Subheading sticky>{t("All Conditions")}</Subheading>
+      <FilterRow>
+        <SearchInput
+          placeholder={t("Search conditions\u2026")}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <StatusFilters>
+          <FilterChip
+            $active={!statusFilter}
+            onClick={() => setStatusFilter(null)}
+          >
+            {t("All")}
+          </FilterChip>
+          <FilterChip
+            $active={statusFilter === "draft"}
+            onClick={() => setStatusFilter(statusFilter === "draft" ? null : "draft")}
+          >
+            {t("Draft")}
+          </FilterChip>
+          <FilterChip
+            $active={statusFilter === "review"}
+            onClick={() => setStatusFilter(statusFilter === "review" ? null : "review")}
+          >
+            {t("Review")}
+          </FilterChip>
+          <FilterChip
+            $active={statusFilter === "published"}
+            onClick={() => setStatusFilter(statusFilter === "published" ? null : "published")}
+          >
+            {t("Published")}
+          </FilterChip>
+        </StatusFilters>
+      </FilterRow>
 
-      {conditions.orderedData.length === 0 && conditions.isLoaded ? (
-        <Empty>{t("No conditions have been created yet.")}</Empty>
+      <Subheading sticky>
+        {statusFilter
+          ? t("{{status}} Conditions", { status: statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) })
+          : t("All Conditions")} ({filtered.length})
+      </Subheading>
+
+      {filtered.length === 0 && conditions.isLoaded ? (
+        <Empty>
+          {search.trim()
+            ? t("No conditions matching your search.")
+            : t("No conditions have been created yet.")}
+        </Empty>
       ) : (
         <ConditionGrid>
-          {conditions.orderedData.map((condition) => (
+          {filtered.map((condition) => (
             <ConditionCard
               key={condition.id}
               onClick={() => history.push(conditionPath(condition.id))}
@@ -88,6 +151,49 @@ function Conditions() {
     </Scene>
   );
 }
+
+const FilterRow = styled(Flex)`
+  gap: 16px;
+  align-items: center;
+  margin: 16px 0;
+  flex-wrap: wrap;
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid ${s("divider")};
+  border-radius: 6px;
+  background: ${s("background")};
+  color: ${s("text")};
+  font-size: 14px;
+  outline: none;
+
+  &:focus {
+    border-color: ${s("accent")};
+  }
+`;
+
+const StatusFilters = styled(Flex)`
+  gap: 6px;
+`;
+
+const FilterChip = styled.button<{ $active: boolean }>`
+  border: 1px solid ${(props) => (props.$active ? props.theme.accent : props.theme.divider)};
+  background: ${(props) => (props.$active ? props.theme.accent + "15" : "transparent")};
+  color: ${(props) => (props.$active ? props.theme.accent : props.theme.textSecondary)};
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 100ms ease;
+
+  &:hover {
+    border-color: ${(props) => props.theme.accent};
+  }
+`;
 
 const ConditionGrid = styled.div`
   display: grid;
