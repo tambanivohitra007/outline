@@ -51,6 +51,13 @@ import urls from "./urls";
 import userMemberships from "./userMemberships";
 import users from "./users";
 import views from "./views";
+// Medical domain routes
+import careDomains from "./careDomains/careDomains";
+import conditions from "./conditions/conditions";
+import interventions from "./interventions/interventions";
+import evidenceEntries from "./evidenceEntries/evidenceEntries";
+import scriptures from "./scriptures/scriptures";
+import recipes from "./recipes/recipes";
 
 const api = new Koa<AppState, AppContext>();
 const router = new Router();
@@ -118,6 +125,13 @@ router.use("/", userMemberships.routes());
 router.use("/", reactions.routes());
 router.use("/", relationships.routes());
 router.use("/", imports.routes());
+// Medical domain routes
+router.use("/", careDomains.routes());
+router.use("/", conditions.routes());
+router.use("/", interventions.routes());
+router.use("/", evidenceEntries.routes());
+router.use("/", scriptures.routes());
+router.use("/", recipes.routes());
 
 if (!env.isCloudHosted) {
   router.use("/", installation.routes());
