@@ -4,6 +4,7 @@ import auth from "@server/middlewares/authentication";
 import validate from "@server/middlewares/validate";
 import {
   Condition,
+  ConditionIntervention,
   ConditionSection,
   Intervention,
   EvidenceEntry,
@@ -136,6 +137,22 @@ router.post(
           label: "belongs to",
         });
       }
+    }
+
+    // Condition-Intervention edges from the join table
+    const ciLinks = await ConditionIntervention.findAll({
+      attributes: ["conditionId", "interventionId", "evidenceLevel"],
+    });
+
+    for (const link of ciLinks) {
+      edges.push({
+        id: `edge-ci-${link.conditionId}-${link.interventionId}`,
+        source: `condition-${link.conditionId}`,
+        target: `intervention-${link.interventionId}`,
+        label: link.evidenceLevel
+          ? `Evidence: ${link.evidenceLevel}`
+          : "treats",
+      });
     }
 
     ctx.body = {
