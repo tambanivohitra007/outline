@@ -1,4 +1,5 @@
 import type { Condition } from "@server/models";
+import presentConditionSection from "./conditionSection";
 
 export default function presentCondition(condition: Condition) {
   return {
@@ -12,6 +13,9 @@ export default function presentCondition(condition: Condition) {
     collectionId: condition.collectionId,
     teamId: condition.teamId,
     createdById: condition.createdById,
+    sections: condition.sections
+      ? condition.sections.map(presentConditionSection)
+      : undefined,
     createdAt: condition.createdAt,
     updatedAt: condition.updatedAt,
   };

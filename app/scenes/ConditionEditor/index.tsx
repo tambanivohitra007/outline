@@ -1,10 +1,9 @@
 import { observer } from "mobx-react";
 import { BeakerIcon } from "outline-icons";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { RouteComponentProps } from "react-router-dom";
 import Flex from "~/components/Flex";
-import Heading from "~/components/Heading";
 import PlaceholderDocument from "~/components/PlaceholderDocument";
 import Scene from "~/components/Scene";
 import useStores from "~/hooks/useStores";
@@ -22,10 +21,11 @@ type Props = RouteComponentProps<Params>;
 
 function ConditionEditor({ match }: Props) {
   const { t } = useTranslation();
-  const { conditions, conditionSections } = useStores();
+  const { conditions, conditionSections, documents } = useStores();
   const { id } = match.params;
   const [isLoading, setIsLoading] = useState(true);
 
+  // Load condition
   useEffect(() => {
     async function load() {
       setIsLoading(true);
@@ -47,6 +47,19 @@ function ConditionEditor({ match }: Props) {
     }
   }, [condition, conditionSections]);
 
+  // Fetch backing documents for each section
+  const sections = condition
+    ? conditionSections.forCondition(condition.id)
+    : [];
+
+  useEffect(() => {
+    for (const section of sections) {
+      if (section.documentId && !documents.get(section.documentId)) {
+        void documents.fetch(section.documentId);
+      }
+    }
+  }, [sections, documents]);
+
   if (isLoading || !condition) {
     return (
       <Scene icon={<BeakerIcon />} title={t("Loading...")}>
@@ -55,21 +68,17 @@ function ConditionEditor({ match }: Props) {
     );
   }
 
-  const sections = conditionSections.forCondition(condition.id);
-
   return (
-    <Scene
-      icon={<BeakerIcon />}
-      title={condition.name}
-      wide
-    >
+    <Scene icon={<BeakerIcon />} title={condition.name} wide>
       <ConditionHeader condition={condition} />
 
       <EditorLayout>
         <MainContent>
           {sections.length === 0 ? (
             <EmptyState>
-              {t("No sections found. Sections are created automatically when a condition is created via the API.")}
+              {t(
+                "No sections found. Create a condition via the API to get started."
+              )}
             </EmptyState>
           ) : (
             sections.map((section) => (

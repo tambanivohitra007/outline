@@ -3,6 +3,7 @@ import slugify from "@shared/utils/slugify";
 import auth from "@server/middlewares/authentication";
 import { transaction } from "@server/middlewares/transaction";
 import validate from "@server/middlewares/validate";
+import conditionCreator from "@server/commands/conditionCreator";
 import { Condition, ConditionSection } from "@server/models";
 import { authorize } from "@server/policies";
 import {
@@ -72,43 +73,14 @@ router.post(
   transaction(),
   async (ctx: APIContext<T.ConditionsCreateReq>) => {
     const { user } = ctx.state.auth;
-    const { transaction } = ctx.state;
     const { name, snomedCode, icdCode, collectionId } = ctx.input.body;
 
-    const condition = await Condition.create(
-      {
-        name,
-        slug: slugify(name),
-        snomedCode: snomedCode ?? null,
-        icdCode: icdCode ?? null,
-        collectionId: collectionId ?? null,
-        teamId: user.teamId,
-        createdById: user.id,
-      },
-      { transaction }
-    );
-
-    // Create default sections
-    const defaultSections = [
-      { sectionType: "risk_factors" as const, title: "Risk Factors/Causes", sortOrder: 0 },
-      { sectionType: "physiology" as const, title: "Relevant Physiology", sortOrder: 1 },
-      { sectionType: "complications" as const, title: "Complications", sortOrder: 2 },
-      { sectionType: "solutions" as const, title: "Solutions", sortOrder: 3 },
-      { sectionType: "bible_sop" as const, title: "Bible & Spirit of Prophecy", sortOrder: 4 },
-      { sectionType: "research_ideas" as const, title: "Ideas for Potential Research", sortOrder: 5 },
-    ];
-
-    await Promise.all(
-      defaultSections.map((section) =>
-        ConditionSection.create(
-          {
-            ...section,
-            conditionId: condition.id,
-          },
-          { transaction }
-        )
-      )
-    );
+    const condition = await conditionCreator(ctx, {
+      name,
+      snomedCode,
+      icdCode,
+      collectionId,
+    });
 
     ctx.body = {
       data: presentCondition(condition),

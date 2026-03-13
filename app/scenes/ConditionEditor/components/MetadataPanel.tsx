@@ -13,12 +13,21 @@ interface Props {
 
 function MetadataPanel({ condition }: Props) {
   const { t } = useTranslation();
-  const { evidenceEntries, scriptures } = useStores();
+  const { conditions, evidenceEntries, scriptures } = useStores();
 
   useEffect(() => {
     void evidenceEntries.fetchPage({ conditionId: condition.id });
     void scriptures.fetchPage({ conditionId: condition.id });
   }, [condition.id, evidenceEntries, scriptures]);
+
+  const handleStatusChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    await conditions.update({
+      id: condition.id,
+      status: e.target.value as "draft" | "review" | "published",
+    });
+  };
 
   const evidence = evidenceEntries.forCondition(condition.id);
   const conditionScriptures = scriptures.forCondition(condition.id);
@@ -29,7 +38,7 @@ function MetadataPanel({ condition }: Props) {
         <PanelTitle>{t("Status")}</PanelTitle>
         <StatusSelect
           value={condition.status}
-          onChange={() => {}}
+          onChange={handleStatusChange}
         >
           <option value="draft">{t("Draft")}</option>
           <option value="review">{t("In Review")}</option>

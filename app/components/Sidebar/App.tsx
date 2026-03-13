@@ -109,11 +109,13 @@ function AppSidebar() {
                 icon={<HomeIcon />}
                 exact={false}
                 label={t("Home")}
+                description={t("Recent activity & updates")}
               />
               <SidebarLink
                 to={searchPath()}
                 icon={<SearchIcon />}
                 label={t("Search")}
+                description={t("Find documents & knowledge")}
                 exact={false}
               />
               {can.createDocument && <DraftsLink />}
@@ -125,30 +127,35 @@ function AppSidebar() {
                 to={conditionsPath()}
                 icon={<BeakerIcon />}
                 label={t("Conditions")}
+                description={t("Browse medical conditions & diagnoses")}
                 exact={false}
               />
               <SidebarLink
                 to={interventionsPath()}
                 icon={<ToolsIcon />}
                 label={t("Interventions")}
+                description={t("Treatment plans & therapeutic protocols")}
                 exact={false}
               />
               <SidebarLink
                 to={recipesPath()}
                 icon={<LeafIcon />}
                 label={t("Recipes")}
+                description={t("Healthy recipes & nutritional guides")}
                 exact={false}
               />
               <SidebarLink
                 to={knowledgeGraphPath()}
                 icon={<GlobeIcon />}
                 label={t("Knowledge Graph")}
+                description={t("Explore relationships between concepts")}
                 exact={false}
               />
               <SidebarLink
                 to={analyticsPath()}
                 icon={<SettingsIcon />}
                 label={t("Analytics")}
+                description={t("Insights, metrics & reporting")}
                 exact={false}
               />
             </Section>
