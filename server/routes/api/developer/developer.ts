@@ -1,12 +1,15 @@
 import type { Context, Next } from "koa";
 import Router from "koa-router";
+import { addMonths } from "date-fns";
 import { randomString } from "@shared/random";
+import { getCookieDomain } from "@shared/utils/domains";
 import type { Invite } from "@server/commands/userInviter";
 import userInviter from "@server/commands/userInviter";
 import env from "@server/env";
 import Logger from "@server/logging/Logger";
 import auth from "@server/middlewares/authentication";
 import validate from "@server/middlewares/validate";
+import { User } from "@server/models";
 import { presentUser } from "@server/presenters";
 import type { APIContext } from "@server/types";
 import * as T from "./schema";
@@ -22,6 +25,35 @@ function dev() {
     return next();
   };
 }
+
+router.get(
+  "/developer.login",
+  dev(),
+  async (ctx: Context) => {
+    const user = await User.findOne({
+      order: [["createdAt", "ASC"]],
+    });
+
+    if (!user) {
+      ctx.body = "No users found in database";
+      return;
+    }
+
+    const expires = addMonths(new Date(), 3);
+    const domain = getCookieDomain(ctx.request.hostname, env.isCloudHosted);
+    const token = user.getJwtToken(expires);
+
+    ctx.cookies.set("accessToken", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      expires,
+      domain,
+    });
+
+    Logger.info("developer", `Dev login as ${user.email}`);
+    ctx.redirect("/");
+  }
+);
 
 router.post(
   "developer.create_test_users",
