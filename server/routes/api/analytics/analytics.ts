@@ -44,6 +44,17 @@ router.post(
       }),
     ]);
 
+    // Sequelize group count returns { status: string, count: string }
+    const statusData = (
+      conditionsByStatus as unknown as Array<{
+        status: string;
+        count: string;
+      }>
+    ).map((item) => ({
+      status: item.status,
+      count: Number(item.count),
+    }));
+
     ctx.body = {
       data: {
         totals: {
@@ -53,10 +64,7 @@ router.post(
           scriptures: scriptureCount,
           recipes: recipeCount,
         },
-        conditionsByStatus: conditionsByStatus as unknown as Array<{
-          status: string;
-          count: number;
-        }>,
+        conditionsByStatus: statusData,
       },
     };
   }
