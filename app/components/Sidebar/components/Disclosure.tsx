@@ -29,12 +29,12 @@ const Button = styled(NudeButton)`
   position: absolute;
   left: -24px;
   flex-shrink: 0;
-  color: ${s("textSecondary")};
+  color: ${s("sidebarText")};
   margin: 2px;
   ${extraArea(4)}
 
   &:hover {
-    color: ${s("text")};
+    color: ${s("sidebarText")};
     background: ${s("sidebarControlHoverBackground")};
   }
 `;

@@ -64,7 +64,7 @@ const Navigation = styled(Flex)`
 `;
 
 const Forward = styled(ArrowIcon)<{ $active: boolean }>`
-  color: ${s("textTertiary")};
+  color: ${s("sidebarText")};
   opacity: ${(props) => (props.$active ? 1 : 0.5)};
   transition: color 100ms ease-in-out;
 
