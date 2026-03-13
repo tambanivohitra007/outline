@@ -12,3 +12,13 @@ export const ConditionSectionsListSchema = BaseSchema.extend({
 export type ConditionSectionsListReq = z.infer<
   typeof ConditionSectionsListSchema
 >;
+
+export const ConditionSectionsCreateDocumentSchema = BaseSchema.extend({
+  body: z.object({
+    id: z.uuid(),
+  }),
+});
+
+export type ConditionSectionsCreateDocumentReq = z.infer<
+  typeof ConditionSectionsCreateDocumentSchema
+>;
