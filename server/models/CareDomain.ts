@@ -1,5 +1,5 @@
 import type { InferAttributes, InferCreationAttributes } from "sequelize";
-import { DataType, Column, Table, HasMany, Default } from "sequelize-typescript";
+import { DataType, Column, Table, Default } from "sequelize-typescript";
 import IdModel from "./base/IdModel";
 import Fix from "./decorators/Fix";
 
@@ -27,11 +27,6 @@ class CareDomain extends IdModel<
   @Default(0)
   @Column
   sortOrder: number;
-
-  // associations
-
-  @HasMany(() => require("./Intervention").default, "careDomainId")
-  interventions: import("./Intervention").default[];
 }
 
 export default CareDomain;
