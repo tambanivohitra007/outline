@@ -834,6 +834,18 @@ export class Environment {
   public GEMINI_API_KEY = this.toOptionalString(environment.GEMINI_API_KEY);
 
   /**
+   * Cerbo EHR API base URL.
+   */
+  @IsOptional()
+  public CERBO_API_URL = this.toOptionalString(environment.CERBO_API_URL);
+
+  /**
+   * Cerbo EHR API key.
+   */
+  @IsOptional()
+  public CERBO_API_KEY = this.toOptionalString(environment.CERBO_API_KEY);
+
+  /**
    * Returns true if the current installation is the cloud hosted version at
    * getoutline.com
    */

@@ -21,6 +21,7 @@ import {
   interventionsPath,
   knowledgeGraphPath,
   analyticsPath,
+  patientPortalPath,
   recipesPath,
   searchPath,
   settingsPath,
@@ -47,6 +48,7 @@ const Interventions = lazy(() => import("~/scenes/Interventions"));
 const RecipesScene = lazy(() => import("~/scenes/Recipes"));
 const KnowledgeGraph = lazy(() => import("~/scenes/KnowledgeGraph"));
 const AnalyticsScene = lazy(() => import("~/scenes/Analytics"));
+const PatientPortal = lazy(() => import("~/scenes/PatientPortal"));
 
 const RedirectDocument = ({
   match,
@@ -143,6 +145,7 @@ function AuthenticatedRoutes() {
             <Route exact path={recipesPath()} component={RecipesScene} />
             <Route exact path={knowledgeGraphPath()} component={KnowledgeGraph} />
             <Route exact path={analyticsPath()} component={AnalyticsScene} />
+            <Route exact path={patientPortalPath()} component={PatientPortal} />
             <Route exact path="/404" component={Error404} />
             <SettingsRoutes />
             <Route component={Error404} />
