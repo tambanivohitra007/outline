@@ -29,3 +29,11 @@ import "./webhookSubscription";
 import "./userMembership";
 import "./userPasskey";
 import "./emoji";
+
+// Medical domain policies
+import "./careDomain";
+import "./condition";
+import "./intervention";
+import "./evidenceEntry";
+import "./scripture";
+import "./recipe";

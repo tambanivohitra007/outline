@@ -31,6 +31,15 @@ import presentUser from "./user";
 import presentView from "./view";
 import presentEmoji from "./emoji";
 
+// Medical domain presenters
+import presentCareDomain from "./careDomain";
+import presentCondition from "./condition";
+import presentConditionSection from "./conditionSection";
+import presentEvidenceEntry from "./evidenceEntry";
+import presentIntervention from "./intervention";
+import presentRecipe from "./recipe";
+import presentScripture from "./scripture";
+
 export {
   presentApiKey,
   presentAttachment,
@@ -66,4 +75,12 @@ export {
   presentUser,
   presentView,
   presentEmoji,
+  // Medical domain
+  presentCareDomain,
+  presentCondition,
+  presentConditionSection,
+  presentEvidenceEntry,
+  presentIntervention,
+  presentRecipe,
+  presentScripture,
 };
