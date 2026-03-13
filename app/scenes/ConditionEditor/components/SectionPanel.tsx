@@ -1,7 +1,9 @@
 import { observer } from "mobx-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
 import type ConditionSection from "~/models/ConditionSection";
+import useStores from "~/hooks/useStores";
 import styled from "styled-components";
 import { s } from "@shared/styles";
 
@@ -29,10 +31,21 @@ const SECTION_DESCRIPTIONS: Record<string, string> = {
 
 function SectionPanel({ section }: Props) {
   const { t } = useTranslation();
+  const { documents } = useStores();
+  const history = useHistory();
   const [isExpanded, setIsExpanded] = useState(true);
 
   const icon = SECTION_ICONS[section.sectionType] ?? "";
   const description = SECTION_DESCRIPTIONS[section.sectionType] ?? "";
+  const document = section.documentId
+    ? documents.get(section.documentId)
+    : null;
+
+  const handleOpenEditor = () => {
+    if (document) {
+      history.push(document.path);
+    }
+  };
 
   return (
     <Panel>
@@ -40,6 +53,11 @@ function SectionPanel({ section }: Props) {
         <HeaderLeft>
           <SectionIcon>{icon}</SectionIcon>
           <SectionTitle>{section.title}</SectionTitle>
+          {document && (
+            <DocumentStatus>
+              {document.publishedAt ? t("Published") : t("Draft")}
+            </DocumentStatus>
+          )}
         </HeaderLeft>
         <ExpandIcon $expanded={isExpanded}>&#9660;</ExpandIcon>
       </PanelHeader>
@@ -49,21 +67,28 @@ function SectionPanel({ section }: Props) {
           <SectionDescription>{t(description)}</SectionDescription>
 
           {section.documentId ? (
-            <EditorPlaceholder>
-              <EditorLink
-                href={`/doc/${section.documentId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t("Open in collaborative editor")}
-              </EditorLink>
-              <EditorHint>
-                {t("This section is backed by a collaborative document. Click to open the full editor with real-time collaboration.")}
-              </EditorHint>
-            </EditorPlaceholder>
+            <EditorArea>
+              <DocumentPreview onClick={handleOpenEditor}>
+                <PreviewContent>
+                  {document?.text ? (
+                    <PreviewText>
+                      {document.text.substring(0, 300)}
+                      {document.text.length > 300 ? "\u2026" : ""}
+                    </PreviewText>
+                  ) : (
+                    <PreviewEmpty>
+                      {t("Click to start writing content for this section.")}
+                    </PreviewEmpty>
+                  )}
+                </PreviewContent>
+                <OpenButton>
+                  {t("Open Editor")}
+                </OpenButton>
+              </DocumentPreview>
+            </EditorArea>
           ) : (
             <NoDocPlaceholder>
-              {t("No document linked to this section yet. Create content via the API to get started.")}
+              {t("No document linked to this section.")}
             </NoDocPlaceholder>
           )}
         </PanelContent>
@@ -109,6 +134,16 @@ const SectionTitle = styled.h3`
   color: ${s("text")};
 `;
 
+const DocumentStatus = styled.span`
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: ${s("accent")};
+  color: white;
+  text-transform: uppercase;
+`;
+
 const ExpandIcon = styled.span<{ $expanded: boolean }>`
   font-size: 10px;
   color: ${s("textTertiary")};
@@ -128,33 +163,52 @@ const SectionDescription = styled.p`
   font-style: italic;
 `;
 
-const EditorPlaceholder = styled.div`
-  padding: 20px;
-  border: 2px dashed ${s("divider")};
+const EditorArea = styled.div``;
+
+const DocumentPreview = styled.div`
+  padding: 16px;
+  border: 1px solid ${s("divider")};
   border-radius: 6px;
-  text-align: center;
+  cursor: pointer;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+
+  &:hover {
+    border-color: ${s("accent")};
+    box-shadow: 0 0 0 1px ${s("accent")};
+  }
 `;
 
-const EditorLink = styled.a`
+const PreviewContent = styled.div`
+  margin-bottom: 12px;
+`;
+
+const PreviewText = styled.div`
+  font-size: 13px;
+  color: ${s("textSecondary")};
+  line-height: 1.6;
+  white-space: pre-wrap;
+`;
+
+const PreviewEmpty = styled.div`
+  font-size: 13px;
+  color: ${s("textTertiary")};
+  font-style: italic;
+  text-align: center;
+  padding: 16px 0;
+`;
+
+const OpenButton = styled.div`
   display: inline-block;
-  padding: 8px 16px;
+  padding: 6px 14px;
   background: ${s("accent")};
   color: white;
-  border-radius: 6px;
-  text-decoration: none;
+  border-radius: 4px;
+  font-size: 13px;
   font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 8px;
 
   &:hover {
     opacity: 0.9;
   }
-`;
-
-const EditorHint = styled.p`
-  margin: 8px 0 0 0;
-  font-size: 12px;
-  color: ${s("textTertiary")};
 `;
 
 const NoDocPlaceholder = styled.div`

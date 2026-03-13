@@ -35,6 +35,8 @@ type Props = Omit<NavLinkProps, "to"> & {
   icon?: React.ReactNode;
   /** Text label or content to display for the link */
   label?: React.ReactNode;
+  /** Optional description text displayed below the label */
+  description?: string;
   /** Optional menu to display on hover or interaction */
   menu?: React.ReactNode;
   /** Whether to show an unread badge indicator */
@@ -77,6 +79,7 @@ function SidebarLink(
     onClickIntent,
     to,
     label,
+    description,
     active,
     isActiveDrop,
     isDraft,
@@ -179,7 +182,10 @@ function SidebarLink(
             />
           )}
           {icon && <IconWrapper>{icon}</IconWrapper>}
-          <Label $ellipsis={ellipsis}>{label}</Label>
+          <LabelGroup>
+            <Label $ellipsis={ellipsis}>{label}</Label>
+            {description && <Description>{description}</Description>}
+          </LabelGroup>
           {unreadBadge && <UnreadBadge style={unreadStyle} />}
         </Content>
       </ContextMenu>
@@ -199,7 +205,7 @@ export const IconWrapper = styled.span`
 
 const Content = styled.span`
   display: flex;
-  align-items: start;
+  align-items: center;
   position: relative;
   width: 100%;
   min-width: 0;
@@ -346,6 +352,13 @@ const Link = styled(NavLink)<{
   }
 `;
 
+const LabelGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+`;
+
 const Label = styled.div<{ $ellipsis: boolean }>`
   position: relative;
   width: 100%;
@@ -357,6 +370,15 @@ const Label = styled.div<{ $ellipsis: boolean }>`
   * {
     unicode-bidi: plaintext;
   }
+`;
+
+const Description = styled.div`
+  font-size: 12px;
+  line-height: 16px;
+  color: ${s("textTertiary")};
+  margin-left: 2px;
+  white-space: normal;
+  ${ellipsis()}
 `;
 
 export default React.forwardRef<HTMLAnchorElement, Props>(SidebarLink);

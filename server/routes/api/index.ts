@@ -53,6 +53,7 @@ import users from "./users";
 import views from "./views";
 // Medical domain routes
 import careDomains from "./careDomains/careDomains";
+import conditionSections from "./conditionSections/conditionSections";
 import conditions from "./conditions/conditions";
 import interventions from "./interventions/interventions";
 import evidenceEntries from "./evidenceEntries/evidenceEntries";
@@ -131,6 +132,7 @@ router.use("/", relationships.routes());
 router.use("/", imports.routes());
 // Medical domain routes
 router.use("/", careDomains.routes());
+router.use("/", conditionSections.routes());
 router.use("/", conditions.routes());
 router.use("/", interventions.routes());
 router.use("/", evidenceEntries.routes());
