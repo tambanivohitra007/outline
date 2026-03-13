@@ -19,6 +19,8 @@ import {
   draftsPath,
   homePath,
   interventionsPath,
+  knowledgeGraphPath,
+  analyticsPath,
   recipesPath,
   searchPath,
   settingsPath,
@@ -43,6 +45,8 @@ const Conditions = lazy(() => import("~/scenes/Conditions"));
 const ConditionEditor = lazy(() => import("~/scenes/ConditionEditor"));
 const Interventions = lazy(() => import("~/scenes/Interventions"));
 const RecipesScene = lazy(() => import("~/scenes/Recipes"));
+const KnowledgeGraph = lazy(() => import("~/scenes/KnowledgeGraph"));
+const AnalyticsScene = lazy(() => import("~/scenes/Analytics"));
 
 const RedirectDocument = ({
   match,
@@ -137,6 +141,8 @@ function AuthenticatedRoutes() {
             <Route exact path={`${conditionsPath()}/:id`} component={ConditionEditor} />
             <Route exact path={interventionsPath()} component={Interventions} />
             <Route exact path={recipesPath()} component={RecipesScene} />
+            <Route exact path={knowledgeGraphPath()} component={KnowledgeGraph} />
+            <Route exact path={analyticsPath()} component={AnalyticsScene} />
             <Route exact path="/404" component={Error404} />
             <SettingsRoutes />
             <Route component={Error404} />
