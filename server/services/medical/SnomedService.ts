@@ -1,4 +1,5 @@
 import env from "@server/env";
+import fetch from "@server/utils/fetch";
 
 const SNOMED_BASE_URL =
   env.SNOMED_API_URL ?? "https://browser.ihtsdotools.org/snowstorm/snomed-ct";

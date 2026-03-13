@@ -1,4 +1,5 @@
 import env from "@server/env";
+import fetch from "@server/utils/fetch";
 
 interface CerboPatient {
   id: string;

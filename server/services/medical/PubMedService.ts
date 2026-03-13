@@ -1,4 +1,5 @@
 import env from "@server/env";
+import fetch from "@server/utils/fetch";
 
 const PUBMED_BASE_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 
@@ -81,9 +82,14 @@ export default class PubMedService {
   static async fetchArticle(pmid: string): Promise<PubMedArticle | null> {
     const apiKey = env.PUBMED_API_KEY ? `&api_key=${env.PUBMED_API_KEY}` : "";
 
-    // Fetch summary for basic info
+    // Fetch summary and abstract in parallel
     const summaryUrl = `${PUBMED_BASE_URL}/esummary.fcgi?db=pubmed&id=${pmid}&retmode=json${apiKey}`;
-    const summaryRes = await fetch(summaryUrl);
+    const fetchUrl = `${PUBMED_BASE_URL}/efetch.fcgi?db=pubmed&id=${pmid}&rettype=abstract&retmode=text${apiKey}`;
+
+    const [summaryRes, fetchRes] = await Promise.all([
+      fetch(summaryUrl),
+      fetch(fetchUrl),
+    ]);
 
     if (!summaryRes.ok) {
       return null;
@@ -96,9 +102,6 @@ export default class PubMedService {
       return null;
     }
 
-    // Fetch abstract
-    const fetchUrl = `${PUBMED_BASE_URL}/efetch.fcgi?db=pubmed&id=${pmid}&rettype=abstract&retmode=text${apiKey}`;
-    const fetchRes = await fetch(fetchUrl);
     const abstractText = fetchRes.ok ? await fetchRes.text() : null;
 
     const authors = (article.authors ?? [])

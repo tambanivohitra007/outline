@@ -1,4 +1,5 @@
 import env from "@server/env";
+import fetch from "@server/utils/fetch";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta";
 
@@ -32,6 +33,7 @@ export default class GeminiService {
 
     const response = await fetch(url, {
       method: "POST",
+      timeout: 30000,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
@@ -43,8 +45,7 @@ export default class GeminiService {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Gemini API error: ${response.status} - ${error}`);
+      throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const data = await response.json();
