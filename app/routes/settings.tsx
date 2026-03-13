@@ -6,7 +6,6 @@ import lazy from "~/utils/lazyWithRetry";
 import { settingsPath } from "~/utils/routeHelpers";
 import { observer } from "mobx-react";
 
-const Application = lazy(() => import("~/scenes/Settings/Application"));
 const Template = lazy(() => import("~/scenes/Settings/Template"));
 const TemplateNew = lazy(() => import("~/scenes/Settings/TemplateNew"));
 
@@ -23,12 +22,6 @@ function SettingsRoutes() {
           component={config.component}
         />
       ))}
-      {/* TODO: Refactor these exceptions into config? */}
-      <Route
-        exact
-        path={settingsPath("applications", ":id")}
-        component={Application}
-      />
       <Route
         exact
         path={settingsPath("templates", "new")}

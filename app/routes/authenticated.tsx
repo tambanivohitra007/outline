@@ -13,7 +13,6 @@ import useCurrentTeam from "~/hooks/useCurrentTeam";
 import usePolicy from "~/hooks/usePolicy";
 import lazy from "~/utils/lazyWithRetry";
 import {
-  archivePath,
   conditionsPath,
   conditionPath,
   draftsPath,
@@ -27,19 +26,16 @@ import {
   settingsPath,
   matchDocumentSlug as documentSlug,
   matchCollectionSlug as collectionSlug,
-  trashPath,
   debugPath,
 } from "~/utils/routeHelpers";
 import env from "~/env";
 
 const SettingsRoutes = lazy(() => import("./settings"));
-const Archive = lazy(() => import("~/scenes/Archive"));
 const Collection = lazy(() => import("~/scenes/Collection"));
 const Document = lazy(() => import("~/scenes/Document"));
 const Drafts = lazy(() => import("~/scenes/Drafts"));
 const Home = lazy(() => import("~/scenes/Home"));
 const Search = lazy(() => import("~/scenes/Search"));
-const Trash = lazy(() => import("~/scenes/Trash"));
 const Debug = lazy(() => import("~/scenes/Developer/Debug"));
 const Changesets = lazy(() => import("~/scenes/Developer/Changesets"));
 const Conditions = lazy(() => import("~/scenes/Conditions"));
@@ -83,12 +79,6 @@ function AuthenticatedRoutes() {
           <Switch>
             {can.createDocument && (
               <Route exact path={draftsPath()} component={Drafts} />
-            )}
-            {can.createDocument && (
-              <Route exact path={archivePath()} component={Archive} />
-            )}
-            {can.createDocument && (
-              <Route exact path={trashPath()} component={Trash} />
             )}
             <Route path={`${homePath()}/:tab?`} component={Home} />
             <Redirect from="/dashboard" to={homePath()} />

@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { metaDisplay } from "@shared/utils/keyboard";
 import Scrollable from "~/components/Scrollable";
-import { inviteUser } from "~/actions/definitions/users";
 import useCurrentTeam from "~/hooks/useCurrentTeam";
 import useCurrentUser from "~/hooks/useCurrentUser";
 import usePolicy from "~/hooks/usePolicy";
@@ -25,19 +24,15 @@ import {
 import TeamLogo from "../TeamLogo";
 import Tooltip from "../Tooltip";
 import Sidebar from "./Sidebar";
-import ArchiveLink from "./components/ArchiveLink";
 import Collections from "./components/Collections";
 import { DraftsLink } from "./components/DraftsLink";
 import DragPlaceholder from "./components/DragPlaceholder";
 import HistoryNavigation from "./components/HistoryNavigation";
 import Section from "./components/Section";
-import SharedWithMe from "./components/SharedWithMe";
-import SidebarAction from "./components/SidebarAction";
 import SidebarButton from "./components/SidebarButton";
 import SidebarLink from "./components/SidebarLink";
 import Starred from "./components/Starred";
 import ToggleButton from "./components/ToggleButton";
-import TrashLink from "./components/TrashLink";
 
 function AppSidebar() {
   const { t } = useTranslation();
@@ -163,19 +158,7 @@ function AppSidebar() {
               <Starred />
             </Section>
             <Section>
-              <SharedWithMe />
-            </Section>
-            <Section>
               <Collections />
-            </Section>
-            {can.createDocument && (
-              <Section auto>
-                <ArchiveLink />
-              </Section>
-            )}
-            <Section>
-              {can.createDocument && <TrashLink />}
-              <SidebarAction action={inviteUser} />
             </Section>
           </Scrollable>
         </DndProvider>

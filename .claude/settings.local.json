@@ -27,7 +27,9 @@
       "Bash(grep -v \"//\")",
       "Bash(taskkill //F //IM node.exe 2>/dev/null; sleep 2 && echo \"done\")",
       "Bash(ls c:/Users/rindra/Projects/outline/server/migrations/20260313*)",
-      "Bash(taskkill //F //IM node.exe 2>/dev/null; echo \"done\")"
+      "Bash(taskkill //F //IM node.exe 2>/dev/null; echo \"done\")",
+      "Bash(grep -r \"Outline\" /c/Users/rindra/Projects/outline/app/components/Breadcrumb* | head -10)",
+      "Bash(find /c/Users/rindra/Projects/outline -name \"*.json\" -path \"*/package.json\" | head -1 | xargs head -20)"
     ]
   }
 }
