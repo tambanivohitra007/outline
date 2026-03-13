@@ -215,6 +215,10 @@ export function analyticsPath(): string {
   return "/analytics";
 }
 
+export function patientPortalPath(): string {
+  return "/patient-portal";
+}
+
 export const matchCollectionSlug =
   ":collectionSlug([0-9a-zA-Z-_~]*-[a-zA-z0-9]{10,15})";
 

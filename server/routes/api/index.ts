@@ -61,6 +61,7 @@ import recipes from "./recipes/recipes";
 import medical from "./medical/medical";
 import analytics from "./analytics/analytics";
 import ai from "./ai/ai";
+import fhir from "./fhir/fhir";
 
 const api = new Koa<AppState, AppContext>();
 const router = new Router();
@@ -138,6 +139,7 @@ router.use("/", recipes.routes());
 router.use("/", medical.routes());
 router.use("/", analytics.routes());
 router.use("/", ai.routes());
+router.use("/", fhir.routes());
 
 if (!env.isCloudHosted) {
   router.use("/", installation.routes());
