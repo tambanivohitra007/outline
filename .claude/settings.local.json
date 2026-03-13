@@ -43,7 +43,8 @@
       "Bash(find /c/Users/rindra/Projects/outline/app -name \"Routes.tsx\" -o -name \"*Router*\" -o -name \"index.tsx\" | xargs grep -l \"Archive\\\\|Trash\\\\|/archive\\\\|/trash\" 2>/dev/null | head -5)",
       "Bash(grep -r \"PresentationMode\\\\|present\" /c/Users/rindra/Projects/outline/app/scenes/Document --include=\"*.tsx\" 2>/dev/null | head -10)",
       "Bash(grep -r \"SharePopover\\\\|shareDocument\" /c/Users/rindra/Projects/outline/app/components --include=\"*.tsx\" 2>/dev/null | head -10)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(grep -c \"response.json\\\\|response.text\\\\|\\\\.json\\(\\)\\\\|\\\\.text\\(\\)\" server/services/medical/*.ts server/services/ai/*.ts server/services/fhir/CerboService.ts)"
     ]
   }
 }

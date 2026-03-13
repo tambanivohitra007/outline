@@ -50,6 +50,9 @@ router.post(
     const { user } = ctx.state.auth;
 
     const intervention = await Intervention.findByPk(id);
+    if (!intervention || intervention.teamId !== user.teamId) {
+      ctx.throw(404);
+    }
     authorize(user, "read", intervention);
 
     ctx.body = {
@@ -103,6 +106,9 @@ router.post(
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
+    if (!intervention || intervention.teamId !== user.teamId) {
+      ctx.throw(404);
+    }
     authorize(user, "update", intervention);
 
     if (updates.name) {
@@ -132,6 +138,9 @@ router.post(
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
+    if (!intervention || intervention.teamId !== user.teamId) {
+      ctx.throw(404);
+    }
     authorize(user, "delete", intervention);
 
     await intervention!.destroy({ transaction });

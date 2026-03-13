@@ -1,5 +1,4 @@
 import Router from "koa-router";
-import { Op } from "sequelize";
 import auth from "@server/middlewares/authentication";
 import validate from "@server/middlewares/validate";
 import {
@@ -147,10 +146,14 @@ router.post(
       }
     }
 
-    // Condition-Intervention edges from the join table
-    const ciLinks = await ConditionIntervention.findAll({
-      attributes: ["conditionId", "interventionId", "evidenceLevel"],
-    });
+    // Condition-Intervention edges scoped to this team's conditions
+    const conditionIds = conditions.map((c) => c.id);
+    const ciLinks = conditionIds.length > 0
+      ? await ConditionIntervention.findAll({
+          where: { conditionId: conditionIds },
+          attributes: ["conditionId", "interventionId", "evidenceLevel"],
+        })
+      : [];
 
     for (const link of ciLinks) {
       edges.push({

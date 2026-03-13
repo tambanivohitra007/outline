@@ -8,7 +8,6 @@ import { Condition, ConditionSection } from "@server/models";
 import { authorize } from "@server/policies";
 import {
   presentCondition,
-  presentConditionSection,
   presentPolicies,
 } from "@server/presenters";
 import type { APIContext } from "@server/types";
@@ -57,6 +56,9 @@ router.post(
     const condition = await Condition.findByPk(id, {
       include: [{ model: ConditionSection, as: "sections" }],
     });
+    if (!condition || condition.teamId !== user.teamId) {
+      ctx.throw(404);
+    }
     authorize(user, "read", condition);
 
     ctx.body = {
@@ -103,6 +105,9 @@ router.post(
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
+    if (!condition || condition.teamId !== user.teamId) {
+      ctx.throw(404);
+    }
     authorize(user, "update", condition);
 
     if (updates.name) {
@@ -132,34 +137,15 @@ router.post(
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
+    if (!condition || condition.teamId !== user.teamId) {
+      ctx.throw(404);
+    }
     authorize(user, "delete", condition);
 
     await condition!.destroy({ transaction });
 
     ctx.body = {
       success: true,
-    };
-  }
-);
-
-router.post(
-  "conditions.sections",
-  auth(),
-  validate(T.ConditionsSectionsSchema),
-  async (ctx: APIContext<T.ConditionsSectionsReq>) => {
-    const { id } = ctx.input.body;
-    const { user } = ctx.state.auth;
-
-    const condition = await Condition.findByPk(id);
-    authorize(user, "read", condition);
-
-    const sections = await ConditionSection.findAll({
-      where: { conditionId: id },
-      order: [["sortOrder", "ASC"]],
-    });
-
-    ctx.body = {
-      data: sections.map(presentConditionSection),
     };
   }
 );

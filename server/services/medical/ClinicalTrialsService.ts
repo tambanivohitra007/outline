@@ -1,3 +1,5 @@
+import fetch from "@server/utils/fetch";
+
 const CLINICAL_TRIALS_BASE_URL = "https://clinicaltrials.gov/api/v2";
 
 interface ClinicalTrial {

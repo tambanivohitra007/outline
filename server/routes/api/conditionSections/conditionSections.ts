@@ -26,6 +26,9 @@ router.post(
     const { user } = ctx.state.auth;
 
     const condition = await Condition.findByPk(conditionId);
+    if (!condition || condition.teamId !== user.teamId) {
+      ctx.throw(404);
+    }
     authorize(user, "read", condition);
 
     const sections = await ConditionSection.findAll({

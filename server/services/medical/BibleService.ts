@@ -1,4 +1,5 @@
 import env from "@server/env";
+import fetch from "@server/utils/fetch";
 
 const BIBLE_API_URL = "https://api.scripture.api.bible/v1";
 
