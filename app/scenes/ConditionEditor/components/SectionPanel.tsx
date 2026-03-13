@@ -1,9 +1,10 @@
 import { observer } from "mobx-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import type ConditionSection from "~/models/ConditionSection";
 import useStores from "~/hooks/useStores";
+import { client } from "~/utils/ApiClient";
 import styled from "styled-components";
 import { s } from "@shared/styles";
 
@@ -31,9 +32,10 @@ const SECTION_DESCRIPTIONS: Record<string, string> = {
 
 function SectionPanel({ section }: Props) {
   const { t } = useTranslation();
-  const { documents } = useStores();
+  const { documents, conditionSections } = useStores();
   const history = useHistory();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
 
   const icon = SECTION_ICONS[section.sectionType] ?? "";
   const description = SECTION_DESCRIPTIONS[section.sectionType] ?? "";
@@ -46,6 +48,25 @@ function SectionPanel({ section }: Props) {
       history.push(document.path);
     }
   };
+
+  const handleCreateDocument = useCallback(async () => {
+    setIsCreating(true);
+    try {
+      const res = await client.post("/conditionSections.createDocument", {
+        id: section.id,
+      });
+      if (res.data) {
+        // Update the section in the store with the new documentId
+        conditionSections.add(res.data);
+        // Fetch the newly created document
+        if (res.data.documentId) {
+          await documents.fetch(res.data.documentId);
+        }
+      }
+    } finally {
+      setIsCreating(false);
+    }
+  }, [section.id, conditionSections, documents]);
 
   return (
     <Panel>
@@ -81,14 +102,19 @@ function SectionPanel({ section }: Props) {
                     </PreviewEmpty>
                   )}
                 </PreviewContent>
-                <OpenButton>
-                  {t("Open Editor")}
-                </OpenButton>
+                <OpenButton>{t("Open Editor")}</OpenButton>
               </DocumentPreview>
             </EditorArea>
           ) : (
             <NoDocPlaceholder>
-              {t("No document linked to this section.")}
+              <PlaceholderText>
+                {t("No document created for this section yet.")}
+              </PlaceholderText>
+              <CreateButton onClick={handleCreateDocument} disabled={isCreating}>
+                {isCreating
+                  ? t("Creating\u2026")
+                  : t("Create Document")}
+              </CreateButton>
             </NoDocPlaceholder>
           )}
         </PanelContent>
@@ -214,10 +240,34 @@ const OpenButton = styled.div`
 const NoDocPlaceholder = styled.div`
   padding: 24px;
   text-align: center;
-  font-size: 13px;
-  color: ${s("textTertiary")};
   border: 2px dashed ${s("divider")};
   border-radius: 6px;
+`;
+
+const PlaceholderText = styled.p`
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: ${s("textTertiary")};
+`;
+
+const CreateButton = styled.button`
+  padding: 8px 20px;
+  background: ${s("accent")};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 export default observer(SectionPanel);
