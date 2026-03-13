@@ -828,6 +828,12 @@ export class Environment {
   public BIBLE_API_KEY = this.toOptionalString(environment.BIBLE_API_KEY);
 
   /**
+   * Google Gemini API key for AI content generation.
+   */
+  @IsOptional()
+  public GEMINI_API_KEY = this.toOptionalString(environment.GEMINI_API_KEY);
+
+  /**
    * Returns true if the current installation is the cloud hosted version at
    * getoutline.com
    */
