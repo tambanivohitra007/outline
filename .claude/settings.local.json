@@ -89,7 +89,10 @@
       "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const glob = require\\('glob'\\); const path = require\\('path'\\); const pattern = path.join\\('build', 'plugins/*/server/!\\(*.test|schema\\).[jt]s'\\); console.log\\('Pattern:', pattern\\); const files = glob.sync\\(pattern\\); console.log\\('Files found:', files.length\\); files.forEach\\(f => console.log\\(' ', f\\)\\);\")",
       "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const glob = require\\('glob'\\); const files = glob.sync\\('build/plugins/*/server/!\\(*.test|schema\\).[jt]s'\\); console.log\\('Files found:', files.length\\); files.forEach\\(f => console.log\\(' ', f\\)\\);\")",
       "WebFetch(domain:lifestyle.rindra.org)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const glob = require\\('glob'\\); const path = require\\('path'\\); const rootDir = 'build'; const files = glob.sync\\(rootDir + '/plugins/*/server/!\\(*.test|schema\\).[jt]s'\\); console.log\\('Files found:', files.length\\); const storage = files.filter\\(f => f.includes\\('storage'\\)\\); console.log\\('Storage plugin:', storage\\);\")",
+      "Bash(find /c/Users/rindra/Projects/outline/app -name \"*[Ll]ogin*\" -o -name \"*[Aa]uth*\" | grep -E \"\\\\.\\(tsx?|jsx?\\)$\" | head -20)",
+      "Bash(find /c/Users/rindra/Projects/outline/server/models -name \"*User*\" -o -name \"*Authentication*\" | grep -E \"\\\\.\\(ts|js\\)$\" | head -15)"
     ]
   }
 }
