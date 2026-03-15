@@ -182,10 +182,14 @@ function SidebarLink(
             />
           )}
           {icon && <IconWrapper>{icon}</IconWrapper>}
-          <LabelGroup>
+          {description ? (
+            <LabelGroup>
+              <Label $ellipsis={ellipsis}>{label}</Label>
+              <Description>{description}</Description>
+            </LabelGroup>
+          ) : (
             <Label $ellipsis={ellipsis}>{label}</Label>
-            {description && <Description>{description}</Description>}
-          </LabelGroup>
+          )}
           {unreadBadge && <UnreadBadge style={unreadStyle} />}
         </Content>
       </ContextMenu>
@@ -339,8 +343,7 @@ const Link = styled(NavLink)<{
     }
 
     &:hover {
-      color: ${(props) =>
-        props.$isActiveDrop ? props.theme.white : props.theme.white};
+      color: ${(props) => props.theme.white};
     }
   }
 
@@ -382,7 +385,6 @@ const Description = styled.div`
   color: ${s("sidebarText")};
   opacity: 0.6;
   margin-left: 2px;
-  white-space: normal;
   ${ellipsis()}
 `;
 

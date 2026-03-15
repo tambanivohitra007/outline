@@ -5,6 +5,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
+import { s } from "@shared/styles";
 import { metaDisplay } from "@shared/utils/keyboard";
 import Scrollable from "~/components/Scrollable";
 import useCurrentTeam from "~/hooks/useCurrentTeam";
@@ -182,7 +183,7 @@ const Logo = styled.img`
 `;
 
 const Separator = styled.div`
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid ${s("sidebarControlHoverBackground")};
   margin: 4px 20px;
 `;
 

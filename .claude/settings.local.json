@@ -78,7 +78,8 @@
       "Bash(node scripts/populate-docs.js 2>&1)",
       "Bash(grep -r \"AIGenerateButton\\\\|ai\\\\.generateContent\" /c/Users/rindra/Projects/outline/app --include=*.tsx --include=*.ts)",
       "Bash(grep -r \"GEMINI\\\\|AI.*SETTING\\\\|LLM.*CONFIG\" /c/Users/rindra/Projects/outline/server --include=*.ts)",
-      "Bash(2)"
+      "Bash(2)",
+      "Bash(find /c/Users/rindra/Projects/outline -name \"*.ts\" -o -name \"*.tsx\" | xargs grep -l \"ellipsis\\(\\)\" | head -5)"
     ]
   }
 }
