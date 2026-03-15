@@ -5,6 +5,7 @@ export const ScripturesListSchema = BaseSchema.extend({
   body: z.object({
     conditionId: z.uuid().optional(),
     interventionId: z.uuid().optional(),
+    careDomainId: z.uuid().optional(),
     spiritOfProphecy: z.boolean().optional(),
   }).default({}),
 });
@@ -26,6 +27,7 @@ export const ScripturesCreateSchema = BaseSchema.extend({
     sopPage: z.string().optional(),
     conditionId: z.uuid().optional(),
     interventionId: z.uuid().optional(),
+    careDomainId: z.uuid().optional(),
   }),
 });
 

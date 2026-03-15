@@ -18,7 +18,7 @@ router.post(
   validate(T.ScripturesListSchema),
   async (ctx: APIContext<T.ScripturesListReq>) => {
     const { user } = ctx.state.auth;
-    const { conditionId, interventionId, spiritOfProphecy } = ctx.input.body;
+    const { conditionId, interventionId, careDomainId, spiritOfProphecy } = ctx.input.body;
 
     const where: Record<string, unknown> = { teamId: user.teamId };
     if (conditionId) {
@@ -26,6 +26,9 @@ router.post(
     }
     if (interventionId) {
       where.interventionId = interventionId;
+    }
+    if (careDomainId) {
+      where.careDomainId = careDomainId;
     }
     if (spiritOfProphecy !== undefined) {
       where.spiritOfProphecy = spiritOfProphecy;

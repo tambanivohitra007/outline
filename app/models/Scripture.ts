@@ -60,6 +60,11 @@ class Scripture extends Model {
   @observable
   theme: string | null;
 
+  /** Associated care domain ID */
+  @Field
+  @observable
+  careDomainId: string | null;
+
   /** Associated condition ID */
   conditionId: string | null;
 

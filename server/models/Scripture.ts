@@ -7,6 +7,7 @@ import {
   Table,
   Default,
 } from "sequelize-typescript";
+import CareDomain from "./CareDomain";
 import Condition from "./Condition";
 import Intervention from "./Intervention";
 import Team from "./Team";
@@ -55,6 +56,13 @@ class Scripture extends IdModel<
   sopPage: string | null;
 
   // associations
+
+  @BelongsTo(() => CareDomain, "careDomainId")
+  careDomain: CareDomain | null;
+
+  @ForeignKey(() => CareDomain)
+  @Column(DataType.UUID)
+  careDomainId: string | null;
 
   @BelongsTo(() => Condition, "conditionId")
   condition: Condition | null;
