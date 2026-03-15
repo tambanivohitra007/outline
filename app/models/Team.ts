@@ -80,7 +80,7 @@ class Team extends Model {
 
   @computed
   get signinMethods(): string {
-    return "SSO";
+    return "email and password";
   }
 
   @computed

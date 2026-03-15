@@ -142,9 +142,9 @@ function Members() {
       <Heading>{t("Members")}</Heading>
       <Text as="p" type="secondary">
         <Trans>
-          Everyone that has signed into {{ appName }} is listed here. It’s
-          possible that there are other users who have access through{" "}
-          {{ signinMethods: team.signinMethods }} but haven’t signed in yet.
+          Everyone that has signed into {{ appName }} is listed here. Invite
+          team members using {{ signinMethods: team.signinMethods }} to
+          collaborate on conditions, interventions, and research.
         </Trans>
       </Text>
       <StickyFilters justify="space-between">
