@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Transformer } from "markmap-lib";
 import { Markmap } from "markmap-view";
+import ChapterReader from "~/components/medical/ChapterReader";
 import PlaceholderDocument from "~/components/PlaceholderDocument";
 import Scene from "~/components/Scene";
 import { client } from "~/utils/ApiClient";
@@ -327,6 +328,10 @@ function KnowledgeGraph() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [detail, setDetail] = useState<NodeDetail | null>(null);
+  const [readingScripture, setReadingScripture] = useState<{
+    reference: string;
+    isSop: boolean;
+  } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const markmapRef = useRef<Markmap | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -609,6 +614,21 @@ function KnowledgeGraph() {
                   </PanelField>
                 ))}
               </PanelFields>
+              {(detail.type === "Scripture" ||
+                detail.type === "Spirit of Prophecy") && (
+                <ReadChapterButton
+                  onClick={() =>
+                    setReadingScripture({
+                      reference: detail.title,
+                      isSop: detail.type === "Spirit of Prophecy",
+                    })
+                  }
+                >
+                  {detail.type === "Spirit of Prophecy"
+                    ? t("Read full passage")
+                    : t("Read full chapter")}
+                </ReadChapterButton>
+              )}
               {detail.items && detail.items.length > 0 && (
                 <PanelItemsSection>
                   <PanelItemsTitle>
@@ -628,6 +648,14 @@ function KnowledgeGraph() {
               )}
             </DetailPanel>
           </>
+        )}
+
+        {readingScripture && (
+          <ChapterReader
+            reference={readingScripture.reference}
+            isSpiritOfProphecy={readingScripture.isSop}
+            onClose={() => setReadingScripture(null)}
+          />
         )}
       </GraphContainer>
     </Scene>
@@ -885,6 +913,26 @@ const PanelFieldValue = styled.span`
   font-size: 13px;
   font-weight: 500;
   color: ${s("text")};
+`;
+
+const ReadChapterButton = styled.button`
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  margin-top: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid ${s("accent")};
+  border-radius: 8px;
+  background: transparent;
+  color: ${s("accent")};
+  cursor: pointer;
+  transition: all 120ms ease;
+
+  &:hover {
+    background: ${s("accent")};
+    color: white;
+  }
 `;
 
 const PanelItemsSection = styled.div`

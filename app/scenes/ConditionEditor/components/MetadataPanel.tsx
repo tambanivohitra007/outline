@@ -7,6 +7,7 @@ import Flex from "~/components/Flex";
 import type Condition from "~/models/Condition";
 import type Intervention from "~/models/Intervention";
 import BibleSearch from "~/components/medical/BibleSearch";
+import ChapterReader from "~/components/medical/ChapterReader";
 import ClinicalTrialSearch from "~/components/medical/ClinicalTrialSearch";
 import PubMedSearch from "~/components/medical/PubMedSearch";
 import useStores from "~/hooks/useStores";
@@ -48,6 +49,11 @@ function MetadataPanel({ condition }: Props) {
   const [showScriptureForm, setShowScriptureForm] = useState(false);
   const [scriptureRef, setScriptureRef] = useState("");
   const [scriptureText, setScriptureText] = useState("");
+  const [readingScripture, setReadingScripture] = useState<{
+    reference: string;
+    isSop: boolean;
+    sopSource?: string;
+  } | null>(null);
   const [isSop, setIsSop] = useState(false);
   const [sopSource, setSopSource] = useState("");
 
@@ -171,6 +177,7 @@ function MetadataPanel({ condition }: Props) {
   const conditionScriptures = scriptures.forCondition(condition.id);
 
   return (
+    <>
     <Panel>
       <PanelSection>
         <PanelTitle>{t("Status")}</PanelTitle>
@@ -473,12 +480,26 @@ function MetadataPanel({ condition }: Props) {
                     <SopBadge>{t("SoP")}</SopBadge>
                   )}
                 </ItemContent>
-                <RemoveButton
-                  onClick={() => handleDeleteScripture(scripture)}
-                  title={t("Remove")}
-                >
-                  <CloseIcon size={12} />
-                </RemoveButton>
+                <ScriptureActions>
+                  <ReadButton
+                    onClick={() =>
+                      setReadingScripture({
+                        reference: scripture.reference,
+                        isSop: scripture.spiritOfProphecy,
+                        sopSource: scripture.sopSource ?? undefined,
+                      })
+                    }
+                    title={t("Read chapter")}
+                  >
+                    {t("Read")}
+                  </ReadButton>
+                  <RemoveButton
+                    onClick={() => handleDeleteScripture(scripture)}
+                    title={t("Remove")}
+                  >
+                    <CloseIcon size={12} />
+                  </RemoveButton>
+                </ScriptureActions>
               </ScriptureItem>
             ))}
           </ItemList>
@@ -514,6 +535,16 @@ function MetadataPanel({ condition }: Props) {
         )}
       </PanelSection>
     </Panel>
+
+    {readingScripture && (
+      <ChapterReader
+        reference={readingScripture.reference}
+        isSpiritOfProphecy={readingScripture.isSop}
+        sopSource={readingScripture.sopSource}
+        onClose={() => setReadingScripture(null)}
+      />
+    )}
+    </>
   );
 }
 
@@ -666,8 +697,37 @@ const EvidenceMeta = styled.div`
 
 const ScriptureItem = styled(Flex)`
   align-items: center;
+  justify-content: space-between;
   gap: 4px;
   padding: 4px 0;
+`;
+
+const ScriptureActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+`;
+
+const ReadButton = styled.button`
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: ${s("accent")};
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 100ms ease, background 100ms ease;
+
+  ${ScriptureItem}:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    background: ${s("backgroundSecondary")};
+  }
 `;
 
 const ScriptureRef = styled.span`

@@ -117,6 +117,49 @@ export default class BibleService {
   }
 
   /**
+   * Fetch an entire Bible chapter by its ID (e.g., "JHN.3").
+   *
+   * @param chapterId The chapter ID in API.Bible format (e.g., "GEN.1", "JHN.3").
+   * @param translation Bible translation ID.
+   * @returns The chapter reference and full text content, or null if not found.
+   */
+  static async getChapter(
+    chapterId: string,
+    translation = "de4e12af7f28f599-02"
+  ): Promise<{ reference: string; content: string; copyright: string } | null> {
+    const apiKey = env.BIBLE_API_KEY;
+
+    if (!apiKey) {
+      return null;
+    }
+
+    const url = `${BIBLE_API_URL}/bibles/${translation}/chapters/${encodeURIComponent(chapterId)}?content-type=text&include-verse-numbers=true`;
+
+    const response = await fetch(url, {
+      headers: {
+        "api-key": apiKey,
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error(`Bible API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const chapter = data.data;
+
+    return {
+      reference: chapter?.reference ?? chapterId,
+      content: (chapter?.content ?? "").replace(/<[^>]*>/g, "").trim(),
+      copyright: (chapter?.copyright ?? "").replace(/<[^>]*>/g, "").trim(),
+    };
+  }
+
+  /**
    * Look up a specific Bible verse by reference.
    *
    * @param reference The verse reference (e.g., "JHN.3.16").
