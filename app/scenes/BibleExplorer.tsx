@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { BookmarkedIcon, PlusIcon, CloseIcon, TrashIcon, SearchIcon } from "outline-icons";
-import { useEffect, useCallback, useState, useMemo, useRef } from "react";
+import { useEffect, useCallback, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Action } from "~/components/Actions";
@@ -98,10 +98,7 @@ function BibleExplorer() {
   const [egwContent, setEgwContent] = useState<EgwParagraph[]>([]);
   const [egwLoadingContent, setEgwLoadingContent] = useState(false);
 
-  const bibleTimerRef = useRef<ReturnType<typeof setTimeout>>();
-  const egwTimerRef = useRef<ReturnType<typeof setTimeout>>();
-
-  // Bible API search with debounce
+  // Bible API search
   const handleBibleSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
       setBibleResults([]);
@@ -126,11 +123,9 @@ function BibleExplorer() {
 
   const handleBibleQueryChange = useCallback((value: string) => {
     setBibleQuery(value);
-    clearTimeout(bibleTimerRef.current);
-    bibleTimerRef.current = setTimeout(() => handleBibleSearch(value), 400);
-  }, [handleBibleSearch]);
+  }, []);
 
-  // EGW search with debounce
+  // EGW search
   const handleEgwSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
       setEgwResults([]);
@@ -155,9 +150,7 @@ function BibleExplorer() {
 
   const handleEgwQueryChange = useCallback((value: string) => {
     setEgwQuery(value);
-    clearTimeout(egwTimerRef.current);
-    egwTimerRef.current = setTimeout(() => handleEgwSearch(value), 400);
-  }, [handleEgwSearch]);
+  }, []);
 
   // Load EGW books
   const handleLoadEgwBooks = useCallback(async (searchTerm?: string) => {
@@ -392,6 +385,11 @@ function BibleExplorer() {
                   placeholder={t("Search Bible verses (e.g. \u201Ctemperance\u201D, \u201Chealing\u201D, \u201Cbody is a temple\u201D)\u2026")}
                   value={bibleQuery}
                   onChange={(e) => handleBibleQueryChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      void handleBibleSearch(bibleQuery);
+                    }
+                  }}
                 />
                 <ApiSearchBtn
                   onClick={() => handleBibleSearch(bibleQuery)}
@@ -430,6 +428,11 @@ function BibleExplorer() {
                   placeholder={t("Search Ellen G. White writings (e.g. \u201Cnatural remedies\u201D, \u201Chealth reform\u201D)\u2026")}
                   value={egwQuery}
                   onChange={(e) => handleEgwQueryChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      void handleEgwSearch(egwQuery);
+                    }
+                  }}
                 />
                 <ApiSearchBtn
                   onClick={() => handleEgwSearch(egwQuery)}
