@@ -785,7 +785,7 @@ const InlineForm = styled.div`
   padding: 8px;
   border: 1px solid ${s("divider")};
   border-radius: 6px;
-  background: ${s("sidebarBackground")};
+  background: ${s("backgroundSecondary")};
 `;
 
 const FormInput = styled.input`
@@ -859,7 +859,7 @@ const SearchPanel = styled.div`
   padding: 8px;
   border: 1px solid ${s("divider")};
   border-radius: 6px;
-  background: ${s("sidebarBackground")};
+  background: ${s("backgroundSecondary")};
 `;
 
 const AISuggestRow = styled(Flex)`
@@ -911,7 +911,7 @@ const SuggestionsContent = styled.pre`
   padding: 8px;
   border: 1px solid ${s("divider")};
   border-radius: 4px;
-  background: ${s("sidebarBackground")};
+  background: ${s("backgroundSecondary")};
 `;
 
 export default observer(MetadataPanel);
