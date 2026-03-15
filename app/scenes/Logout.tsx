@@ -1,17 +1,26 @@
-import { Redirect } from "react-router-dom";
+import { useEffect } from "react";
 import env from "~/env";
+import LoadingIndicator from "~/components/LoadingIndicator";
 import useStores from "~/hooks/useStores";
-import { logoutPath } from "~/utils/routeHelpers";
 
 const Logout = () => {
   const { auth } = useStores();
 
-  void auth.logout({ userInitiated: true });
+  useEffect(() => {
+    async function performLogout() {
+      await auth.logout({ userInitiated: true });
 
-  if (env.OIDC_LOGOUT_URI) {
-    return null; // user will be redirected to logout URI after logout
-  }
-  return <Redirect to={logoutPath()} />;
+      if (env.OIDC_LOGOUT_URI) {
+        window.location.href = env.OIDC_LOGOUT_URI;
+      } else {
+        // Full page navigation to clear all SPA state
+        window.location.href = "/?logout=true";
+      }
+    }
+    void performLogout();
+  }, [auth]);
+
+  return <LoadingIndicator />;
 };
 
 export default Logout;
