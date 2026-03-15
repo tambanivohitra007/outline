@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { ToolsIcon, PlusIcon, CloseIcon } from "outline-icons";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Action } from "~/components/Actions";
 import Button from "~/components/Button";
@@ -18,6 +18,7 @@ function Interventions() {
   const { t } = useTranslation();
   const { interventions, careDomains } = useStores();
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   // Create form state
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -62,9 +63,21 @@ function Interventions() {
     setCreateDomainId("");
   }, []);
 
-  const filtered = selectedDomain
-    ? interventions.byCareDomain(selectedDomain)
-    : interventions.orderedData;
+  const filtered = useMemo(() => {
+    let data = selectedDomain
+      ? interventions.byCareDomain(selectedDomain)
+      : interventions.orderedData;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      data = data.filter(
+        (i) =>
+          i.name.toLowerCase().includes(q) ||
+          i.category?.toLowerCase().includes(q) ||
+          i.description?.toLowerCase().includes(q)
+      );
+    }
+    return data;
+  }, [interventions.orderedData, selectedDomain, search]);
 
   return (
     <Scene
@@ -153,6 +166,14 @@ function Interventions() {
           </CreateFormFields>
         </CreateFormCard>
       )}
+
+      <FilterRow>
+        <SearchInput
+          placeholder={t("Search interventions\u2026")}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </FilterRow>
 
       <Subheading sticky>
         {t("Care Domains")}
@@ -352,6 +373,26 @@ const CancelButton = styled.button`
 
   &:hover {
     border-color: ${s("text")};
+  }
+`;
+
+const FilterRow = styled(Flex)`
+  margin: 16px 0;
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid ${s("divider")};
+  border-radius: 6px;
+  background: ${s("background")};
+  color: ${s("text")};
+  font-size: 14px;
+  outline: none;
+
+  &:focus {
+    border-color: ${s("accent")};
   }
 `;
 
