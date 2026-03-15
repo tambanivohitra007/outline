@@ -189,7 +189,7 @@ function BibleExplorer() {
     }
   }, []);
 
-  // Save an API result as a local scripture
+  // Save an API result as a local scripture (with duplicate detection)
   const handleSaveFromApi = useCallback(async (
     reference: string,
     text: string,
@@ -197,7 +197,7 @@ function BibleExplorer() {
     sopSource?: string
   ) => {
     try {
-      await scriptures.create({
+      const res = await client.post("/scriptures.create", {
         reference,
         text,
         spiritOfProphecy: isSop,
@@ -205,11 +205,15 @@ function BibleExplorer() {
         conditionId: selectedCondition || undefined,
         careDomainId: selectedDomain || undefined,
       });
-      toast.success(t("Saved to your collection"));
+      if (res.duplicate) {
+        toast.info(t("This reference is already in your collection"));
+      } else {
+        toast.success(t("Saved to your collection"));
+      }
     } catch (err) {
       toast.error((err as Error).message);
     }
-  }, [scriptures, t, selectedCondition, selectedDomain]);
+  }, [t, selectedCondition, selectedDomain]);
 
   useEffect(() => {
     void scriptures.fetchPage({ limit: 200 });
@@ -290,7 +294,7 @@ function BibleExplorer() {
     }
     setIsCreating(true);
     try {
-      await scriptures.create({
+      const res = await client.post("/scriptures.create", {
         reference: formReference.trim(),
         text: formText.trim() || undefined,
         book: formBook.trim() || undefined,
@@ -304,16 +308,20 @@ function BibleExplorer() {
         sopSource: formIsSop ? formSopSource.trim() || undefined : undefined,
         sopPage: formIsSop ? formSopPage.trim() || undefined : undefined,
       });
-      toast.success(t("Scripture added"));
-      setShowAddForm(false);
-      resetForm();
+      if (res.duplicate) {
+        toast.info(t("This reference is already in your collection"));
+      } else {
+        toast.success(t("Scripture added"));
+        setShowAddForm(false);
+        resetForm();
+      }
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
       setIsCreating(false);
     }
   }, [
-    scriptures, t,
+    t,
     formReference, formText, formBook, formChapter, formVerseStart, formVerseEnd,
     formTheme, formConditionId, formCareDomainId, formIsSop, formSopSource, formSopPage,
   ]);

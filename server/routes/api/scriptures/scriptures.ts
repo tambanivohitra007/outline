@@ -57,10 +57,31 @@ router.post(
   async (ctx: APIContext<T.ScripturesCreateReq>) => {
     const { user } = ctx.state.auth;
     const { transaction } = ctx.state;
+    const body = ctx.input.body;
+
+    // Check for duplicate by reference within the same team + condition scope
+    const where: Record<string, unknown> = {
+      teamId: user.teamId,
+      reference: body.reference,
+    };
+    if (body.conditionId) {
+      where.conditionId = body.conditionId;
+    }
+
+    const existing = await Scripture.findOne({ where, transaction });
+
+    if (existing) {
+      ctx.body = {
+        data: presentScripture(existing),
+        policies: presentPolicies(user, [existing]),
+        duplicate: true,
+      };
+      return;
+    }
 
     const scripture = await Scripture.create(
       {
-        ...ctx.input.body,
+        ...body,
         teamId: user.teamId,
       },
       { transaction }
