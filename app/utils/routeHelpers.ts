@@ -219,6 +219,10 @@ export function patientPortalPath(): string {
   return "/patient-portal";
 }
 
+export function conditionCompiledPath(idOrSlug: string): string {
+  return `/conditions/${idOrSlug}/compiled`;
+}
+
 export function bibleExplorerPath(): string {
   return "/bible-explorer";
 }

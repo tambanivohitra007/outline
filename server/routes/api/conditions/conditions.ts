@@ -5,6 +5,7 @@ import { transaction } from "@server/middlewares/transaction";
 import validate from "@server/middlewares/validate";
 import conditionCreator from "@server/commands/conditionCreator";
 import { Collection, Condition, ConditionSection, Document } from "@server/models";
+import DocumentHelper from "@server/models/helpers/DocumentHelper";
 import { authorize } from "@server/policies";
 import {
   presentCondition,
@@ -243,6 +244,61 @@ router.post(
 
     ctx.body = {
       success: true,
+    };
+  }
+);
+
+const SECTION_TYPE_TITLES: Record<string, string> = {
+  risk_factors: "Risk Factors",
+  physiology: "Physiology",
+  complications: "Complications",
+  solutions: "Solutions",
+  bible_sop: "Bible & Spirit of Prophecy",
+  research_ideas: "Research Ideas",
+};
+
+router.post(
+  "conditions.compile",
+  auth(),
+  validate(T.ConditionsCompileSchema),
+  async (ctx: APIContext<T.ConditionsCompileReq>) => {
+    const { id } = ctx.input.body;
+    const { user } = ctx.state.auth;
+
+    const condition = await Condition.findByPk(id);
+    if (!condition || condition.teamId !== user.teamId) {
+      ctx.throw(404);
+    }
+    authorize(user, "read", condition!);
+
+    const sections = await ConditionSection.findAll({
+      where: { conditionId: id },
+      include: [{ model: Document, as: "document" }],
+      order: [["sortOrder", "ASC"]],
+    });
+
+    const compiledSections = await Promise.all(
+      sections.map(async (section) => {
+        let markdown = "";
+        if (section.document) {
+          markdown = await DocumentHelper.toMarkdown(section.document, {
+            includeTitle: false,
+          });
+        }
+        return {
+          id: section.id,
+          sectionType: section.sectionType,
+          title: section.title || SECTION_TYPE_TITLES[section.sectionType] || section.sectionType,
+          markdown,
+        };
+      })
+    );
+
+    ctx.body = {
+      data: {
+        condition: presentCondition(condition!),
+        sections: compiledSections,
+      },
     };
   }
 );

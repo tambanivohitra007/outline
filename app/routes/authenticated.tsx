@@ -47,6 +47,7 @@ const KnowledgeGraph = lazy(() => import("~/scenes/KnowledgeGraph"));
 const AnalyticsScene = lazy(() => import("~/scenes/Analytics"));
 const PatientPortal = lazy(() => import("~/scenes/PatientPortal"));
 const BibleExplorer = lazy(() => import("~/scenes/BibleExplorer"));
+const ConditionCompiled = lazy(() => import("~/scenes/ConditionCompiled"));
 
 const RedirectDocument = ({
   match,
@@ -132,6 +133,7 @@ function AuthenticatedRoutes() {
               />
             )}
             <Route exact path={conditionsPath()} component={Conditions} />
+            <Route exact path={`${conditionsPath()}/:id/compiled`} component={ConditionCompiled} />
             <Route exact path={`${conditionsPath()}/:id`} component={ConditionEditor} />
             <Route exact path={interventionsPath()} component={Interventions} />
             <Route exact path={recipesPath()} component={RecipesScene} />

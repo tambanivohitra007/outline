@@ -67,3 +67,11 @@ export const ConditionsStatusSchema = BaseSchema.extend({
 });
 
 export type ConditionsStatusReq = z.infer<typeof ConditionsStatusSchema>;
+
+export const ConditionsCompileSchema = BaseSchema.extend({
+  body: z.object({
+    id: z.uuid(),
+  }),
+});
+
+export type ConditionsCompileReq = z.infer<typeof ConditionsCompileSchema>;
