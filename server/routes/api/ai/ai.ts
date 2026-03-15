@@ -3,6 +3,7 @@ import Router from "koa-router";
 import auth from "@server/middlewares/authentication";
 import validate from "@server/middlewares/validate";
 import {
+  Collection,
   Condition,
   ConditionSection,
   Document,
@@ -57,44 +58,65 @@ router.post(
     // Direct database search — no AI dependency
     const likeQuery = { [Op.iLike]: `%${query}%` };
 
-    const [conditions, interventions, recipes] = await Promise.all([
-      Condition.findAll({
-        where: {
-          teamId,
-          [Op.or]: [
-            { name: likeQuery },
-            { description: likeQuery },
-          ],
-        },
-        limit: 10,
-      }),
-      Intervention.findAll({
-        where: {
-          teamId,
-          [Op.or]: [
-            { name: likeQuery },
-            { category: likeQuery },
-          ],
-        },
-        limit: 10,
-      }),
-      Recipe.findAll({
-        where: {
-          teamId,
-          [Op.or]: [
-            { name: likeQuery },
-            { description: likeQuery },
-          ],
-        },
-        limit: 10,
-      }),
-    ]);
+    const [conditions, interventions, recipes, documents, collections] =
+      await Promise.all([
+        Condition.findAll({
+          where: {
+            teamId,
+            [Op.or]: [{ name: likeQuery }, { description: likeQuery }],
+          },
+          limit: 10,
+        }),
+        Intervention.findAll({
+          where: {
+            teamId,
+            [Op.or]: [{ name: likeQuery }, { category: likeQuery }],
+          },
+          limit: 10,
+        }),
+        Recipe.findAll({
+          where: {
+            teamId,
+            [Op.or]: [{ name: likeQuery }, { description: likeQuery }],
+          },
+          limit: 10,
+        }),
+        Document.unscoped().findAll({
+          where: {
+            teamId,
+            [Op.or]: [{ title: likeQuery }, { text: likeQuery }],
+            archivedAt: { [Op.is]: null },
+            deletedAt: { [Op.is]: null },
+          },
+          attributes: ["id", "title", "urlId"],
+          limit: 10,
+          order: [["updatedAt", "DESC"]],
+        }),
+        Collection.findAll({
+          where: {
+            teamId,
+            name: likeQuery,
+          },
+          attributes: ["id", "name", "urlId"],
+          limit: 10,
+        }),
+      ]);
 
     ctx.body = {
       data: {
         conditions: conditions.map(presentCondition),
         interventions: interventions.map(presentIntervention),
         recipes: recipes.map(presentRecipe),
+        documents: documents.map((d) => ({
+          id: d.id,
+          title: d.title,
+          url: d.url,
+        })),
+        collections: collections.map((c) => ({
+          id: c.id,
+          name: c.name,
+          url: `/collection/${c.urlId}`,
+        })),
       },
     };
   }
