@@ -67,6 +67,8 @@ export const TeamsUpdateSchema = BaseSchema.extend({
         mcp: z.boolean().optional(),
         /** List of disabled embed provider titles. */
         disabledEmbeds: z.array(z.string()).optional(),
+        /** List of disabled medical block item IDs. */
+        disabledMedicalBlocks: z.array(z.string()).optional(),
       })
       .optional(),
   }),
