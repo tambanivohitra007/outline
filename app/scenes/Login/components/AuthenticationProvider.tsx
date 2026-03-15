@@ -1,9 +1,10 @@
 import { startAuthentication } from "@simplewebauthn/browser";
-import { EmailIcon } from "outline-icons";
+import { EmailIcon, KeyIcon } from "outline-icons";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import styled from "styled-components";
+import { s } from "@shared/styles";
 import { Client } from "@shared/types";
 import ButtonLarge from "~/components/ButtonLarge";
 import InputLarge from "~/components/InputLarge";
@@ -156,6 +157,10 @@ function AuthenticationProvider(props: Props) {
     );
   }
 
+  if (id === "local-auth") {
+    return <LocalAuthForm isCreate={isCreate} {...rest} />;
+  }
+
   if (id === "email") {
     if (isCreate) {
       return null;
@@ -205,6 +210,156 @@ function AuthenticationProvider(props: Props) {
   );
 }
 
+type LocalAuthMode = "login" | "register";
+
+function LocalAuthForm({
+  isCreate,
+  ...rest
+}: {
+  isCreate: boolean;
+} & Record<string, unknown>) {
+  const { t } = useTranslation();
+  const [mode, setMode] = React.useState<LocalAuthMode>(
+    isCreate ? "register" : "login"
+  );
+  const [expanded, setExpanded] = React.useState(false);
+  const [isSubmitting, setSubmitting] = React.useState(false);
+  const [localEmail, setLocalEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [localName, setLocalName] = React.useState("");
+  const [error, setError] = React.useState("");
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    setSubmitting(true);
+
+    try {
+      const endpoint =
+        mode === "register" ? "/auth/local-auth.register" : "/auth/local-auth";
+
+      const body: Record<string, string> = {
+        email: localEmail,
+        password,
+      };
+      if (mode === "register") {
+        body.name = localName;
+      }
+
+      const csrfToken = getCookie(CSRF.cookieName) || "";
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          [CSRF.headerName]: csrfToken,
+        },
+        body: JSON.stringify({ ...body, [CSRF.fieldName]: csrfToken }),
+        redirect: "follow",
+        credentials: "same-origin",
+      });
+
+      if (response.redirected) {
+        window.location.href = response.url;
+        return;
+      }
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(
+          data?.message || data?.error || t("An error occurred")
+        );
+      }
+
+      // If the response is OK but not a redirect, reload
+      window.location.href = "/";
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : t("An error occurred")
+      );
+      setSubmitting(false);
+    }
+  };
+
+  if (!expanded) {
+    return (
+      <Wrapper>
+        <ButtonLarge
+          onClick={() => setExpanded(true)}
+          icon={<KeyIcon />}
+          fullwidth
+          {...rest}
+        >
+          {t("Continue with Password")}
+        </ButtonLarge>
+      </Wrapper>
+    );
+  }
+
+  return (
+    <Wrapper>
+      <LocalForm onSubmit={handleSubmit}>
+        {mode === "register" && (
+          <InputLarge
+            type="text"
+            name="name"
+            placeholder={t("Full name")}
+            value={localName}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setLocalName(e.target.value)
+            }
+            disabled={isSubmitting}
+            required
+            autoFocus
+          />
+        )}
+        <InputLarge
+          type="email"
+          name="email"
+          placeholder={t("Email")}
+          value={localEmail}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setLocalEmail(e.target.value)
+          }
+          disabled={isSubmitting}
+          required
+          autoFocus={mode === "login"}
+        />
+        <InputLarge
+          type="password"
+          name="password"
+          placeholder={t("Password")}
+          value={password}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setPassword(e.target.value)
+          }
+          disabled={isSubmitting}
+          required
+          minLength={8}
+        />
+        {error && <ErrorText>{error}</ErrorText>}
+        <ButtonLarge type="submit" disabled={isSubmitting} fullwidth>
+          {isSubmitting
+            ? t("Please wait") + "…"
+            : mode === "register"
+              ? t("Create Account")
+              : t("Sign In")}
+        </ButtonLarge>
+        <ToggleLink
+          type="button"
+          onClick={() => {
+            setMode(mode === "login" ? "register" : "login");
+            setError("");
+          }}
+        >
+          {mode === "login"
+            ? t("Don't have an account? Register")
+            : t("Already have an account? Sign in")}
+        </ToggleLink>
+      </LocalForm>
+    </Wrapper>
+  );
+}
+
 const Wrapper = styled.div`
   width: 100%;
 `;
@@ -213,6 +368,34 @@ const Form = styled.form`
   width: 100%;
   display: flex;
   justify-content: space-between;
+`;
+
+const LocalForm = styled.form`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const ErrorText = styled.div`
+  color: ${s("danger")};
+  font-size: 13px;
+  text-align: center;
+`;
+
+const ToggleLink = styled.button`
+  background: none;
+  border: none;
+  color: ${s("accent")};
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+  padding: 4px;
+  margin-top: 4px;
+
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 export default AuthenticationProvider;
