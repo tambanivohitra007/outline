@@ -1,7 +1,8 @@
 import { observer } from "mobx-react";
-import { LeafIcon, PlusIcon, CloseIcon } from "outline-icons";
+import { LeafIcon, PlusIcon, CloseIcon, TrashIcon, EditIcon } from "outline-icons";
 import { useEffect, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { Action } from "~/components/Actions";
 import Button from "~/components/Button";
 import Empty from "~/components/Empty";
@@ -10,6 +11,7 @@ import Heading from "~/components/Heading";
 import Scene from "~/components/Scene";
 import Subheading from "~/components/Subheading";
 import Text from "~/components/Text";
+import type Recipe from "~/models/Recipe";
 import useStores from "~/hooks/useStores";
 import styled from "styled-components";
 import { s } from "@shared/styles";
@@ -26,6 +28,15 @@ function Recipes() {
   const [createPrepTime, setCreatePrepTime] = useState("");
   const [createCookTime, setCreateCookTime] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editServings, setEditServings] = useState("");
+  const [editPrepTime, setEditPrepTime] = useState("");
+  const [editCookTime, setEditCookTime] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     void recipes.fetchPage();
@@ -63,6 +74,58 @@ function Recipes() {
     setCreatePrepTime("");
     setCreateCookTime("");
   }, []);
+
+  const handleStartEdit = useCallback((recipe: Recipe) => {
+    setEditingId(recipe.id);
+    setEditName(recipe.name);
+    setEditDescription(recipe.description ?? "");
+    setEditServings(recipe.servings != null ? String(recipe.servings) : "");
+    setEditPrepTime(recipe.prepTime != null ? String(recipe.prepTime) : "");
+    setEditCookTime(recipe.cookTime != null ? String(recipe.cookTime) : "");
+  }, []);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingId(null);
+  }, []);
+
+  const handleSaveEdit = useCallback(async () => {
+    if (!editingId || !editName.trim()) {
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await recipes.update({
+        id: editingId,
+        name: editName.trim(),
+        description: editDescription.trim() || null,
+        servings: editServings ? parseInt(editServings, 10) : null,
+        prepTime: editPrepTime ? parseInt(editPrepTime, 10) : null,
+        cookTime: editCookTime ? parseInt(editCookTime, 10) : null,
+      });
+      setEditingId(null);
+      toast.success(t("Recipe updated"));
+    } finally {
+      setIsSaving(false);
+    }
+  }, [recipes, editingId, editName, editDescription, editServings, editPrepTime, editCookTime, t]);
+
+  const handleDelete = useCallback(
+    async (e: React.MouseEvent, recipe: Recipe) => {
+      e.stopPropagation();
+      const confirmed = window.confirm(
+        t(
+          `Are you sure you want to delete "{{ recipeName }}"?`,
+          { recipeName: recipe.name }
+        )
+      );
+      if (!confirmed) {
+        return;
+      }
+      await recipes.delete(recipe);
+      toast.success(t("Recipe deleted"));
+    },
+    [recipes, t]
+  );
 
   return (
     <Scene
@@ -166,38 +229,130 @@ function Recipes() {
         <Empty>{t("No recipes have been created yet.")}</Empty>
       ) : (
         <RecipeGrid>
-          {recipes.orderedData.map((recipe) => (
-            <RecipeCard key={recipe.id}>
-              <RecipeName>{recipe.name}</RecipeName>
-              {recipe.description && (
-                <RecipeDescription>{recipe.description}</RecipeDescription>
-              )}
-              <RecipeMeta>
-                {recipe.prepTime != null && (
-                  <MetaItem>
-                    {t("Prep")}: {recipe.prepTime}{t("min")}
-                  </MetaItem>
+          {recipes.orderedData.map((recipe) =>
+            editingId === recipe.id ? (
+              <EditFormCard key={recipe.id}>
+                <CreateFormHeader>
+                  <CreateFormTitle>{t("Edit Recipe")}</CreateFormTitle>
+                  <CloseButton onClick={handleCancelEdit}>
+                    <CloseIcon size={16} />
+                  </CloseButton>
+                </CreateFormHeader>
+                <CreateFormFields>
+                  <FormGroup>
+                    <FormLabel>{t("Recipe Name")} *</FormLabel>
+                    <FormInput
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      autoFocus
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <FormLabel>{t("Description")}</FormLabel>
+                    <FormTextarea
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      rows={2}
+                    />
+                  </FormGroup>
+                  <FormRow>
+                    <FormGroup>
+                      <FormLabel>{t("Servings")}</FormLabel>
+                      <FormInput
+                        type="number"
+                        value={editServings}
+                        onChange={(e) => setEditServings(e.target.value)}
+                        min="1"
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <FormLabel>{t("Prep Time (min)")}</FormLabel>
+                      <FormInput
+                        type="number"
+                        value={editPrepTime}
+                        onChange={(e) => setEditPrepTime(e.target.value)}
+                        min="0"
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <FormLabel>{t("Cook Time (min)")}</FormLabel>
+                      <FormInput
+                        type="number"
+                        value={editCookTime}
+                        onChange={(e) => setEditCookTime(e.target.value)}
+                        min="0"
+                      />
+                    </FormGroup>
+                  </FormRow>
+                  <FormActions>
+                    <CreateButton
+                      onClick={handleSaveEdit}
+                      disabled={!editName.trim() || isSaving}
+                    >
+                      {isSaving ? `${t("Saving")}\u2026` : t("Save Changes")}
+                    </CreateButton>
+                    <CancelButton onClick={handleCancelEdit}>
+                      {t("Cancel")}
+                    </CancelButton>
+                  </FormActions>
+                </CreateFormFields>
+              </EditFormCard>
+            ) : (
+              <RecipeCard
+                key={recipe.id}
+                onClick={() => handleStartEdit(recipe)}
+              >
+                <CardHeader>
+                  <RecipeName>{recipe.name}</RecipeName>
+                  <CardActions>
+                    <ActionButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStartEdit(recipe);
+                      }}
+                      title={t("Edit recipe")}
+                    >
+                      <EditIcon size={14} />
+                    </ActionButton>
+                    <ActionButton
+                      onClick={(e) => handleDelete(e, recipe)}
+                      title={t("Delete recipe")}
+                      $danger
+                    >
+                      <TrashIcon size={14} />
+                    </ActionButton>
+                  </CardActions>
+                </CardHeader>
+                {recipe.description && (
+                  <RecipeDescription>{recipe.description}</RecipeDescription>
                 )}
-                {recipe.cookTime != null && (
-                  <MetaItem>
-                    {t("Cook")}: {recipe.cookTime}{t("min")}
-                  </MetaItem>
+                <RecipeMeta>
+                  {recipe.prepTime != null && (
+                    <MetaItem>
+                      {t("Prep")}: {recipe.prepTime}{t("min")}
+                    </MetaItem>
+                  )}
+                  {recipe.cookTime != null && (
+                    <MetaItem>
+                      {t("Cook")}: {recipe.cookTime}{t("min")}
+                    </MetaItem>
+                  )}
+                  {recipe.servings != null && (
+                    <MetaItem>
+                      {t("Serves")}: {recipe.servings}
+                    </MetaItem>
+                  )}
+                </RecipeMeta>
+                {recipe.dietaryTags && recipe.dietaryTags.length > 0 && (
+                  <TagList>
+                    {recipe.dietaryTags.map((tag) => (
+                      <DietaryTag key={tag}>{tag}</DietaryTag>
+                    ))}
+                  </TagList>
                 )}
-                {recipe.servings != null && (
-                  <MetaItem>
-                    {t("Serves")}: {recipe.servings}
-                  </MetaItem>
-                )}
-              </RecipeMeta>
-              {recipe.dietaryTags && recipe.dietaryTags.length > 0 && (
-                <TagList>
-                  {recipe.dietaryTags.map((tag) => (
-                    <DietaryTag key={tag}>{tag}</DietaryTag>
-                  ))}
-                </TagList>
-              )}
-            </RecipeCard>
-          ))}
+              </RecipeCard>
+            )
+          )}
         </RecipeGrid>
       )}
     </Scene>
@@ -211,6 +366,10 @@ const CreateFormCard = styled.div`
   margin-bottom: 16px;
   background: ${s("background")};
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+`;
+
+const EditFormCard = styled(CreateFormCard)`
+  margin-bottom: 0;
 `;
 
 const CreateFormHeader = styled(Flex)`
@@ -351,6 +510,7 @@ const RecipeCard = styled.div`
   border: 1px solid ${s("divider")};
   border-radius: 8px;
   padding: 16px;
+  cursor: pointer;
   transition: all 100ms ease-in-out;
 
   &:hover {
@@ -359,8 +519,42 @@ const RecipeCard = styled.div`
   }
 `;
 
+const CardHeader = styled(Flex)`
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+`;
+
+const CardActions = styled(Flex)`
+  gap: 4px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 100ms ease;
+
+  ${RecipeCard}:hover & {
+    opacity: 1;
+  }
+`;
+
+const ActionButton = styled.button<{ $danger?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  color: ${s("textTertiary")};
+  cursor: pointer;
+  transition: color 100ms ease;
+
+  &:hover {
+    color: ${(props) => (props.$danger ? props.theme.danger : props.theme.accent)};
+  }
+`;
+
 const RecipeName = styled.h3`
-  margin: 0 0 8px 0;
+  margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: ${s("text")};
