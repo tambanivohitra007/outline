@@ -180,7 +180,7 @@ function Recipes() {
                 placeholder={t("Brief description of this recipe\u2026")}
                 value={createDescription}
                 onChange={(e) => setCreateDescription(e.target.value)}
-                rows={2}
+                rows={4}
               />
             </FormGroup>
             <FormRow>
@@ -314,7 +314,7 @@ function Recipes() {
                 <FormTextarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  rows={2}
+                  rows={4}
                 />
               </FormGroup>
               <FormRow>
@@ -476,6 +476,9 @@ const FormTextarea = styled.textarea`
   outline: none;
   resize: vertical;
   font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 80px;
 
   &:focus {
     border-color: ${s("accent")};
