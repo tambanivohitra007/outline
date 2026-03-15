@@ -6,6 +6,7 @@ import { useTranslation, Trans } from "react-i18next";
 import { toast } from "sonner";
 import embeds from "@shared/editor/embeds";
 import { TeamPreference } from "@shared/types";
+import { MEDICAL_BLOCK_ITEMS } from "~/editor/components/BlockMenu";
 import Heading from "~/components/Heading";
 import Switch from "~/components/Switch";
 import Text from "~/components/Text";
@@ -77,8 +78,30 @@ function Embeds() {
     [team, saveData]
   );
 
+  const handleToggleMedicalBlock = React.useCallback(
+    async (id: string, enabled: boolean) => {
+      const disabled =
+        (team.getPreference(TeamPreference.DisabledMedicalBlocks) as string[]) ||
+        [];
+
+      const updated = enabled
+        ? disabled.filter((t) => t !== id)
+        : [...disabled, id];
+
+      team.setPreference(TeamPreference.DisabledMedicalBlocks, updated);
+      await saveData({
+        preferences: { ...team.preferences },
+      });
+    },
+    [team, saveData]
+  );
+
   const disabledEmbeds =
     (team.getPreference(TeamPreference.DisabledEmbeds) as string[]) || [];
+
+  const disabledMedical =
+    (team.getPreference(TeamPreference.DisabledMedicalBlocks) as string[]) ||
+    [];
 
   return (
     <IntegrationScene title={t("Embeds")} icon={<BrowserIcon />}>
@@ -150,6 +173,36 @@ function Embeds() {
           })}
         </>
       )}
+      <Heading as="h2">{t("Medical blocks")}</Heading>
+      <Text as="p" type="secondary">
+        <Trans>
+          Medical block items appear in the editor slash menu. Disabled items
+          will be hidden from the menu for all workspace members.
+        </Trans>
+      </Text>
+      {MEDICAL_BLOCK_ITEMS.map((block) => {
+        const enabled = !disabledMedical.includes(block.id);
+        return (
+          <SettingRow
+            key={block.id}
+            name={block.id}
+            label={
+              <Text type={enabled ? undefined : "tertiary"}>
+                {t(block.labelKey)}
+              </Text>
+            }
+            compact
+          >
+            <Switch
+              id={block.id}
+              checked={enabled}
+              onChange={(checked: boolean) =>
+                handleToggleMedicalBlock(block.id, checked)
+              }
+            />
+          </SettingRow>
+        );
+      })}
     </IntegrationScene>
   );
 }

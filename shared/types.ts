@@ -388,6 +388,8 @@ export enum TeamPreference {
   MCP = "mcp",
   /** List of disabled embed provider titles. */
   DisabledEmbeds = "disabledEmbeds",
+  /** List of disabled medical block item IDs. */
+  DisabledMedicalBlocks = "disabledMedicalBlocks",
 }
 
 export type TeamPreferences = {
@@ -405,6 +407,7 @@ export type TeamPreferences = {
   [TeamPreference.EmailDisplay]?: EmailDisplay;
   [TeamPreference.MCP]?: boolean;
   [TeamPreference.DisabledEmbeds]?: string[];
+  [TeamPreference.DisabledMedicalBlocks]?: string[];
 };
 
 export enum NavigationNodeType {
