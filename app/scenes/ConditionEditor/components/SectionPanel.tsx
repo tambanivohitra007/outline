@@ -91,10 +91,9 @@ function SectionPanel({ section }: Props) {
             <EditorArea>
               <DocumentPreview onClick={handleOpenEditor}>
                 <PreviewContent>
-                  {document?.text ? (
+                  {document?.title ? (
                     <PreviewText>
-                      {document.text.substring(0, 300)}
-                      {document.text.length > 300 ? "\u2026" : ""}
+                      {document.title}
                     </PreviewText>
                   ) : (
                     <PreviewEmpty>

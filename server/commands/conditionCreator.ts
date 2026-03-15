@@ -1,12 +1,11 @@
+import { CollectionPermission } from "@shared/types";
 import slugify from "@shared/utils/slugify";
+import documentCreator from "@server/commands/documentCreator";
 import {
   Collection,
   Condition,
   ConditionSection,
-  Document,
 } from "@server/models";
-import { DocumentHelper } from "@server/models/helpers/DocumentHelper";
-import { ProsemirrorHelper } from "@server/models/helpers/ProsemirrorHelper";
 import type { APIContext } from "@server/types";
 
 interface Props {
@@ -67,14 +66,14 @@ export default async function conditionCreator(
   let resolvedCollectionId = collectionId ?? null;
 
   if (!resolvedCollectionId) {
-    const collection = Collection.build({
+    const collection = await Collection.createWithCtx(ctx, {
       name,
       description: `Treatment guide for ${name}`,
       teamId: user.teamId,
       createdById: user.id,
-      permission: "read_write",
+      sort: Collection.DEFAULT_SORT,
+      permission: CollectionPermission.ReadWrite,
     });
-    await collection.saveWithCtx(ctx);
     resolvedCollectionId = collection.id;
   }
 
@@ -94,26 +93,10 @@ export default async function conditionCreator(
 
   // Create a backing Document + ConditionSection for each default section
   for (const sectionDef of DEFAULT_SECTIONS) {
-    const content = ProsemirrorHelper.toProsemirror("").toJSON();
-    const document = Document.build({
-      title: `${name} — ${sectionDef.title}`,
-      content,
+    const document = await documentCreator(ctx, {
+      title: `${name} \u2014 ${sectionDef.title}`,
       collectionId: resolvedCollectionId,
-      teamId: user.teamId,
-      createdById: user.id,
-      lastModifiedById: user.id,
-    });
-
-    document.text = await DocumentHelper.toMarkdown(document, {
-      includeTitle: false,
-    });
-    await document.saveWithCtx(ctx, { silent: true });
-
-    // Publish the document into the collection
-    await document.publish(ctx, {
-      collectionId: resolvedCollectionId,
-      silent: true,
-      event: false,
+      publish: true,
     });
 
     await ConditionSection.create(
