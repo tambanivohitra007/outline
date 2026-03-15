@@ -77,97 +77,145 @@ router.post(
     const { user } = ctx.state.auth;
     const teamId = user.teamId;
 
-    const [conditions, interventions, careDomains] = await Promise.all([
-      Condition.findAll({
-        where: { teamId },
-        attributes: ["id", "name", "slug", "status", "snomedCode"],
-      }),
-      Intervention.findAll({
-        where: { teamId },
-        attributes: ["id", "name", "slug", "careDomainId"],
-      }),
-      CareDomain.findAll({
-        attributes: ["id", "name", "slug", "color", "icon"],
-        order: [["sortOrder", "ASC"]],
-      }),
-    ]);
+    const [conditions, interventions, careDomains, sections] =
+      await Promise.all([
+        Condition.findAll({
+          where: { teamId },
+          attributes: ["id", "name", "slug", "status", "snomedCode"],
+        }),
+        Intervention.findAll({
+          where: { teamId },
+          attributes: ["id", "name", "slug", "careDomainId", "category"],
+        }),
+        CareDomain.findAll({
+          attributes: ["id", "name", "slug", "color", "icon"],
+          order: [["sortOrder", "ASC"]],
+        }),
+        ConditionSection.findAll({
+          where: {},
+          attributes: [
+            "id",
+            "conditionId",
+            "sectionType",
+            "title",
+            "sortOrder",
+          ],
+          order: [["sortOrder", "ASC"]],
+        }),
+      ]);
 
-    // Build nodes
-    const nodes: Array<{
-      id: string;
-      type: string;
-      label: string;
-      data: Record<string, unknown>;
-    }> = [];
+    // Index care domains by id
+    const domainById = new Map(careDomains.map((d) => [d.id, d]));
 
-    const edges: Array<{
-      id: string;
-      source: string;
-      target: string;
-      label?: string;
-    }> = [];
+    // Index interventions by id
+    const interventionById = new Map(interventions.map((i) => [i.id, i]));
 
-    // Care domain nodes
-    for (const domain of careDomains) {
-      nodes.push({
-        id: `domain-${domain.id}`,
-        type: "careDomain",
-        label: domain.name,
-        data: { color: domain.color, icon: domain.icon },
+    // Group sections by conditionId
+    const sectionsByCondition = new Map<
+      string,
+      Array<{ sectionType: string; title: string }>
+    >();
+    for (const section of sections) {
+      const list = sectionsByCondition.get(section.conditionId) ?? [];
+      list.push({
+        sectionType: section.sectionType,
+        title: section.title,
       });
+      sectionsByCondition.set(section.conditionId, list);
     }
 
-    // Condition nodes
-    for (const condition of conditions) {
-      nodes.push({
-        id: `condition-${condition.id}`,
-        type: "condition",
-        label: condition.name,
-        data: { status: condition.status, snomedCode: condition.snomedCode },
+    // Get condition-intervention links
+    const conditionIds = conditions.map((c) => c.id);
+    const ciLinks =
+      conditionIds.length > 0
+        ? await ConditionIntervention.findAll({
+            where: { conditionId: conditionIds },
+            attributes: [
+              "conditionId",
+              "interventionId",
+              "careDomainId",
+              "evidenceLevel",
+            ],
+          })
+        : [];
+
+    // Group intervention links by condition, then by care domain
+    const interventionsByCondition = new Map<
+      string,
+      Map<
+        string,
+        Array<{ interventionName: string; evidenceLevel: string | null }>
+      >
+    >();
+    for (const link of ciLinks) {
+      const intervention = interventionById.get(link.interventionId);
+      if (!intervention) {
+        continue;
+      }
+
+      const domainId =
+        link.careDomainId ?? intervention.careDomainId ?? "uncategorized";
+      const condMap =
+        interventionsByCondition.get(link.conditionId) ?? new Map();
+      const domainList = condMap.get(domainId) ?? [];
+      domainList.push({
+        interventionName: intervention.name,
+        evidenceLevel: link.evidenceLevel,
       });
+      condMap.set(domainId, domainList);
+      interventionsByCondition.set(link.conditionId, condMap);
     }
 
-    // Intervention nodes + edges to care domains
-    for (const intervention of interventions) {
-      nodes.push({
-        id: `intervention-${intervention.id}`,
-        type: "intervention",
-        label: intervention.name,
-        data: { careDomainId: intervention.careDomainId },
-      });
+    // Build condition-centric graph data
+    const conditionGraphs = conditions.map((condition) => {
+      const condSections = sectionsByCondition.get(condition.id) ?? [];
+      const condInterventions =
+        interventionsByCondition.get(condition.id) ?? new Map();
 
-      if (intervention.careDomainId) {
-        edges.push({
-          id: `edge-int-domain-${intervention.id}`,
-          source: `intervention-${intervention.id}`,
-          target: `domain-${intervention.careDomainId}`,
-          label: "belongs to",
+      // Build interventions grouped by care domain
+      const interventionGroups: Array<{
+        careDomain: string;
+        interventions: Array<{
+          name: string;
+          evidenceLevel: string | null;
+        }>;
+      }> = [];
+
+      for (const [domainId, intList] of condInterventions) {
+        const domain = domainById.get(domainId);
+        interventionGroups.push({
+          careDomain: domain?.name ?? "Uncategorized",
+          interventions: intList,
         });
       }
-    }
 
-    // Condition-Intervention edges scoped to this team's conditions
-    const conditionIds = conditions.map((c) => c.id);
-    const ciLinks = conditionIds.length > 0
-      ? await ConditionIntervention.findAll({
-          where: { conditionId: conditionIds },
-          attributes: ["conditionId", "interventionId", "evidenceLevel"],
-        })
-      : [];
-
-    for (const link of ciLinks) {
-      edges.push({
-        id: `edge-ci-${link.conditionId}-${link.interventionId}`,
-        source: `condition-${link.conditionId}`,
-        target: `intervention-${link.interventionId}`,
-        label: link.evidenceLevel
-          ? `Evidence: ${link.evidenceLevel}`
-          : "treats",
-      });
-    }
+      return {
+        id: condition.id,
+        name: condition.name,
+        slug: condition.slug,
+        status: condition.status,
+        snomedCode: condition.snomedCode,
+        sections: condSections,
+        interventionGroups,
+      };
+    });
 
     ctx.body = {
-      data: { nodes, edges },
+      data: {
+        conditions: conditionGraphs,
+        careDomains: careDomains.map((d) => ({
+          id: d.id,
+          name: d.name,
+          color: d.color,
+          icon: d.icon,
+        })),
+        totals: {
+          conditions: conditions.length,
+          interventions: interventions.length,
+          careDomains: careDomains.length,
+          links: ciLinks.length,
+        },
+      },
     };
   }
 );
