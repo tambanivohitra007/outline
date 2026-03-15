@@ -54,11 +54,15 @@ export default class CollectionsStore extends Store<Collection> {
   }
 
   /**
-   * Returns active collections excluding condition-backed ones,
-   * for display in the sidebar.
+   * Returns active collections for display in the sidebar.
+   * Admins see all collections; other roles see only non-condition ones.
    */
   @computed
   get sidebarCollections(): Collection[] {
+    const user = this.rootStore.auth.user;
+    if (user?.isAdmin) {
+      return this.allActive;
+    }
     const conditionIds = this.conditionCollectionIds;
     return this.allActive.filter((c) => !conditionIds.has(c.id));
   }
