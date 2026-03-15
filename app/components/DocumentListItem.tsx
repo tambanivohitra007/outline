@@ -231,12 +231,14 @@ const DocumentLink = styled(Link)<{
 }>`
   display: flex;
   align-items: center;
-  margin: 10px -8px;
-  padding: 6px 8px;
+  margin: 0;
+  padding: 12px 16px;
   border-radius: 8px;
   max-height: 50vh;
   width: calc(100vw - 8px);
   cursor: var(--pointer);
+  border: 1px solid transparent;
+  transition: background 100ms ease, border-color 100ms ease, box-shadow 100ms ease;
 
   &:focus-visible {
     outline: none;
@@ -259,6 +261,8 @@ const DocumentLink = styled(Link)<{
   &:focus,
   &:focus-within {
     background: ${s("listItemHoverBackground")};
+    border-color: ${s("inputBorder")};
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 
     ${Actions} {
       opacity: 1;
@@ -277,6 +281,7 @@ const DocumentLink = styled(Link)<{
     props.$menuOpen &&
     css`
       background: ${s("listItemHoverBackground")};
+      border-color: ${s("inputBorder")};
 
       ${Actions} {
         opacity: 1;
@@ -297,9 +302,9 @@ const Heading = styled.span<{ rtl?: boolean }>`
   white-space: nowrap;
   color: ${s("text")};
   font-family: ${s("fontFamily")};
-  font-weight: 500;
-  font-size: 18px;
-  line-height: 1.2;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.3;
   gap: 4px;
 `;
 
@@ -311,11 +316,12 @@ const Title = styled(Highlight)`
 
 const ResultContext = styled(Highlight)`
   display: block;
-  color: ${s("textSecondary")};
-  font-size: 15px;
-  margin-top: -0.25em;
+  color: ${s("textTertiary")};
+  font-size: 14px;
+  line-height: 1.5;
+  margin-top: 0;
   margin-bottom: 0.25em;
-  max-height: 90px;
+  max-height: 60px;
   overflow: hidden;
 `;
 

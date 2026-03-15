@@ -388,6 +388,10 @@ const Centered = styled(Flex)`
 `;
 
 const ResultsWrapper = styled(Flex)`
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+
   ${breakpoint("tablet")`
     margin-top: 40px;
   `};
@@ -401,14 +405,15 @@ const StyledArrowKeyNavigation = styled(ArrowKeyNavigation)`
   display: flex;
   flex-direction: column;
   flex: 1;
+  gap: 2px;
 `;
 
 const Filters = styled(HStack)`
   flex-wrap: wrap;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   transition: opacity 100ms ease-in-out;
-  padding: 8px 0;
+  padding: 4px 0;
 
   ${breakpoint("tablet")`
     padding: 0;
