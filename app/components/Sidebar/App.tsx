@@ -11,7 +11,6 @@ import useCurrentTeam from "~/hooks/useCurrentTeam";
 import useCurrentUser from "~/hooks/useCurrentUser";
 import usePolicy from "~/hooks/usePolicy";
 import useStores from "~/hooks/useStores";
-import TeamMenu from "~/menus/TeamMenu";
 import {
   homePath,
   searchPath,
@@ -21,7 +20,6 @@ import {
   knowledgeGraphPath,
   analyticsPath,
 } from "~/utils/routeHelpers";
-import TeamLogo from "../TeamLogo";
 import Tooltip from "../Tooltip";
 import Sidebar from "./Sidebar";
 import Collections from "./components/Collections";
@@ -29,7 +27,6 @@ import { DraftsLink } from "./components/DraftsLink";
 import DragPlaceholder from "./components/DragPlaceholder";
 import HistoryNavigation from "./components/HistoryNavigation";
 import Section from "./components/Section";
-import SidebarButton from "./components/SidebarButton";
 import SidebarLink from "./components/SidebarLink";
 import SharedWithMe from "./components/SharedWithMe";
 import Starred from "./components/Starred";
@@ -66,18 +63,9 @@ function AppSidebar() {
         <DndProvider backend={HTML5Backend} options={html5Options}>
           <DragPlaceholder />
 
-          <TeamMenu>
-            <SidebarButton
-              title={team.name}
-              image={
-                <TeamLogo
-                  model={team}
-                  size={24}
-                  alt={t("Logo")}
-                  style={{ marginLeft: 4 }}
-                />
-              }
-            >
+          <LogoSection>
+            <Logo src="/images/lifestyle-logo.png" alt={t("Family & Lifestyle Medicine")} />
+            <ToggleButtonWrapper>
               <Tooltip
                 content={t("Toggle sidebar")}
                 shortcut={`${metaDisplay}+.`}
@@ -96,8 +84,8 @@ function AppSidebar() {
                   }}
                 />
               </Tooltip>
-            </SidebarButton>
-          </TeamMenu>
+            </ToggleButtonWrapper>
+          </LogoSection>
           <Overflow>
             <Section>
               <SidebarLink
@@ -170,6 +158,27 @@ function AppSidebar() {
     </Sidebar>
   );
 }
+
+const LogoSection = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px 12px;
+  flex-shrink: 0;
+`;
+
+const ToggleButtonWrapper = styled.div`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+`;
+
+const Logo = styled.img`
+  height: 100px;
+  width: auto;
+  object-fit: contain;
+`;
 
 const Overflow = styled.div`
   overflow: hidden;
