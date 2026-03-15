@@ -530,6 +530,10 @@ function KnowledgeGraph() {
 
   return (
     <Scene icon={<GlobeIcon />} title={t("Knowledge Graph")} centered={false}>
+      <GraphTitle>
+        <GlobeIcon size={24} />
+        {t("Knowledge Graph")}
+      </GraphTitle>
       <GraphContainer ref={containerRef} $isFullscreen={isFullscreen}>
         {hasData && (
           <Toolbar>
@@ -670,6 +674,16 @@ function ExitFullscreenIcon() {
 const slideIn = keyframes`
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
+`;
+
+const GraphTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: ${s("text")};
 `;
 
 const GraphContainer = styled.div<{ $isFullscreen: boolean }>`

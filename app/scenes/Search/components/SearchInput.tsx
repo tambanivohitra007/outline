@@ -1,4 +1,5 @@
 import { SearchIcon } from "outline-icons";
+import { transparentize } from "polished";
 import * as React from "react";
 import styled, { useTheme } from "styled-components";
 import { s } from "@shared/styles";
@@ -65,8 +66,8 @@ const StyledInput = styled.input`
   transition: border-color 150ms ease, box-shadow 150ms ease;
 
   &:focus {
-    border-color: rgb(230, 57, 80);
-    box-shadow: 0 0 0 3px rgba(230, 57, 80, 0.15);
+    border-color: ${s("accent")};
+    box-shadow: 0 0 0 3px ${(props) => transparentize(0.85, props.theme.accent)};
   }
 
   ::-webkit-search-cancel-button {

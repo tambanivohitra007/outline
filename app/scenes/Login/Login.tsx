@@ -378,24 +378,14 @@ function Login({ children, onBack }: Props) {
 /**
  * Branding content for the left panel
  */
-function BrandingContent() {
-  const { t } = useTranslation();
+const BRAND_VALUE_KEYS = ["Affordable", "Comprehensive", "Personalized", "Accessible"];
 
-  const values = [
-    t("Affordable"),
-    t("Comprehensive"),
-    t("Personalized"),
-    t("Accessible"),
-  ];
+const BrandingContent = React.memo(function BrandingContent() {
+  const { t } = useTranslation();
 
   return (
     <>
-      <BackgroundImage
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=1200&q=80')",
-        }}
-      />
+      <BackgroundImage />
       <GradientOverlay />
       <DecorativeCircleTop />
       <DecorativeCircleBottom />
@@ -419,15 +409,15 @@ function BrandingContent() {
             )}
           </BrandingDescription>
           <ValuePills>
-            {values.map((value) => (
-              <Pill key={value}>{value}</Pill>
+            {BRAND_VALUE_KEYS.map((key) => (
+              <Pill key={key}>{t(key)}</Pill>
             ))}
           </ValuePills>
         </BrandingBody>
       </BrandingInner>
     </>
   );
-}
+});
 
 const LoginWrapper = styled.div`
   display: flex;
@@ -450,6 +440,7 @@ const LeftPanel = styled.div`
 const BackgroundImage = styled.div`
   position: absolute;
   inset: 0;
+  background-image: url("https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=1200&q=80");
   background-size: cover;
   background-position: center;
 `;
