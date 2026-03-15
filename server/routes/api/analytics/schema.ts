@@ -18,3 +18,9 @@ export const AnalyticsCoverageSchema = BaseSchema.extend({
 });
 
 export type AnalyticsCoverageReq = z.infer<typeof AnalyticsCoverageSchema>;
+
+export const HomeDashboardSchema = BaseSchema.extend({
+  body: z.object({}).default({}),
+});
+
+export type HomeDashboardReq = z.infer<typeof HomeDashboardSchema>;

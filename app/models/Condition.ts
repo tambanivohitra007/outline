@@ -28,6 +28,11 @@ class Condition extends ParanoidModel {
   @observable
   icdCode: string | null;
 
+  /** Short description of the condition */
+  @Field
+  @observable
+  description: string | null;
+
   /** Publication status */
   @Field
   @observable

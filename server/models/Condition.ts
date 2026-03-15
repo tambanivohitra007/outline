@@ -34,6 +34,9 @@ class Condition extends ParanoidModel<
   @Column
   icdCode: string | null;
 
+  @Column(DataType.TEXT)
+  description: string | null;
+
   @Default("draft")
   @Column(DataType.ENUM("draft", "review", "published"))
   status: "draft" | "review" | "published";

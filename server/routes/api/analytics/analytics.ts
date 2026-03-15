@@ -403,4 +403,51 @@ router.post(
   }
 );
 
+router.post(
+  "home.dashboard",
+  auth(),
+  validate(T.HomeDashboardSchema),
+  async (ctx: APIContext<T.HomeDashboardReq>) => {
+    const { user } = ctx.state.auth;
+    const teamId = user.teamId;
+
+    const [
+      conditionCount,
+      interventionCount,
+      scriptureCount,
+      recipeCount,
+      recentConditions,
+    ] = await Promise.all([
+      Condition.count({ where: { teamId } }),
+      Intervention.count({ where: { teamId } }),
+      Scripture.count({ where: { teamId } }),
+      Recipe.count({ where: { teamId } }),
+      Condition.findAll({
+        where: { teamId },
+        attributes: ["id", "name", "slug", "description", "status"],
+        order: [["updatedAt", "DESC"]],
+        limit: 5,
+      }),
+    ]);
+
+    ctx.body = {
+      data: {
+        totals: {
+          conditions: conditionCount,
+          interventions: interventionCount,
+          scriptures: scriptureCount,
+          recipes: recipeCount,
+        },
+        recentConditions: recentConditions.map((c) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          description: c.description,
+          status: c.status,
+        })),
+      },
+    };
+  }
+);
+
 export default router;
