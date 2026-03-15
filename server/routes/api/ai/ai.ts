@@ -54,68 +54,44 @@ router.post(
     const { user } = ctx.state.auth;
     const teamId = user.teamId;
 
-    // Use Gemini to interpret the search query
-    const searchParams = await GeminiService.interpretSearch(query);
+    // Direct database search — no AI dependency
+    const likeQuery = { [Op.iLike]: `%${query}%` };
 
-    // Build OR conditions for each entity type
-    const allTerms = [
-      ...searchParams.keywords,
-      ...searchParams.conditionTerms,
-      ...searchParams.interventionTerms,
-      ...searchParams.recipeTerms,
-    ];
-
-    const likeConditions = allTerms.map((term) => ({
-      [Op.iLike]: `%${term}%`,
-    }));
-
-    // Search conditions
-    const conditions =
-      searchParams.conditionTerms.length > 0 || searchParams.keywords.length > 0
-        ? await Condition.findAll({
-            where: {
-              teamId,
-              [Op.or]: [
-                { name: { [Op.or]: likeConditions } },
-              ],
-            },
-            limit: 10,
-          })
-        : [];
-
-    // Search interventions
-    const interventions =
-      searchParams.interventionTerms.length > 0 || searchParams.keywords.length > 0
-        ? await Intervention.findAll({
-            where: {
-              teamId,
-              [Op.or]: [
-                { name: { [Op.or]: likeConditions } },
-                { category: { [Op.or]: likeConditions } },
-              ],
-            },
-            limit: 10,
-          })
-        : [];
-
-    // Search recipes
-    const recipes =
-      searchParams.recipeTerms.length > 0 || searchParams.keywords.length > 0
-        ? await Recipe.findAll({
-            where: {
-              teamId,
-              [Op.or]: [
-                { name: { [Op.or]: likeConditions } },
-                { description: { [Op.or]: likeConditions } },
-              ],
-            },
-            limit: 10,
-          })
-        : [];
+    const [conditions, interventions, recipes] = await Promise.all([
+      Condition.findAll({
+        where: {
+          teamId,
+          [Op.or]: [
+            { name: likeQuery },
+            { description: likeQuery },
+          ],
+        },
+        limit: 10,
+      }),
+      Intervention.findAll({
+        where: {
+          teamId,
+          [Op.or]: [
+            { name: likeQuery },
+            { category: likeQuery },
+          ],
+        },
+        limit: 10,
+      }),
+      Recipe.findAll({
+        where: {
+          teamId,
+          [Op.or]: [
+            { name: likeQuery },
+            { description: likeQuery },
+          ],
+        },
+        limit: 10,
+      }),
+    ]);
 
     ctx.body = {
       data: {
-        intent: searchParams.intent,
         conditions: conditions.map(presentCondition),
         interventions: interventions.map(presentIntervention),
         recipes: recipes.map(presentRecipe),
