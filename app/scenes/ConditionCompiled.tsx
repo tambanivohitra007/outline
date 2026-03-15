@@ -23,6 +23,48 @@ interface CompiledSection {
   markdown: string;
 }
 
+interface CompiledIntervention {
+  id: string;
+  conditionId: string;
+  interventionId: string;
+  careDomainId: string | null;
+  evidenceLevel: string | null;
+  recommendationLevel: string | null;
+  intervention: {
+    id: string;
+    name: string;
+    category: string | null;
+    description: string | null;
+  } | null;
+  careDomainName: string | null;
+}
+
+interface CompiledEvidence {
+  id: string;
+  title: string;
+  pubmedId: string | null;
+  doi: string | null;
+  authors: string | null;
+  journal: string | null;
+  publicationDate: string | null;
+  abstract: string | null;
+  url: string | null;
+  studyType: string | null;
+  qualityRating: string | null;
+  sampleSize: number | null;
+  summary: string | null;
+}
+
+interface CompiledScripture {
+  id: string;
+  reference: string;
+  text: string;
+  theme: string | null;
+  spiritOfProphecy: boolean;
+  sopSource: string | null;
+  sopPage: string | null;
+}
+
 interface CompiledData {
   condition: {
     id: string;
@@ -33,6 +75,9 @@ interface CompiledData {
     status: string;
   };
   sections: CompiledSection[];
+  interventions: CompiledIntervention[];
+  evidence: CompiledEvidence[];
+  scriptures: CompiledScripture[];
 }
 
 type Params = {
@@ -40,6 +85,13 @@ type Params = {
 };
 
 type Props = RouteComponentProps<Params>;
+
+const EVIDENCE_LEVEL_LABELS: Record<string, string> = {
+  A: "Strong (Level A)",
+  B: "Moderate (Level B)",
+  C: "Weak (Level C)",
+  D: "Expert Opinion (Level D)",
+};
 
 /**
  * Safely convert markdown to sanitized HTML.
@@ -110,6 +162,31 @@ function ConditionCompiled({ match }: Props) {
       }));
   }, [data]);
 
+  // Group interventions by care domain
+  const interventionsByDomain = useMemo(() => {
+    if (!data) {
+      return new Map<string, CompiledIntervention[]>();
+    }
+    const grouped = new Map<string, CompiledIntervention[]>();
+    for (const ci of data.interventions) {
+      const domain = ci.careDomainName || "Other";
+      const list = grouped.get(domain) || [];
+      list.push(ci);
+      grouped.set(domain, list);
+    }
+    return grouped;
+  }, [data]);
+
+  // Separate scriptures from SoP
+  const bibleVerses = useMemo(
+    () => data?.scriptures.filter((s) => !s.spiritOfProphecy) ?? [],
+    [data]
+  );
+  const sopWritings = useMemo(
+    () => data?.scriptures.filter((s) => s.spiritOfProphecy) ?? [],
+    [data]
+  );
+
   if (isLoading) {
     return (
       <Scene title={t("Loading...")}>
@@ -127,6 +204,43 @@ function ConditionCompiled({ match }: Props) {
   }
 
   const { condition } = data;
+  const hasInterventions = data.interventions.length > 0;
+  const hasEvidence = data.evidence.length > 0;
+  const hasScriptures = bibleVerses.length > 0 || sopWritings.length > 0;
+
+  // Build TOC entries
+  let tocIndex = 0;
+  const tocEntries: { label: string; anchor: string }[] = [];
+  for (const section of renderedSections) {
+    tocIndex++;
+    tocEntries.push({
+      label: `${tocIndex}. ${section.title}`,
+      anchor: `section-${section.id}`,
+    });
+  }
+  if (hasInterventions) {
+    tocIndex++;
+    tocEntries.push({
+      label: `${tocIndex}. Interventions`,
+      anchor: "interventions",
+    });
+  }
+  if (hasEvidence) {
+    tocIndex++;
+    tocEntries.push({
+      label: `${tocIndex}. Evidence & Research`,
+      anchor: "evidence",
+    });
+  }
+  if (hasScriptures) {
+    tocIndex++;
+    tocEntries.push({
+      label: `${tocIndex}. Scripture & Spirit of Prophecy`,
+      anchor: "scriptures",
+    });
+  }
+
+  let sectionCounter = 0;
 
   return (
     <Scene title={`${condition.name} - ${t("Compiled Document")}`} wide>
@@ -171,10 +285,10 @@ function ConditionCompiled({ match }: Props) {
         <TableOfContents>
           <TocTitle>{t("Table of Contents")}</TocTitle>
           <TocList>
-            {renderedSections.map((section, idx) => (
-              <TocItem key={section.id}>
-                <TocLink href={`#section-${section.id}`}>
-                  {idx + 1}. {section.title}
+            {tocEntries.map((entry) => (
+              <TocItem key={entry.anchor}>
+                <TocLink href={`#${entry.anchor}`}>
+                  {entry.label}
                 </TocLink>
               </TocItem>
             ))}
@@ -183,25 +297,169 @@ function ConditionCompiled({ match }: Props) {
 
         <Divider />
 
-        {renderedSections.map((section, idx) => (
-          <SectionBlock key={section.id} id={`section-${section.id}`}>
-            <SectionNumber>{idx + 1}</SectionNumber>
-            <SectionTitle>{section.title}</SectionTitle>
+        {/* === Section Documents === */}
+        {renderedSections.map((section) => {
+          sectionCounter++;
+          return (
+            <SectionBlock key={section.id} id={`section-${section.id}`}>
+              <SectionNumber>{sectionCounter}</SectionNumber>
+              <SectionTitle>{section.title}</SectionTitle>
+              <SectionContent>
+                <MarkdownContent
+                  dangerouslySetInnerHTML={{ __html: section.html }}
+                />
+              </SectionContent>
+            </SectionBlock>
+          );
+        })}
+
+        {/* === Interventions === */}
+        {hasInterventions && (
+          <SectionBlock id="interventions">
+            <SectionNumber>{++sectionCounter}</SectionNumber>
+            <SectionTitle>{t("Interventions")}</SectionTitle>
             <SectionContent>
-              <MarkdownContent
-                dangerouslySetInnerHTML={{
-                  __html: section.html,
-                }}
-              />
+              {Array.from(interventionsByDomain.entries()).map(
+                ([domain, items]) => (
+                  <DomainGroup key={domain}>
+                    <DomainLabel>{domain}</DomainLabel>
+                    <InterventionTable>
+                      <thead>
+                        <tr>
+                          <Th>{t("Intervention")}</Th>
+                          <Th>{t("Category")}</Th>
+                          <Th>{t("Evidence")}</Th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {items.map((ci) => (
+                          <tr key={ci.id}>
+                            <Td>
+                              <strong>{ci.intervention?.name}</strong>
+                              {ci.intervention?.description && (
+                                <InterventionDesc>
+                                  {ci.intervention.description}
+                                </InterventionDesc>
+                              )}
+                            </Td>
+                            <Td>{ci.intervention?.category || "\u2014"}</Td>
+                            <Td>
+                              {ci.evidenceLevel ? (
+                                <EvidenceBadge $level={ci.evidenceLevel}>
+                                  {EVIDENCE_LEVEL_LABELS[ci.evidenceLevel] ||
+                                    ci.evidenceLevel}
+                                </EvidenceBadge>
+                              ) : (
+                                "\u2014"
+                              )}
+                            </Td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </InterventionTable>
+                  </DomainGroup>
+                )
+              )}
             </SectionContent>
           </SectionBlock>
-        ))}
-
-        {renderedSections.length === 0 && (
-          <EmptyState>
-            {t("No section content has been written yet.")}
-          </EmptyState>
         )}
+
+        {/* === Evidence & Research === */}
+        {hasEvidence && (
+          <SectionBlock id="evidence">
+            <SectionNumber>{++sectionCounter}</SectionNumber>
+            <SectionTitle>{t("Evidence & Research")}</SectionTitle>
+            <SectionContent>
+              {data.evidence.map((entry) => (
+                <EvidenceCard key={entry.id}>
+                  <EvidenceTitle>
+                    {entry.url ? (
+                      <a href={entry.url} target="_blank" rel="noopener noreferrer">
+                        {entry.title}
+                      </a>
+                    ) : (
+                      entry.title
+                    )}
+                  </EvidenceTitle>
+                  <EvidenceMeta>
+                    {entry.authors && <span>{entry.authors}</span>}
+                    {entry.journal && (
+                      <EvidenceJournal>{entry.journal}</EvidenceJournal>
+                    )}
+                    {entry.publicationDate && (
+                      <span>
+                        {new Date(entry.publicationDate).getFullYear()}
+                      </span>
+                    )}
+                    {entry.pubmedId && (
+                      <span>PMID: {entry.pubmedId}</span>
+                    )}
+                    {entry.studyType && <span>{entry.studyType}</span>}
+                  </EvidenceMeta>
+                  {entry.summary && (
+                    <EvidenceSummary>{entry.summary}</EvidenceSummary>
+                  )}
+                  {entry.abstract && !entry.summary && (
+                    <EvidenceAbstract>{entry.abstract}</EvidenceAbstract>
+                  )}
+                </EvidenceCard>
+              ))}
+            </SectionContent>
+          </SectionBlock>
+        )}
+
+        {/* === Scripture & Spirit of Prophecy === */}
+        {hasScriptures && (
+          <SectionBlock id="scriptures">
+            <SectionNumber>{++sectionCounter}</SectionNumber>
+            <SectionTitle>{t("Scripture & Spirit of Prophecy")}</SectionTitle>
+            <SectionContent>
+              {bibleVerses.length > 0 && (
+                <ScriptureGroup>
+                  <ScriptureGroupTitle>{t("Bible Verses")}</ScriptureGroupTitle>
+                  {bibleVerses.map((s) => (
+                    <ScriptureCard key={s.id}>
+                      <ScriptureRef>{s.reference}</ScriptureRef>
+                      <ScriptureText>{s.text}</ScriptureText>
+                      {s.theme && (
+                        <ScriptureTheme>{t("Theme")}: {s.theme}</ScriptureTheme>
+                      )}
+                    </ScriptureCard>
+                  ))}
+                </ScriptureGroup>
+              )}
+              {sopWritings.length > 0 && (
+                <ScriptureGroup>
+                  <ScriptureGroupTitle>
+                    {t("Spirit of Prophecy")}
+                  </ScriptureGroupTitle>
+                  {sopWritings.map((s) => (
+                    <ScriptureCard key={s.id} $sop>
+                      <ScriptureRef>
+                        {s.reference}
+                        {s.sopSource && ` \u2014 ${s.sopSource}`}
+                        {s.sopPage && `, p. ${s.sopPage}`}
+                      </ScriptureRef>
+                      <ScriptureText>{s.text}</ScriptureText>
+                      {s.theme && (
+                        <ScriptureTheme>{t("Theme")}: {s.theme}</ScriptureTheme>
+                      )}
+                    </ScriptureCard>
+                  ))}
+                </ScriptureGroup>
+              )}
+            </SectionContent>
+          </SectionBlock>
+        )}
+
+        {renderedSections.length === 0 &&
+          !hasInterventions &&
+          !hasEvidence &&
+          !hasScriptures && (
+            <EmptyState>
+              {t("No content has been added to this condition yet.")}
+            </EmptyState>
+          )}
 
         <Footer>
           <FooterText>
@@ -243,6 +501,78 @@ function buildFullMarkdown(data: CompiledData): string {
       lines.push("");
       lines.push(section.markdown);
       lines.push("");
+    }
+  }
+
+  // Interventions
+  if (data.interventions.length > 0) {
+    lines.push("## Interventions");
+    lines.push("");
+    for (const ci of data.interventions) {
+      const name = ci.intervention?.name ?? "Unknown";
+      const level = ci.evidenceLevel
+        ? ` (Evidence: ${ci.evidenceLevel})`
+        : "";
+      const domain = ci.careDomainName ? ` [${ci.careDomainName}]` : "";
+      lines.push(`- **${name}**${level}${domain}`);
+    }
+    lines.push("");
+  }
+
+  // Evidence
+  if (data.evidence.length > 0) {
+    lines.push("## Evidence & Research");
+    lines.push("");
+    for (const entry of data.evidence) {
+      lines.push(`### ${entry.title}`);
+      const meta: string[] = [];
+      if (entry.authors) {
+        meta.push(entry.authors);
+      }
+      if (entry.journal) {
+        meta.push(`*${entry.journal}*`);
+      }
+      if (entry.publicationDate) {
+        meta.push(new Date(entry.publicationDate).getFullYear().toString());
+      }
+      if (meta.length > 0) {
+        lines.push(meta.join(". "));
+      }
+      if (entry.summary) {
+        lines.push("");
+        lines.push(entry.summary);
+      }
+      if (entry.url) {
+        lines.push("");
+        lines.push(entry.url);
+      }
+      lines.push("");
+    }
+  }
+
+  // Scriptures
+  const bibleVerses = data.scriptures.filter((s) => !s.spiritOfProphecy);
+  const sopWritings = data.scriptures.filter((s) => s.spiritOfProphecy);
+
+  if (bibleVerses.length > 0 || sopWritings.length > 0) {
+    lines.push("## Scripture & Spirit of Prophecy");
+    lines.push("");
+    if (bibleVerses.length > 0) {
+      lines.push("### Bible Verses");
+      lines.push("");
+      for (const s of bibleVerses) {
+        lines.push(`> **${s.reference}** \u2014 ${s.text}`);
+        lines.push("");
+      }
+    }
+    if (sopWritings.length > 0) {
+      lines.push("### Spirit of Prophecy");
+      lines.push("");
+      for (const s of sopWritings) {
+        const source = s.sopSource ? ` (${s.sopSource}${s.sopPage ? `, p. ${s.sopPage}` : ""})` : "";
+        lines.push(`> **${s.reference}**${source} \u2014 ${s.text}`);
+        lines.push("");
+      }
     }
   }
 
@@ -466,6 +796,187 @@ const MarkdownContent = styled.div`
     border-top: 1px solid ${s("divider")};
     margin: 16px 0;
   }
+`;
+
+// Intervention styles
+
+const DomainGroup = styled.div`
+  margin-bottom: 20px;
+`;
+
+const DomainLabel = styled.h4`
+  font-size: 15px;
+  font-weight: 600;
+  color: ${s("accent")};
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+`;
+
+const InterventionTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+`;
+
+const Th = styled.th`
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 2px solid ${s("divider")};
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: ${s("textSecondary")};
+`;
+
+const Td = styled.td`
+  padding: 10px 12px;
+  border-bottom: 1px solid ${s("divider")};
+  vertical-align: top;
+`;
+
+const InterventionDesc = styled.div`
+  font-size: 13px;
+  color: ${s("textSecondary")};
+  margin-top: 2px;
+`;
+
+const EvidenceBadge = styled.span<{ $level: string }>`
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: ${(props) =>
+    props.$level === "A"
+      ? props.theme.noticeSuccessBackground
+      : props.$level === "B"
+        ? props.theme.noticeInfoBackground
+        : props.$level === "C"
+          ? props.theme.noticeWarningBackground
+          : s("backgroundSecondary")(props)};
+  color: ${(props) =>
+    props.$level === "A"
+      ? props.theme.noticeSuccessText
+      : props.$level === "B"
+        ? props.theme.noticeInfoText
+        : props.$level === "C"
+          ? props.theme.noticeWarningText
+          : s("textSecondary")(props)};
+`;
+
+// Evidence styles
+
+const EvidenceCard = styled.div`
+  padding: 16px;
+  border: 1px solid ${s("divider")};
+  border-radius: 8px;
+  margin-bottom: 12px;
+`;
+
+const EvidenceTitle = styled.div`
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: ${s("text")};
+
+  a {
+    color: ${s("accent")};
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+`;
+
+const EvidenceMeta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: ${s("textSecondary")};
+  margin-bottom: 8px;
+
+  span:not(:last-child)::after {
+    content: "\u00B7";
+    margin-left: 8px;
+  }
+`;
+
+const EvidenceJournal = styled.span`
+  font-style: italic;
+`;
+
+const EvidenceSummary = styled.p`
+  font-size: 14px;
+  line-height: 1.6;
+  color: ${s("text")};
+  margin: 0;
+`;
+
+const EvidenceAbstract = styled.p`
+  font-size: 13px;
+  line-height: 1.5;
+  color: ${s("textSecondary")};
+  margin: 0;
+  max-height: 120px;
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: linear-gradient(transparent, ${s("background")});
+  }
+`;
+
+// Scripture styles
+
+const ScriptureGroup = styled.div`
+  margin-bottom: 20px;
+`;
+
+const ScriptureGroupTitle = styled.h4`
+  font-size: 15px;
+  font-weight: 600;
+  color: ${s("textSecondary")};
+  margin: 0 0 12px;
+`;
+
+const ScriptureCard = styled.blockquote<{ $sop?: boolean }>`
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-left: 3px solid ${(props) =>
+    props.$sop ? props.theme.noticeInfoText : s("accent")(props)};
+  background: ${s("backgroundSecondary")};
+  border-radius: 0 6px 6px 0;
+`;
+
+const ScriptureRef = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+  color: ${s("accent")};
+  margin-bottom: 4px;
+`;
+
+const ScriptureText = styled.div`
+  font-size: 14px;
+  line-height: 1.6;
+  color: ${s("text")};
+  font-style: italic;
+`;
+
+const ScriptureTheme = styled.div`
+  font-size: 12px;
+  color: ${s("textTertiary")};
+  margin-top: 6px;
 `;
 
 const EmptyState = styled.div`
