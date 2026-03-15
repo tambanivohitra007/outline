@@ -186,6 +186,10 @@ class User extends ParanoidModel<
   @SkipChangeset
   lastSigninEmailSentAt: Date | null;
 
+  @AllowNull
+  @Column(DataType.STRING)
+  passwordHash: string | null;
+
   @IsDate
   @Column
   suspendedAt: Date | null;

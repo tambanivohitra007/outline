@@ -9894,6 +9894,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bcryptjs@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "bcryptjs@npm:3.0.3"
+  bin:
+    bcrypt: bin/bcrypt
+  checksum: 10c0/127c94699f07eab5fbbb89d600c3f0e36ae6fd001e028139740b41fffb62a23a2743523fb88f442ae3308a27d4843b97ccb9e436d78f5c5899be187d0972c6d5
+  languageName: node
+  linkType: hard
+
 "before-after-hook@npm:^2.2.0":
   version: 2.2.3
   resolution: "before-after-hook@npm:2.2.3"
@@ -17858,6 +17867,7 @@ __metadata:
     babel-plugin-transform-inline-environment-variables: "npm:^0.4.4"
     babel-plugin-transform-typescript-metadata: "npm:^0.4.0"
     babel-plugin-tsconfig-paths-module-resolver: "npm:^1.0.4"
+    bcryptjs: "npm:^3.0.3"
     body-scroll-lock: "npm:^4.0.0-beta.0"
     browserslist-to-esbuild: "npm:^1.2.0"
     bull: "npm:^4.16.5"
