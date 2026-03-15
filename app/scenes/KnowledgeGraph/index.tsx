@@ -348,7 +348,7 @@ const ConditionChip = styled.button`
   margin: 0 8px 8px 0;
   border: 1px solid ${s("divider")};
   border-radius: 16px;
-  background: ${s("secondaryBackground")};
+  background: ${s("backgroundSecondary")};
   color: ${s("text")};
   font-size: 13px;
   cursor: pointer;

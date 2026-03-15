@@ -88,7 +88,8 @@
       "Bash(grep -r \"FILE_STORAGE\" /c/Users/rindra/Projects/outline/.env* 2>/dev/null | head -20)",
       "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const glob = require\\('glob'\\); const path = require\\('path'\\); const pattern = path.join\\('build', 'plugins/*/server/!\\(*.test|schema\\).[jt]s'\\); console.log\\('Pattern:', pattern\\); const files = glob.sync\\(pattern\\); console.log\\('Files found:', files.length\\); files.forEach\\(f => console.log\\(' ', f\\)\\);\")",
       "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const glob = require\\('glob'\\); const files = glob.sync\\('build/plugins/*/server/!\\(*.test|schema\\).[jt]s'\\); console.log\\('Files found:', files.length\\); files.forEach\\(f => console.log\\(' ', f\\)\\);\")",
-      "WebFetch(domain:lifestyle.rindra.org)"
+      "WebFetch(domain:lifestyle.rindra.org)",
+      "Bash(curl:*)"
     ]
   }
 }
