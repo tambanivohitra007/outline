@@ -6,7 +6,6 @@ import {
   isTeamAdmin,
   isTeamModel,
   isTeamMutable,
-  or,
 } from "./utils";
 
 allow(User, "read", Team, isTeamModel);
@@ -20,24 +19,11 @@ allow(User, "readTemplate", Team, (actor, team) =>
   )
 );
 
-allow(User, "share", Team, (actor, team) =>
-  and(
-    isTeamModel(actor, team),
-    !actor.isGuest,
-    !actor.isViewer,
-    !!team?.sharing
-  )
-);
+// Disabled: medical content should not be publicly shared
+allow(User, "share", Team, () => false);
 
-allow(User, "createTeam", Team, (actor, team) =>
-  and(
-    //
-    isCloudHosted(),
-    !actor.isGuest,
-    !actor.isViewer,
-    or(actor.isAdmin, !!team?.memberTeamCreate)
-  )
-);
+// Disabled: single-workspace platform — no team creation allowed
+allow(User, "createTeam", Team, () => false);
 
 allow(User, "update", Team, isTeamAdmin);
 
