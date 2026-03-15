@@ -66,6 +66,14 @@ export function verifyCSRFToken() {
       }
     }
 
+    // Skip CSRF for login/register auth routes — these create sessions
+    // and don't need CSRF protection (no existing session to hijack)
+    if (
+      ctx.originalUrl.startsWith("/auth/local-auth")
+    ) {
+      return false;
+    }
+
     // Protect all other mutating requests
     return true;
   };

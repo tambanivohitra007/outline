@@ -223,61 +223,22 @@ function LocalAuthForm({
     isCreate ? "register" : "login"
   );
   const [expanded, setExpanded] = React.useState(false);
-  const [isSubmitting, setSubmitting] = React.useState(false);
   const [localEmail, setLocalEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [localName, setLocalName] = React.useState("");
   const [error, setError] = React.useState("");
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-    setSubmitting(true);
-
-    try {
-      const endpoint =
-        mode === "register" ? "/auth/local-auth.register" : "/auth/local-auth";
-
-      const body: Record<string, string> = {
-        email: localEmail,
-        password,
-      };
-      if (mode === "register") {
-        body.name = localName;
-      }
-
-      const csrfToken = getCookie(CSRF.cookieName) || "";
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          [CSRF.headerName]: csrfToken,
-        },
-        body: JSON.stringify({ ...body, [CSRF.fieldName]: csrfToken }),
-        redirect: "follow",
-        credentials: "same-origin",
-      });
-
-      if (response.redirected) {
-        window.location.href = response.url;
-        return;
-      }
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(
-          data?.message || data?.error || t("An error occurred")
-        );
-      }
-
-      // If the response is OK but not a redirect, reload
-      window.location.href = "/";
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t("An error occurred")
-      );
-      setSubmitting(false);
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    // Let the native form POST handle cookies and redirect properly.
+    // Only intercept to validate fields or show errors client-side.
+    if (!localEmail || !password || (mode === "register" && !localName)) {
+      event.preventDefault();
+      setError(t("Please fill in all fields"));
+      return;
     }
+    // Don't disable inputs — the native form POST will navigate away.
+    // Disabling inputs before the browser collects form data would
+    // cause fields to be excluded from the submission.
   };
 
   if (!expanded) {
@@ -297,7 +258,20 @@ function LocalAuthForm({
 
   return (
     <Wrapper>
-      <LocalForm onSubmit={handleSubmit}>
+      <LocalForm
+        method="POST"
+        action={
+          mode === "register"
+            ? "/auth/local-auth.register"
+            : "/auth/local-auth"
+        }
+        onSubmit={handleSubmit}
+      >
+        <input
+          type="hidden"
+          name={CSRF.fieldName}
+          value={getCookie(CSRF.cookieName) || ""}
+        />
         {mode === "register" && (
           <InputLarge
             type="text"
@@ -307,7 +281,6 @@ function LocalAuthForm({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setLocalName(e.target.value)
             }
-            disabled={isSubmitting}
             required
             autoFocus
           />
@@ -320,7 +293,6 @@ function LocalAuthForm({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setLocalEmail(e.target.value)
           }
-          disabled={isSubmitting}
           required
           autoFocus={mode === "login"}
         />
@@ -332,17 +304,14 @@ function LocalAuthForm({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setPassword(e.target.value)
           }
-          disabled={isSubmitting}
           required
           minLength={8}
         />
         {error && <ErrorText>{error}</ErrorText>}
-        <ButtonLarge type="submit" disabled={isSubmitting} fullwidth>
-          {isSubmitting
-            ? t("Please wait") + "…"
-            : mode === "register"
-              ? t("Create Account")
-              : t("Sign In")}
+        <ButtonLarge type="submit" fullwidth>
+          {mode === "register"
+            ? t("Create Account")
+            : t("Sign In")}
         </ButtonLarge>
         <ToggleLink
           type="button"
