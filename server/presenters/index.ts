@@ -34,6 +34,7 @@ import presentEmoji from "./emoji";
 // Medical domain presenters
 import presentCareDomain from "./careDomain";
 import presentCondition from "./condition";
+import presentConditionIntervention from "./conditionIntervention";
 import presentConditionSection from "./conditionSection";
 import presentEvidenceEntry from "./evidenceEntry";
 import presentIntervention from "./intervention";
@@ -78,6 +79,7 @@ export {
   // Medical domain
   presentCareDomain,
   presentCondition,
+  presentConditionIntervention,
   presentConditionSection,
   presentEvidenceEntry,
   presentIntervention,
