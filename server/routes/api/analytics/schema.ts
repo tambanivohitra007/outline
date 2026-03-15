@@ -12,3 +12,9 @@ export const ConditionsGraphSchema = BaseSchema.extend({
 });
 
 export type ConditionsGraphReq = z.infer<typeof ConditionsGraphSchema>;
+
+export const AnalyticsCoverageSchema = BaseSchema.extend({
+  body: z.object({}).default({}),
+});
+
+export type AnalyticsCoverageReq = z.infer<typeof AnalyticsCoverageSchema>;

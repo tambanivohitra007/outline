@@ -79,7 +79,16 @@
       "Bash(grep -r \"AIGenerateButton\\\\|ai\\\\.generateContent\" /c/Users/rindra/Projects/outline/app --include=*.tsx --include=*.ts)",
       "Bash(grep -r \"GEMINI\\\\|AI.*SETTING\\\\|LLM.*CONFIG\" /c/Users/rindra/Projects/outline/server --include=*.ts)",
       "Bash(2)",
-      "Bash(find /c/Users/rindra/Projects/outline -name \"*.ts\" -o -name \"*.tsx\" | xargs grep -l \"ellipsis\\(\\)\" | head -5)"
+      "Bash(find /c/Users/rindra/Projects/outline -name \"*.ts\" -o -name \"*.tsx\" | xargs grep -l \"ellipsis\\(\\)\" | head -5)",
+      "Bash(find /c/Users/rindra/Projects/outline/app -type f -name \"*upload*\" | grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(curl -sk -X POST https://localhost:3000/api/attachments.create 2>&1 | head -5)",
+      "Bash(curl -sk -X POST https://localhost:3000/api/files.create 2>&1 | head -5)",
+      "Bash(curl -sk -X POST https://localhost:3000/api/files.create -w \"\\\\nHTTP_CODE:%{http_code}\\\\n\" 2>&1)",
+      "Bash(curl -k -X POST https://localhost:3000/api/files.create -w \"\\\\nHTTP_CODE:%{http_code}\\\\n\" 2>&1)",
+      "Bash(grep -r \"FILE_STORAGE\" /c/Users/rindra/Projects/outline/.env* 2>/dev/null | head -20)",
+      "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const glob = require\\('glob'\\); const path = require\\('path'\\); const pattern = path.join\\('build', 'plugins/*/server/!\\(*.test|schema\\).[jt]s'\\); console.log\\('Pattern:', pattern\\); const files = glob.sync\\(pattern\\); console.log\\('Files found:', files.length\\); files.forEach\\(f => console.log\\(' ', f\\)\\);\")",
+      "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const glob = require\\('glob'\\); const files = glob.sync\\('build/plugins/*/server/!\\(*.test|schema\\).[jt]s'\\); console.log\\('Files found:', files.length\\); files.forEach\\(f => console.log\\(' ', f\\)\\);\")",
+      "WebFetch(domain:lifestyle.rindra.org)"
     ]
   }
 }
