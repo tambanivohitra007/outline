@@ -165,6 +165,36 @@ const Wrapper = styled.div<{
   transition: box-shadow 100ms ease-in-out;
 
   ${(props) => props.$hiddenScrollbars && hideScrollbars()}
+
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: box-shadow 100ms ease-in-out, scrollbar-color 200ms ease-in-out;
+
+  &:hover {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 3px;
+    transition: background-color 200ms ease-in-out;
+  }
+
+  &:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.35);
+  }
 `;
 
 export default observer(React.forwardRef(Scrollable));
