@@ -82,6 +82,7 @@ module.exports = {
         collectionMap[condition.slug] = collId;
         await queryInterface.bulkInsert("collections", [{
           id: collId,
+          urlId: uuidv4().replace(/-/g, "").slice(0, 10),
           name: condition.name,
           description: `Treatment guide for ${condition.name}`,
           icon: "kit-medical",
@@ -175,7 +176,8 @@ module.exports = {
             updatedAt: now,
           });
 
-          docStructure.push({ id: docId, title: docTitle, children: [] });
+          const docSlug = docTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+          docStructure.push({ id: docId, title: docTitle, url: `/doc/${docSlug}-${documentRows[documentRows.length - 1].urlId}`, children: [] });
         }
 
         // Update collection documentStructure
