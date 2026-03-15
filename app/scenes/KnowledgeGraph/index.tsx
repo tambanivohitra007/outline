@@ -5,11 +5,8 @@ import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { Transformer } from "markmap-lib";
 import { Markmap } from "markmap-view";
-import Flex from "~/components/Flex";
-import Heading from "~/components/Heading";
 import PlaceholderDocument from "~/components/PlaceholderDocument";
 import Scene from "~/components/Scene";
-import Text from "~/components/Text";
 import { client } from "~/utils/ApiClient";
 import { conditionPath } from "~/utils/routeHelpers";
 import styled from "styled-components";
@@ -62,27 +59,6 @@ const SECTION_LABELS: Record<string, string> = {
 
 /**
  * Build a markdown string from condition-centric graph data for markmap.
- *
- * Structure per condition:
- *   Condition (status)
- *   ├─ Risk Factors / Causes
- *   ├─ Physiology & Pathophysiology
- *   ├─ Complications
- *   ├─ Interventions
- *   │  ├─ Care Domain A
- *   │  │  ├─ Intervention 1 (evidence level)
- *   │  │  └─ Intervention 2
- *   │  └─ Care Domain B
- *   │     └─ Intervention 3
- *   ├─ Recipes
- *   │  ├─ Recipe 1
- *   │  └─ Recipe 2
- *   ├─ Scriptures & SOP
- *   │  ├─ John 3:16
- *   │  └─ MH p.127 (SOP)
- *   └─ Evidence
- *      ├─ Study title 1
- *      └─ Study title 2
  *
  * @param data The graph data from the API.
  * @returns A markdown string for markmap.
@@ -190,18 +166,12 @@ function KnowledgeGraph() {
           duration: 300,
           maxWidth: 300,
           paddingX: 16,
+          initialExpandLevel: 1,
         },
         root
       );
     }
   }, [data, isLoading]);
-
-  const handleConditionClick = useCallback(
-    (conditionId: string) => {
-      history.push(conditionPath(conditionId));
-    },
-    [history]
-  );
 
   if (isLoading) {
     return (
@@ -211,48 +181,9 @@ function KnowledgeGraph() {
     );
   }
 
-  const totals = data?.totals ?? {
-    conditions: 0,
-    interventions: 0,
-    careDomains: 0,
-    recipes: 0,
-    scriptures: 0,
-    evidence: 0,
-  };
-
   return (
     <Scene icon={<GlobeIcon />} title={t("Knowledge Graph")} wide>
-      <Heading>{t("Knowledge Graph")}</Heading>
-      <Text as="p" size="large">
-        {t(
-          "Visual map of conditions, interventions, and care domains in your knowledge base."
-        )}
-      </Text>
-
-      <StatsRow>
-        <StatCard>
-          <StatNumber>{totals.conditions}</StatNumber>
-          <StatLabel>{t("Conditions")}</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatNumber>{totals.interventions}</StatNumber>
-          <StatLabel>{t("Interventions")}</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatNumber>{totals.recipes}</StatNumber>
-          <StatLabel>{t("Recipes")}</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatNumber>{totals.scriptures}</StatNumber>
-          <StatLabel>{t("Scriptures")}</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatNumber>{totals.evidence}</StatNumber>
-          <StatLabel>{t("Evidence")}</StatLabel>
-        </StatCard>
-      </StatsRow>
-
-      <MarkmapContainer>
+      <GraphContainer>
         <svg ref={svgRef} />
         {(data?.conditions.length ?? 0) === 0 && (
           <EmptyState>
@@ -261,59 +192,17 @@ function KnowledgeGraph() {
             )}
           </EmptyState>
         )}
-      </MarkmapContainer>
-
-      {(data?.conditions.length ?? 0) > 0 && (
-        <ConditionList>
-          <ConditionListTitle>{t("Quick navigation")}</ConditionListTitle>
-          {data?.conditions.map((condition) => (
-            <ConditionChip
-              key={condition.id}
-              onClick={() => handleConditionClick(condition.id)}
-            >
-              {condition.name}
-            </ConditionChip>
-          ))}
-        </ConditionList>
-      )}
+      </GraphContainer>
     </Scene>
   );
 }
 
-const StatsRow = styled(Flex)`
-  gap: 16px;
-  margin: 16px 0;
-  flex-wrap: wrap;
-`;
-
-const StatCard = styled.div`
-  flex: 1;
-  min-width: 100px;
-  padding: 16px;
-  border: 1px solid ${s("divider")};
-  border-radius: 8px;
-  text-align: center;
-`;
-
-const StatNumber = styled.div`
-  font-size: 28px;
-  font-weight: 700;
-  color: ${s("accent")};
-`;
-
-const StatLabel = styled.div`
-  font-size: 13px;
-  color: ${s("textTertiary")};
-  margin-top: 4px;
-`;
-
-const MarkmapContainer = styled.div`
+const GraphContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 500px;
+  height: calc(100vh - 120px);
   border: 1px solid ${s("divider")};
   border-radius: 8px;
-  margin-top: 16px;
   overflow: hidden;
 
   svg {
@@ -329,35 +218,6 @@ const EmptyState = styled.div`
   transform: translate(-50%, -50%);
   color: ${s("textTertiary")};
   font-size: 14px;
-`;
-
-const ConditionList = styled.div`
-  margin-top: 16px;
-`;
-
-const ConditionListTitle = styled.div`
-  font-size: 13px;
-  font-weight: 600;
-  color: ${s("textTertiary")};
-  margin-bottom: 8px;
-`;
-
-const ConditionChip = styled.button`
-  display: inline-block;
-  padding: 6px 12px;
-  margin: 0 8px 8px 0;
-  border: 1px solid ${s("divider")};
-  border-radius: 16px;
-  background: ${s("backgroundSecondary")};
-  color: ${s("text")};
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 100ms ease;
-
-  &:hover {
-    border-color: ${s("accent")};
-    background: ${s("background")};
-  }
 `;
 
 export default observer(KnowledgeGraph);

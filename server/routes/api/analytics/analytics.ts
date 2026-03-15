@@ -306,17 +306,33 @@ router.post(
     const { user } = ctx.state.auth;
     const teamId = user.teamId;
 
+    // Fetch all data in parallel — conditions + sections needed together,
+    // the rest are independent aggregations
+    const [conditions, allSections, evidenceCounts, careDomains, interventionCounts] =
+      await Promise.all([
+        Condition.findAll({
+          where: { teamId },
+          attributes: ["id", "name", "status"],
+          order: [["name", "ASC"]],
+        }),
+        ConditionSection.findAll({
+          attributes: ["conditionId", "sectionType", "documentId"],
+        }),
+        EvidenceEntry.count({
+          where: { teamId },
+          group: ["conditionId"],
+        }),
+        CareDomain.findAll({
+          attributes: ["id", "name", "color"],
+          order: [["sortOrder", "ASC"]],
+        }),
+        Intervention.count({
+          where: { teamId },
+          group: ["careDomainId"],
+        }),
+      ]);
+
     // Section completion per condition
-    const conditions = await Condition.findAll({
-      where: { teamId },
-      attributes: ["id", "name", "status"],
-      order: [["name", "ASC"]],
-    });
-
-    const allSections = await ConditionSection.findAll({
-      attributes: ["conditionId", "sectionType", "documentId"],
-    });
-
     const sectionsByCondition = new Map<string, typeof allSections>();
     for (const section of allSections) {
       const list = sectionsByCondition.get(section.conditionId) ?? [];
@@ -343,11 +359,6 @@ router.post(
     });
 
     // Evidence per condition
-    const evidenceCounts = await EvidenceEntry.count({
-      where: { teamId },
-      group: ["conditionId"],
-    });
-
     const evidenceByCondition = new Map<string, number>();
     for (const row of evidenceCounts as unknown as Array<{
       conditionId: string;
@@ -365,16 +376,6 @@ router.post(
     }));
 
     // Care domain breakdown — interventions per domain
-    const careDomains = await CareDomain.findAll({
-      attributes: ["id", "name", "color"],
-      order: [["sortOrder", "ASC"]],
-    });
-
-    const interventionCounts = await Intervention.count({
-      where: { teamId },
-      group: ["careDomainId"],
-    });
-
     const countByDomain = new Map<string, number>();
     for (const row of interventionCounts as unknown as Array<{
       careDomainId: string | null;
