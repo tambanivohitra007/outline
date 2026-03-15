@@ -261,6 +261,10 @@ const Link = styled(NavLink)<{
     --background: ${s("sidebarActiveBackground")};
   }
 
+  &[aria-current="page"] svg {
+    fill: ${s("white")};
+  }
+
   ${(props) => props.$isActiveDrop && `--background: ${props.theme.slateDark};`}
 
   display: flex;
