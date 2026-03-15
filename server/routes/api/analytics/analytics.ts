@@ -298,4 +298,108 @@ router.post(
   }
 );
 
+router.post(
+  "analytics.coverage",
+  auth(),
+  validate(T.AnalyticsCoverageSchema),
+  async (ctx: APIContext<T.AnalyticsCoverageReq>) => {
+    const { user } = ctx.state.auth;
+    const teamId = user.teamId;
+
+    // Section completion per condition
+    const conditions = await Condition.findAll({
+      where: { teamId },
+      attributes: ["id", "name", "status"],
+      order: [["name", "ASC"]],
+    });
+
+    const allSections = await ConditionSection.findAll({
+      attributes: ["conditionId", "sectionType", "documentId"],
+    });
+
+    const sectionsByCondition = new Map<string, typeof allSections>();
+    for (const section of allSections) {
+      const list = sectionsByCondition.get(section.conditionId) ?? [];
+      list.push(section);
+      sectionsByCondition.set(section.conditionId, list);
+    }
+
+    const EXPECTED_SECTIONS = 6;
+
+    const conditionCoverage = conditions.map((c) => {
+      const sections = sectionsByCondition.get(c.id) ?? [];
+      const withDocs = sections.filter((sec) => sec.documentId).length;
+      return {
+        id: c.id,
+        name: c.name,
+        status: c.status,
+        totalSections: sections.length,
+        sectionsWithDocs: withDocs,
+        completionPct:
+          sections.length > 0
+            ? Math.round((withDocs / EXPECTED_SECTIONS) * 100)
+            : 0,
+      };
+    });
+
+    // Evidence per condition
+    const evidenceCounts = await EvidenceEntry.count({
+      where: { teamId },
+      group: ["conditionId"],
+    });
+
+    const evidenceByCondition = new Map<string, number>();
+    for (const row of evidenceCounts as unknown as Array<{
+      conditionId: string;
+      count: string;
+    }>) {
+      if (row.conditionId) {
+        evidenceByCondition.set(row.conditionId, Number(row.count));
+      }
+    }
+
+    const evidenceCoverage = conditions.map((c) => ({
+      id: c.id,
+      name: c.name,
+      evidenceCount: evidenceByCondition.get(c.id) ?? 0,
+    }));
+
+    // Care domain breakdown — interventions per domain
+    const careDomains = await CareDomain.findAll({
+      attributes: ["id", "name", "color"],
+      order: [["sortOrder", "ASC"]],
+    });
+
+    const interventionCounts = await Intervention.count({
+      where: { teamId },
+      group: ["careDomainId"],
+    });
+
+    const countByDomain = new Map<string, number>();
+    for (const row of interventionCounts as unknown as Array<{
+      careDomainId: string | null;
+      count: string;
+    }>) {
+      if (row.careDomainId) {
+        countByDomain.set(row.careDomainId, Number(row.count));
+      }
+    }
+
+    const domainBreakdown = careDomains.map((d) => ({
+      id: d.id,
+      name: d.name,
+      color: d.color,
+      interventionCount: countByDomain.get(d.id) ?? 0,
+    }));
+
+    ctx.body = {
+      data: {
+        conditionCoverage,
+        evidenceCoverage,
+        domainBreakdown,
+      },
+    };
+  }
+);
+
 export default router;
