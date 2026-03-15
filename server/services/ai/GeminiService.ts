@@ -56,6 +56,129 @@ export default class GeminiService {
   }
 
   /**
+   * Interpret a natural language search query and return structured search parameters.
+   *
+   * @param query The natural language search query.
+   * @returns Structured search parameters extracted by AI.
+   */
+  static async interpretSearch(query: string): Promise<{
+    keywords: string[];
+    conditionTerms: string[];
+    interventionTerms: string[];
+    recipeTerms: string[];
+    intent: string;
+  }> {
+    const apiKey = env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not configured");
+    }
+
+    const prompt = `You are a medical knowledge base search assistant. Given a user's search query, extract structured search parameters.
+
+User query: "${query}"
+
+Respond with ONLY valid JSON (no markdown fences) in this exact format:
+{
+  "keywords": ["general", "search", "terms"],
+  "conditionTerms": ["medical condition names or symptoms to search for"],
+  "interventionTerms": ["treatment or intervention terms to search for"],
+  "recipeTerms": ["food, recipe, or nutrition terms to search for"],
+  "intent": "brief description of what the user is looking for"
+}
+
+If the query doesn't relate to a category, return an empty array for that field.`;
+
+    const url = `${GEMINI_API_URL}/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      timeout: 15000,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 1024,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const text =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+
+    const parsed = JSON.parse(text.trim());
+
+    return {
+      keywords: parsed.keywords ?? [],
+      conditionTerms: parsed.conditionTerms ?? [],
+      interventionTerms: parsed.interventionTerms ?? [],
+      recipeTerms: parsed.recipeTerms ?? [],
+      intent: parsed.intent ?? query,
+    };
+  }
+
+  /**
+   * Generate suggestions for a condition section based on existing data.
+   *
+   * @param conditionName The condition name.
+   * @param sectionType The section type.
+   * @param existingData Context data about existing interventions, evidence, etc.
+   * @returns Suggested content as markdown.
+   */
+  static async generateSuggestions(
+    conditionName: string,
+    sectionType: string,
+    existingData: string
+  ): Promise<string> {
+    const apiKey = env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not configured");
+    }
+
+    const prompt = `You are a medical knowledge assistant for lifestyle medicine. For the condition "${conditionName}", section "${sectionType.replace(/_/g, " ")}":
+
+Here is the existing data in this knowledge base:
+${existingData}
+
+Based on this, suggest:
+1. Related interventions or treatments that could be added
+2. Evidence gaps that should be filled
+3. Cross-references to other conditions that share similar interventions
+4. Potential scripture or Spirit of Prophecy references (if applicable to section type)
+
+Keep suggestions concise and actionable. Format as markdown bullet points.`;
+
+    const url = `${GEMINI_API_URL}/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      timeout: 20000,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.5,
+          maxOutputTokens: 2048,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  }
+
+  /**
    * Build a prompt for content generation based on section type.
    *
    * @param options The generation options.
