@@ -1,9 +1,11 @@
 import { observer } from "mobx-react";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import Flex from "~/components/Flex";
 import type Condition from "~/models/Condition";
 import useStores from "~/hooks/useStores";
+import { client } from "~/utils/ApiClient";
 import styled from "styled-components";
 import { s } from "@shared/styles";
 
@@ -25,6 +27,7 @@ function ConditionHeader({ condition }: Props) {
   const { conditions } = useStores();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(condition.name);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleSave = useCallback(async () => {
     if (name.trim() && name !== condition.name) {
@@ -32,6 +35,30 @@ function ConditionHeader({ condition }: Props) {
     }
     setIsEditing(false);
   }, [conditions, condition, name]);
+
+  const handleStatusChange = useCallback(
+    async (newStatus: "draft" | "review" | "published") => {
+      setIsTransitioning(true);
+      try {
+        await client.post("/conditions.status", {
+          id: condition.id,
+          status: newStatus,
+        });
+        // Update local model
+        condition.status = newStatus;
+
+        const messages: Record<string, string> = {
+          draft: t("Condition moved back to draft"),
+          review: t("Condition submitted for review"),
+          published: t("Condition published"),
+        };
+        toast.success(messages[newStatus]);
+      } finally {
+        setIsTransitioning(false);
+      }
+    },
+    [conditions, condition, t]
+  );
 
   return (
     <Header>
@@ -72,6 +99,45 @@ function ConditionHeader({ condition }: Props) {
           </MetaTag>
         )}
       </MetaRow>
+
+      <StatusActions>
+        {condition.status === "draft" && (
+          <StatusButton
+            onClick={() => handleStatusChange("review")}
+            disabled={isTransitioning}
+            $variant="review"
+          >
+            {isTransitioning ? `${t("Submitting")}\u2026` : t("Submit for Review")}
+          </StatusButton>
+        )}
+        {condition.status === "review" && (
+          <>
+            <StatusButton
+              onClick={() => handleStatusChange("published")}
+              disabled={isTransitioning}
+              $variant="publish"
+            >
+              {isTransitioning ? `${t("Publishing")}\u2026` : t("Publish")}
+            </StatusButton>
+            <StatusButton
+              onClick={() => handleStatusChange("draft")}
+              disabled={isTransitioning}
+              $variant="draft"
+            >
+              {t("Back to Draft")}
+            </StatusButton>
+          </>
+        )}
+        {condition.status === "published" && (
+          <StatusButton
+            onClick={() => handleStatusChange("draft")}
+            disabled={isTransitioning}
+            $variant="draft"
+          >
+            {t("Unpublish")}
+          </StatusButton>
+        )}
+      </StatusActions>
     </Header>
   );
 }
@@ -147,6 +213,45 @@ const MetaTag = styled.span`
 const MetaLabel = styled.span`
   font-weight: 600;
   margin-right: 4px;
+`;
+
+const StatusActions = styled(Flex)`
+  gap: 8px;
+  margin-top: 12px;
+`;
+
+const StatusButton = styled.button<{ $variant: string }>`
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 100ms ease;
+  border: ${(props) =>
+    props.$variant === "draft"
+      ? `1px solid ${props.theme.divider}`
+      : "none"};
+  background: ${(props) =>
+    props.$variant === "publish"
+      ? "#28a745"
+      : props.$variant === "review"
+        ? "#ffc107"
+        : "transparent"};
+  color: ${(props) =>
+    props.$variant === "publish"
+      ? "#fff"
+      : props.$variant === "review"
+        ? "#212529"
+        : props.theme.textSecondary};
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 export default observer(ConditionHeader);
