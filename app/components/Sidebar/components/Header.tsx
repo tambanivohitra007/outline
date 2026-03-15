@@ -44,7 +44,11 @@ export const Header: React.FC<Props> = ({ id, title, children }: Props) => {
           {id && <Disclosure $expanded={expanded} size={20} />}
         </Button>
       </H3>
-      {expanded && (firstRender ? children : <Fade>{children}</Fade>)}
+      {expanded && (
+        <NodeTree>
+          {firstRender ? children : <Fade>{children}</Fade>}
+        </NodeTree>
+      )}
     </>
   );
 };
@@ -63,6 +67,39 @@ export const fadeAndSlideDown = keyframes`
 
 const Fade = styled.span`
   animation: ${fadeAndSlideDown} 100ms ease-in-out;
+`;
+
+const NodeTree = styled.div`
+  position: relative;
+  margin-left: 6px;
+  padding-left: 14px;
+  border-left: 1.5px solid ${s("sidebarControlHoverBackground")};
+
+  > * {
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: -14px;
+      top: 50%;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      border: 1.5px solid ${s("sidebarControlHoverBackground")};
+      background: ${s("sidebarBackground")};
+      transform: translate(-3.5px, -50%);
+      z-index: 1;
+    }
+  }
+
+  > [aria-current="page"],
+  > *:has([aria-current="page"]) {
+    &::after {
+      border-color: ${s("sidebarActiveBackground")};
+      background: ${s("sidebarActiveBackground")};
+    }
+  }
 `;
 
 const Button = styled.button`
