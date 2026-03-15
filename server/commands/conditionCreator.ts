@@ -91,6 +91,7 @@ export default async function conditionCreator(
       slug: slugify(name),
       snomedCode: snomedCode ?? null,
       icdCode: icdCode ?? null,
+      status: "draft",
       collectionId: resolvedCollectionId,
       teamId: user.teamId,
       createdById: user.id,
@@ -104,7 +105,7 @@ export default async function conditionCreator(
       title: `${name} \u2014 ${sectionDef.title}`,
       collectionId: resolvedCollectionId,
       icon: sectionDef.icon,
-      publish: true,
+      publish: false,
     });
 
     await ConditionSection.create(

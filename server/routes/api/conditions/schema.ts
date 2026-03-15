@@ -56,3 +56,12 @@ export const ConditionsSectionsSchema = BaseSchema.extend({
 });
 
 export type ConditionsSectionsReq = z.infer<typeof ConditionsSectionsSchema>;
+
+export const ConditionsStatusSchema = BaseSchema.extend({
+  body: z.object({
+    id: z.uuid(),
+    status: z.enum(["draft", "review", "published"]),
+  }),
+});
+
+export type ConditionsStatusReq = z.infer<typeof ConditionsStatusSchema>;

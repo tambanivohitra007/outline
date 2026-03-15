@@ -124,6 +124,67 @@ router.post(
 );
 
 router.post(
+  "conditions.status",
+  auth(),
+  validate(T.ConditionsStatusSchema),
+  transaction(),
+  async (ctx: APIContext<T.ConditionsStatusReq>) => {
+    const { id, status } = ctx.input.body;
+    const { user } = ctx.state.auth;
+    const { transaction } = ctx.state;
+
+    const condition = await Condition.findByPk(id, {
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!condition || condition.teamId !== user.teamId) {
+      ctx.throw(404);
+    }
+    authorize(user, "update", condition);
+
+    // Update condition status
+    await condition!.update({ status }, { transaction });
+
+    // Sync backing document publish state with condition status
+    const sections = await ConditionSection.findAll({
+      where: { conditionId: id },
+      transaction,
+    });
+
+    const documentIds = sections
+      .map((s) => s.documentId)
+      .filter((did): did is string => !!did);
+
+    if (documentIds.length > 0) {
+      if (status === "published" || status === "review") {
+        // Publish all section documents that are still drafts
+        await Document.update(
+          { publishedAt: new Date() },
+          {
+            where: { id: documentIds, publishedAt: null },
+            transaction,
+          }
+        );
+      } else if (status === "draft") {
+        // Unpublish all section documents back to drafts
+        await Document.update(
+          { publishedAt: null },
+          {
+            where: { id: documentIds },
+            transaction,
+          }
+        );
+      }
+    }
+
+    ctx.body = {
+      data: presentCondition(condition!),
+      policies: presentPolicies(user, [condition!]),
+    };
+  }
+);
+
+router.post(
   "conditions.delete",
   auth(),
   validate(T.ConditionsDeleteSchema),
