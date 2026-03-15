@@ -152,7 +152,7 @@ const PanelHeader = styled.div`
   user-select: none;
 
   &:hover {
-    background: ${s("sidebarBackground")};
+    background: ${s("backgroundTertiary")};
   }
 `;
 
