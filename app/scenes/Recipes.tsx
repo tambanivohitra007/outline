@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { LeafIcon, PlusIcon, CloseIcon, TrashIcon, EditIcon } from "outline-icons";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Action } from "~/components/Actions";
@@ -29,14 +29,15 @@ function Recipes() {
   const [createCookTime, setCreateCookTime] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
-  // Edit state
-  const [editingId, setEditingId] = useState<string | null>(null);
+  // Edit modal state
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editServings, setEditServings] = useState("");
   const [editPrepTime, setEditPrepTime] = useState("");
   const [editCookTime, setEditCookTime] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     void recipes.fetchPage();
@@ -76,7 +77,7 @@ function Recipes() {
   }, []);
 
   const handleStartEdit = useCallback((recipe: Recipe) => {
-    setEditingId(recipe.id);
+    setEditingRecipe(recipe);
     setEditName(recipe.name);
     setEditDescription(recipe.description ?? "");
     setEditServings(recipe.servings != null ? String(recipe.servings) : "");
@@ -85,29 +86,35 @@ function Recipes() {
   }, []);
 
   const handleCancelEdit = useCallback(() => {
-    setEditingId(null);
+    setEditingRecipe(null);
   }, []);
 
   const handleSaveEdit = useCallback(async () => {
-    if (!editingId || !editName.trim()) {
+    if (!editingRecipe || !editName.trim()) {
       return;
     }
     setIsSaving(true);
     try {
       await recipes.update({
-        id: editingId,
+        id: editingRecipe.id,
         name: editName.trim(),
         description: editDescription.trim() || null,
         servings: editServings ? parseInt(editServings, 10) : null,
         prepTime: editPrepTime ? parseInt(editPrepTime, 10) : null,
         cookTime: editCookTime ? parseInt(editCookTime, 10) : null,
       });
-      setEditingId(null);
+      setEditingRecipe(null);
       toast.success(t("Recipe updated"));
     } finally {
       setIsSaving(false);
     }
-  }, [recipes, editingId, editName, editDescription, editServings, editPrepTime, editCookTime, t]);
+  }, [recipes, editingRecipe, editName, editDescription, editServings, editPrepTime, editCookTime, t]);
+
+  const handleModalBackdropClick = useCallback((e: React.MouseEvent) => {
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      handleCancelEdit();
+    }
+  }, [handleCancelEdit]);
 
   const handleDelete = useCallback(
     async (e: React.MouseEvent, recipe: Recipe) => {
@@ -229,135 +236,156 @@ function Recipes() {
         <Empty>{t("No recipes have been created yet.")}</Empty>
       ) : (
         <RecipeGrid>
-          {recipes.orderedData.map((recipe) =>
-            editingId === recipe.id ? (
-              <EditFormCard key={recipe.id}>
-                <CreateFormHeader>
-                  <CreateFormTitle>{t("Edit Recipe")}</CreateFormTitle>
-                  <CloseButton onClick={handleCancelEdit}>
-                    <CloseIcon size={16} />
-                  </CloseButton>
-                </CreateFormHeader>
-                <CreateFormFields>
-                  <FormGroup>
-                    <FormLabel>{t("Recipe Name")} *</FormLabel>
-                    <FormInput
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      autoFocus
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <FormLabel>{t("Description")}</FormLabel>
-                    <FormTextarea
-                      value={editDescription}
-                      onChange={(e) => setEditDescription(e.target.value)}
-                      rows={2}
-                    />
-                  </FormGroup>
-                  <FormRow>
-                    <FormGroup>
-                      <FormLabel>{t("Servings")}</FormLabel>
-                      <FormInput
-                        type="number"
-                        value={editServings}
-                        onChange={(e) => setEditServings(e.target.value)}
-                        min="1"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <FormLabel>{t("Prep Time (min)")}</FormLabel>
-                      <FormInput
-                        type="number"
-                        value={editPrepTime}
-                        onChange={(e) => setEditPrepTime(e.target.value)}
-                        min="0"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <FormLabel>{t("Cook Time (min)")}</FormLabel>
-                      <FormInput
-                        type="number"
-                        value={editCookTime}
-                        onChange={(e) => setEditCookTime(e.target.value)}
-                        min="0"
-                      />
-                    </FormGroup>
-                  </FormRow>
-                  <FormActions>
-                    <CreateButton
-                      onClick={handleSaveEdit}
-                      disabled={!editName.trim() || isSaving}
-                    >
-                      {isSaving ? `${t("Saving")}\u2026` : t("Save Changes")}
-                    </CreateButton>
-                    <CancelButton onClick={handleCancelEdit}>
-                      {t("Cancel")}
-                    </CancelButton>
-                  </FormActions>
-                </CreateFormFields>
-              </EditFormCard>
-            ) : (
-              <RecipeCard
-                key={recipe.id}
-                onClick={() => handleStartEdit(recipe)}
-              >
-                <CardHeader>
-                  <RecipeName>{recipe.name}</RecipeName>
-                  <CardActions>
-                    <ActionButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleStartEdit(recipe);
-                      }}
-                      title={t("Edit recipe")}
-                    >
-                      <EditIcon size={14} />
-                    </ActionButton>
-                    <ActionButton
-                      onClick={(e) => handleDelete(e, recipe)}
-                      title={t("Delete recipe")}
-                      $danger
-                    >
-                      <TrashIcon size={14} />
-                    </ActionButton>
-                  </CardActions>
-                </CardHeader>
-                {recipe.description && (
-                  <RecipeDescription>{recipe.description}</RecipeDescription>
+          {recipes.orderedData.map((recipe) => (
+            <RecipeCard key={recipe.id}>
+              <CardHeader>
+                <RecipeName>{recipe.name}</RecipeName>
+                <CardActions>
+                  <ActionButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStartEdit(recipe);
+                    }}
+                    title={t("Edit recipe")}
+                  >
+                    <EditIcon size={14} />
+                  </ActionButton>
+                  <ActionButton
+                    onClick={(e) => handleDelete(e, recipe)}
+                    title={t("Delete recipe")}
+                    $danger
+                  >
+                    <TrashIcon size={14} />
+                  </ActionButton>
+                </CardActions>
+              </CardHeader>
+              {recipe.description && (
+                <RecipeDescription>{recipe.description}</RecipeDescription>
+              )}
+              <RecipeMeta>
+                {recipe.prepTime != null && (
+                  <MetaItem>
+                    {t("Prep")}: {recipe.prepTime}{t("min")}
+                  </MetaItem>
                 )}
-                <RecipeMeta>
-                  {recipe.prepTime != null && (
-                    <MetaItem>
-                      {t("Prep")}: {recipe.prepTime}{t("min")}
-                    </MetaItem>
-                  )}
-                  {recipe.cookTime != null && (
-                    <MetaItem>
-                      {t("Cook")}: {recipe.cookTime}{t("min")}
-                    </MetaItem>
-                  )}
-                  {recipe.servings != null && (
-                    <MetaItem>
-                      {t("Serves")}: {recipe.servings}
-                    </MetaItem>
-                  )}
-                </RecipeMeta>
-                {recipe.dietaryTags && recipe.dietaryTags.length > 0 && (
-                  <TagList>
-                    {recipe.dietaryTags.map((tag) => (
-                      <DietaryTag key={tag}>{tag}</DietaryTag>
-                    ))}
-                  </TagList>
+                {recipe.cookTime != null && (
+                  <MetaItem>
+                    {t("Cook")}: {recipe.cookTime}{t("min")}
+                  </MetaItem>
                 )}
-              </RecipeCard>
-            )
-          )}
+                {recipe.servings != null && (
+                  <MetaItem>
+                    {t("Serves")}: {recipe.servings}
+                  </MetaItem>
+                )}
+              </RecipeMeta>
+              {recipe.dietaryTags && recipe.dietaryTags.length > 0 && (
+                <TagList>
+                  {recipe.dietaryTags.map((tag) => (
+                    <DietaryTag key={tag}>{tag}</DietaryTag>
+                  ))}
+                </TagList>
+              )}
+            </RecipeCard>
+          ))}
         </RecipeGrid>
+      )}
+
+      {editingRecipe && (
+        <ModalOverlay onClick={handleModalBackdropClick}>
+          <ModalContent ref={modalRef}>
+            <CreateFormHeader>
+              <CreateFormTitle>{t("Edit Recipe")}</CreateFormTitle>
+              <CloseButton onClick={handleCancelEdit}>
+                <CloseIcon size={16} />
+              </CloseButton>
+            </CreateFormHeader>
+            <CreateFormFields>
+              <FormGroup>
+                <FormLabel>{t("Recipe Name")} *</FormLabel>
+                <FormInput
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  autoFocus
+                />
+              </FormGroup>
+              <FormGroup>
+                <FormLabel>{t("Description")}</FormLabel>
+                <FormTextarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows={2}
+                />
+              </FormGroup>
+              <FormRow>
+                <FormGroup>
+                  <FormLabel>{t("Servings")}</FormLabel>
+                  <FormInput
+                    type="number"
+                    value={editServings}
+                    onChange={(e) => setEditServings(e.target.value)}
+                    min="1"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel>{t("Prep Time (min)")}</FormLabel>
+                  <FormInput
+                    type="number"
+                    value={editPrepTime}
+                    onChange={(e) => setEditPrepTime(e.target.value)}
+                    min="0"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel>{t("Cook Time (min)")}</FormLabel>
+                  <FormInput
+                    type="number"
+                    value={editCookTime}
+                    onChange={(e) => setEditCookTime(e.target.value)}
+                    min="0"
+                  />
+                </FormGroup>
+              </FormRow>
+              <FormActions>
+                <CreateButton
+                  onClick={handleSaveEdit}
+                  disabled={!editName.trim() || isSaving}
+                >
+                  {isSaving ? `${t("Saving")}\u2026` : t("Save Changes")}
+                </CreateButton>
+                <CancelButton onClick={handleCancelEdit}>
+                  {t("Cancel")}
+                </CancelButton>
+              </FormActions>
+            </CreateFormFields>
+          </ModalContent>
+        </ModalOverlay>
       )}
     </Scene>
   );
 }
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+`;
+
+const ModalContent = styled.div`
+  background: ${s("background")};
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 520px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+`;
 
 const CreateFormCard = styled.div`
   border: 1px solid ${s("accent")};
@@ -366,10 +394,6 @@ const CreateFormCard = styled.div`
   margin-bottom: 16px;
   background: ${s("background")};
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-`;
-
-const EditFormCard = styled(CreateFormCard)`
-  margin-bottom: 0;
 `;
 
 const CreateFormHeader = styled(Flex)`
@@ -510,7 +534,6 @@ const RecipeCard = styled.div`
   border: 1px solid ${s("divider")};
   border-radius: 8px;
   padding: 16px;
-  cursor: pointer;
   transition: all 100ms ease-in-out;
 
   &:hover {
