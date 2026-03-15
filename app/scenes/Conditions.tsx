@@ -15,6 +15,7 @@ import Scene from "~/components/Scene";
 import Subheading from "~/components/Subheading";
 import Text from "~/components/Text";
 import AISearchBar from "~/components/medical/AISearchBar";
+import SnomedAutocomplete from "~/components/medical/SnomedAutocomplete";
 import useStores from "~/hooks/useStores";
 import { conditionPath } from "~/utils/routeHelpers";
 import styled from "styled-components";
@@ -149,10 +150,9 @@ function Conditions() {
             <FormRow>
               <FormGroup>
                 <FormLabel>{t("SNOMED CT Code")}</FormLabel>
-                <FormInput
-                  placeholder={t("e.g. 44054006")}
-                  value={createSnomed}
-                  onChange={(e) => setCreateSnomed(e.target.value)}
+                <SnomedAutocomplete
+                  onSelect={(conceptId) => setCreateSnomed(conceptId)}
+                  placeholder={t("Search SNOMED CT\u2026")}
                 />
               </FormGroup>
               <FormGroup>
