@@ -37,6 +37,32 @@ export default class CollectionsStore extends Store<Collection> {
     return this.orderedData.filter((c) => c.isActive);
   }
 
+  /**
+   * Returns the set of collection IDs that back a medical condition.
+   * These are managed through the Conditions UI and should be hidden
+   * from the general sidebar collections list.
+   */
+  @computed
+  get conditionCollectionIds(): Set<string> {
+    const ids = new Set<string>();
+    for (const condition of this.rootStore.conditions.orderedData) {
+      if (condition.collectionId) {
+        ids.add(condition.collectionId);
+      }
+    }
+    return ids;
+  }
+
+  /**
+   * Returns active collections excluding condition-backed ones,
+   * for display in the sidebar.
+   */
+  @computed
+  get sidebarCollections(): Collection[] {
+    const conditionIds = this.conditionCollectionIds;
+    return this.allActive.filter((c) => !conditionIds.has(c.id));
+  }
+
   @computed
   get orderedData(): Collection[] {
     let collections = Array.from(this.data.values());

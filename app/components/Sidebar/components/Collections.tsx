@@ -1,9 +1,10 @@
 import fractionalIndex from "fractional-index";
 import { observer } from "mobx-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useDrop } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
+import { s } from "@shared/styles";
 import type Collection from "~/models/Collection";
 import Flex from "~/components/Flex";
 import Error from "~/components/List/Error";
@@ -26,7 +27,18 @@ function Collections() {
   const { documents, auth, collections } = useStores();
   const { t } = useTranslation();
   const can = usePolicy(auth.team?.id);
-  const orderedCollections = collections.allActive;
+  const [filter, setFilter] = useState("");
+
+  const sidebarCollections = collections.sidebarCollections;
+  const orderedCollections = useMemo(() => {
+    if (!filter.trim()) {
+      return sidebarCollections;
+    }
+    const q = filter.trim().toLowerCase();
+    return sidebarCollections.filter((c) =>
+      c.name.toLowerCase().includes(q)
+    );
+  }, [sidebarCollections, filter]);
 
   const params = useMemo(
     () => ({
@@ -43,20 +55,34 @@ function Collections() {
     drop: async (item: DragObject) => {
       void collections.move(
         item.id,
-        fractionalIndex(null, orderedCollections[0].index)
+        fractionalIndex(null, sidebarCollections[0].index)
       );
     },
-    canDrop: (item) => item.id !== orderedCollections[0].id,
+    canDrop: (item) =>
+      sidebarCollections.length > 0 &&
+      item.id !== sidebarCollections[0].id,
     collect: (monitor) => ({
       isCollectionDropping: monitor.isOver(),
       isDraggingAnyCollection: monitor.getItemType() === "collection",
     }),
   });
 
+  const showFilter = sidebarCollections.length > 5;
+
   return (
     <SidebarContext.Provider value="collections">
       <Flex column>
         <Header id="collections" title={t("Collections")}>
+          {showFilter && (
+            <FilterWrapper>
+              <FilterInput
+                type="text"
+                placeholder={`${t("Filter collections")}…`}
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+              />
+            </FilterWrapper>
+          )}
           <Relative>
             <PaginatedList<Collection>
               options={params}
@@ -73,8 +99,17 @@ function Collections() {
                 ) : undefined
               }
               empty={
-                // No need for empty state if we're displaying the createCollection action
-                can.createCollection ? null : (
+                filter ? (
+                  <SidebarLink
+                    label={
+                      <Text type="tertiary" size="small" italic>
+                        {t("No matching collections")}
+                      </Text>
+                    }
+                    onClick={() => {}}
+                    depth={1.5}
+                  />
+                ) : can.createCollection ? null : (
                   <SidebarLink
                     label={
                       <Text type="tertiary" size="small" italic>
@@ -107,6 +142,29 @@ function Collections() {
 export const StyledError = styled(Error)`
   font-size: 15px;
   padding: 0 8px;
+`;
+
+const FilterWrapper = styled.div`
+  padding: 4px 12px 4px 12px;
+`;
+
+const FilterInput = styled.input`
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 13px;
+  border: 1px solid ${s("inputBorder")};
+  border-radius: 4px;
+  background: ${s("backgroundSecondary")};
+  color: ${s("text")};
+  outline: none;
+
+  &:focus {
+    border-color: ${s("accent")};
+  }
+
+  &::placeholder {
+    color: ${s("textTertiary")};
+  }
 `;
 
 export default observer(Collections);

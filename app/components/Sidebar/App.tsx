@@ -37,18 +37,19 @@ import ToggleButton from "./components/ToggleButton";
 
 function AppSidebar() {
   const { t } = useTranslation();
-  const { documents, ui, collections } = useStores();
+  const { documents, ui, collections, conditions } = useStores();
   const team = useCurrentTeam();
   const user = useCurrentUser();
   const can = usePolicy(team);
 
   useEffect(() => {
     void collections.fetchAll();
+    void conditions.fetchAll();
 
     if (!user.isViewer) {
       void documents.fetchDrafts();
     }
-  }, [documents, collections, user.isViewer]);
+  }, [documents, collections, conditions, user.isViewer]);
 
   const [dndArea, setDndArea] = useState();
   const handleSidebarRef = useCallback((node) => setDndArea(node), []);
