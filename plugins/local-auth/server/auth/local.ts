@@ -24,7 +24,7 @@ router.post(
 
     const team = await Team.findOne();
     if (!team) {
-      throw AuthorizationError("No team found");
+      return ctx.redirect("/?notice=auth-error&error=No+team+found");
     }
 
     const user = await User.findOne({
@@ -35,16 +35,16 @@ router.post(
     });
 
     if (!user || !user.passwordHash) {
-      throw AuthorizationError("Invalid email or password");
+      return ctx.redirect("/?notice=auth-error&error=Invalid+email+or+password");
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
-      throw AuthorizationError("Invalid email or password");
+      return ctx.redirect("/?notice=auth-error&error=Invalid+email+or+password");
     }
 
     if (user.isSuspended) {
-      throw AuthorizationError("Your account has been suspended");
+      return ctx.redirect("/?notice=auth-error&error=Your+account+has+been+suspended");
     }
 
     await signIn(ctx, "local-auth", {

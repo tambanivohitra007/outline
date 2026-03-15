@@ -4,7 +4,7 @@ import { Trans } from "react-i18next";
 import Notice from "~/components/Notice";
 import useQuery from "~/hooks/useQuery";
 
-function Message({ notice }: { notice: string }) {
+function Message({ notice, error }: { notice: string; error: string | null }) {
   switch (notice) {
     case "invalid-code":
       return (
@@ -70,6 +70,14 @@ function Message({ notice }: { notice: string }) {
         </Trans>
       );
     case "auth-error":
+      return error ? (
+        <>{error}</>
+      ) : (
+        <Trans>
+          Authentication failed – we were unable to sign you in at this time.
+          Please try again.
+        </Trans>
+      );
     case "state-mismatch":
       return (
         <Trans>
@@ -129,6 +137,7 @@ function Message({ notice }: { notice: string }) {
 export function Notices() {
   const query = useQuery();
   const notice = query.get("notice");
+  const error = query.get("error");
 
   if (!notice) {
     return null;
@@ -136,7 +145,7 @@ export function Notices() {
 
   return (
     <Notice icon={<WarningIcon color="currentcolor" />}>
-      <Message notice={notice} />
+      <Message notice={notice} error={error} />
     </Notice>
   );
 }
