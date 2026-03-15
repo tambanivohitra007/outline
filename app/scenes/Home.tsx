@@ -169,7 +169,7 @@ function Home() {
         {data.recentConditions.map((condition) => (
           <ActivityCard
             key={condition.id}
-            onClick={() => history.push(conditionPath(condition.slug))}
+            onClick={() => history.push(conditionPath(condition.id))}
           >
             <ActivityIconWrap>
               <ConditionsIcon />
