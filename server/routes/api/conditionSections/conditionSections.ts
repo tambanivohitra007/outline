@@ -1,4 +1,6 @@
 import Router from "koa-router";
+import { CollectionPermission } from "@shared/types";
+import documentCreator from "@server/commands/documentCreator";
 import auth from "@server/middlewares/authentication";
 import { transaction } from "@server/middlewares/transaction";
 import validate from "@server/middlewares/validate";
@@ -6,10 +8,7 @@ import {
   Collection,
   Condition,
   ConditionSection,
-  Document,
 } from "@server/models";
-import { DocumentHelper } from "@server/models/helpers/DocumentHelper";
-import { ProsemirrorHelper } from "@server/models/helpers/ProsemirrorHelper";
 import { authorize } from "@server/policies";
 import { presentConditionSection } from "@server/presenters";
 import type { APIContext } from "@server/types";
@@ -73,37 +72,23 @@ router.post(
     // Ensure condition has a collection
     let collectionId = condition!.collectionId;
     if (!collectionId) {
-      const collection = Collection.build({
+      const collection = await Collection.createWithCtx(ctx, {
         name: condition!.name,
         description: `Treatment guide for ${condition!.name}`,
         teamId: user.teamId,
         createdById: user.id,
-        permission: "read_write",
+        sort: Collection.DEFAULT_SORT,
+        permission: CollectionPermission.ReadWrite,
       });
-      await collection.saveWithCtx(ctx);
       collectionId = collection.id;
       await condition!.update({ collectionId }, { transaction });
     }
 
-    // Create a backing document
-    const content = ProsemirrorHelper.toProsemirror("").toJSON();
-    const document = Document.build({
+    // Create a backing document using Outline's standard document creator
+    const document = await documentCreator(ctx, {
       title: `${condition!.name} \u2014 ${section.title}`,
-      content,
       collectionId,
-      teamId: user.teamId,
-      createdById: user.id,
-      lastModifiedById: user.id,
-    });
-
-    document.text = await DocumentHelper.toMarkdown(document, {
-      includeTitle: false,
-    });
-    await document.saveWithCtx(ctx, { silent: true });
-    await document.publish(ctx, {
-      collectionId,
-      silent: true,
-      event: false,
+      publish: true,
     });
 
     // Link it to the section
