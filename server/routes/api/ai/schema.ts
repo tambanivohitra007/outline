@@ -43,6 +43,15 @@ export const AISuggestSchema = BaseSchema.extend({
 
 export type AISuggestReq = z.infer<typeof AISuggestSchema>;
 
+export const AIExplainSchema = BaseSchema.extend({
+  body: z.object({
+    topic: z.string().min(1).max(1000),
+    context: z.string().max(500).optional(),
+  }),
+});
+
+export type AIExplainReq = z.infer<typeof AIExplainSchema>;
+
 export const AIReviewSummarySchema = BaseSchema.extend({
   body: z.object({
     conditionId: z.string().uuid(),

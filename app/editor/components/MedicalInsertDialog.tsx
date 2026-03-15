@@ -141,11 +141,11 @@ function MedicalInsertDialog({
     setAiText("");
 
     try {
-      const res = await client.post("/ai.suggest", {
-        prompt: `Provide a clear, concise medical explanation for: ${prompt}`,
-        context: documentTitle ? `Document context: ${documentTitle}` : undefined,
+      const res = await client.post("/ai.explain", {
+        topic: prompt,
+        context: documentTitle || undefined,
       });
-      setAiText(res.data?.text ?? res.data ?? "");
+      setAiText(res.data?.text ?? "");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : t("AI generation failed.")

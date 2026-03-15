@@ -232,6 +232,50 @@ Keep the summary concise and actionable. Format as markdown.`;
   }
 
   /**
+   * Generate a general-purpose medical explanation for a given topic.
+   *
+   * @param topic The topic or question to explain.
+   * @param context Optional context such as document title.
+   * @returns The generated explanation as markdown.
+   */
+  static async explain(topic: string, context?: string): Promise<string> {
+    const apiKey = env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not configured");
+    }
+
+    let prompt = `You are a medical knowledge assistant specializing in lifestyle medicine and integrative health.\n\n`;
+    prompt += `Provide a clear, concise explanation for: ${topic}\n\n`;
+    if (context) {
+      prompt += `Document context: ${context}\n\n`;
+    }
+    prompt += `Write in a professional medical tone. Use markdown formatting with headers and bullet points where appropriate. Be evidence-based and reference lifestyle medicine principles (NEWSTART+) when relevant.`;
+
+    const url = `${GEMINI_API_URL}/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      timeout: 30000,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.4,
+          maxOutputTokens: 2048,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  }
+
+  /**
    * Build a prompt for content generation based on section type.
    *
    * @param options The generation options.
