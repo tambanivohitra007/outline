@@ -179,6 +179,59 @@ Keep suggestions concise and actionable. Format as markdown bullet points.`;
   }
 
   /**
+   * Summarize condition content for review, highlighting completeness and gaps.
+   *
+   * @param conditionName The condition name.
+   * @param sectionSummaries Summaries of each section's current state.
+   * @returns A review summary as markdown.
+   */
+  static async summarizeForReview(
+    conditionName: string,
+    sectionSummaries: string
+  ): Promise<string> {
+    const apiKey = env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not configured");
+    }
+
+    const prompt = `You are a medical content review assistant for a lifestyle medicine knowledge base. A condition guide for "${conditionName}" is being prepared for review/publication.
+
+Here are the current sections and their content status:
+${sectionSummaries}
+
+Please provide a concise review summary that includes:
+1. **Completeness Assessment**: Which sections are well-developed vs. need more content
+2. **Content Quality Notes**: Any obvious gaps, inconsistencies, or areas needing attention
+3. **Readiness Score**: Rate overall readiness for publication (Ready / Needs Minor Edits / Needs Major Work)
+4. **Recommended Actions**: Specific next steps for the review team
+
+Keep the summary concise and actionable. Format as markdown.`;
+
+    const url = `${GEMINI_API_URL}/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      timeout: 20000,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 2048,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  }
+
+  /**
    * Build a prompt for content generation based on section type.
    *
    * @param options The generation options.

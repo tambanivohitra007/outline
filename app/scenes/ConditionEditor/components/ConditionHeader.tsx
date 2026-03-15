@@ -28,6 +28,8 @@ function ConditionHeader({ condition }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(condition.name);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [reviewSummary, setReviewSummary] = useState<string | null>(null);
+  const [isLoadingReview, setIsLoadingReview] = useState(false);
 
   const handleSave = useCallback(async () => {
     if (name.trim() && name !== condition.name) {
@@ -59,6 +61,23 @@ function ConditionHeader({ condition }: Props) {
     },
     [conditions, condition, t]
   );
+
+  const handleReviewSummary = useCallback(async () => {
+    setIsLoadingReview(true);
+    setReviewSummary(null);
+    try {
+      const res = await client.post("/ai.reviewSummary", {
+        conditionId: condition.id,
+      });
+      setReviewSummary(res.data?.summary ?? "");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : t("Failed to generate review summary")
+      );
+    } finally {
+      setIsLoadingReview(false);
+    }
+  }, [condition.id, t]);
 
   return (
     <Header>
@@ -137,7 +156,25 @@ function ConditionHeader({ condition }: Props) {
             {t("Unpublish")}
           </StatusButton>
         )}
+        <ReviewButton
+          onClick={handleReviewSummary}
+          disabled={isLoadingReview}
+        >
+          {isLoadingReview ? t("Analyzing\u2026") : t("AI Review Summary")}
+        </ReviewButton>
       </StatusActions>
+
+      {reviewSummary && (
+        <ReviewPanel>
+          <ReviewPanelHeader>
+            <ReviewPanelTitle>{t("AI Review Summary")}</ReviewPanelTitle>
+            <DismissButton onClick={() => setReviewSummary(null)}>
+              {t("Dismiss")}
+            </DismissButton>
+          </ReviewPanelHeader>
+          <ReviewContent>{reviewSummary}</ReviewContent>
+        </ReviewPanel>
+      )}
     </Header>
   );
 }
@@ -252,6 +289,76 @@ const StatusButton = styled.button<{ $variant: string }>`
     opacity: 0.5;
     cursor: not-allowed;
   }
+`;
+
+const ReviewButton = styled.button`
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 100ms ease;
+  border: 1px solid ${s("accent")};
+  background: transparent;
+  color: ${s("accent")};
+
+  &:hover {
+    background: ${s("accent")};
+    color: white;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const ReviewPanel = styled.div`
+  margin-top: 12px;
+  border: 1px solid ${s("accent")};
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+const ReviewPanelHeader = styled(Flex)`
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: ${s("backgroundSecondary")};
+  border-bottom: 1px solid ${s("divider")};
+`;
+
+const ReviewPanelTitle = styled.span`
+  font-size: 13px;
+  font-weight: 600;
+  color: ${s("accent")};
+`;
+
+const DismissButton = styled.button`
+  padding: 3px 10px;
+  border: 1px solid ${s("divider")};
+  border-radius: 4px;
+  background: none;
+  color: ${s("textSecondary")};
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: ${s("text")};
+    color: ${s("text")};
+  }
+`;
+
+const ReviewContent = styled.pre`
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: ${s("text")};
+  max-height: 400px;
+  overflow-y: auto;
+  margin: 0;
 `;
 
 export default observer(ConditionHeader);

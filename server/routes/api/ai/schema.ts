@@ -42,3 +42,11 @@ export const AISuggestSchema = BaseSchema.extend({
 });
 
 export type AISuggestReq = z.infer<typeof AISuggestSchema>;
+
+export const AIReviewSummarySchema = BaseSchema.extend({
+  body: z.object({
+    conditionId: z.string().uuid(),
+  }),
+});
+
+export type AIReviewSummaryReq = z.infer<typeof AIReviewSummarySchema>;

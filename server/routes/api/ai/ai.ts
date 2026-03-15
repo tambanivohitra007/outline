@@ -5,6 +5,7 @@ import validate from "@server/middlewares/validate";
 import {
   Condition,
   ConditionSection,
+  Document,
   Intervention,
   Recipe,
 } from "@server/models";
@@ -156,6 +157,56 @@ router.post(
         suggestions,
         conditionName: condition!.name,
         sectionType,
+      },
+    };
+  }
+);
+
+router.post(
+  "ai.reviewSummary",
+  auth(),
+  validate(T.AIReviewSummarySchema),
+  async (ctx: APIContext<T.AIReviewSummaryReq>) => {
+    const { conditionId } = ctx.input.body;
+    const { user } = ctx.state.auth;
+
+    const condition = await Condition.findByPk(conditionId);
+    if (!condition || condition.teamId !== user.teamId) {
+      ctx.throw(404);
+    }
+
+    // Gather section data with document content summaries
+    const sections = await ConditionSection.findAll({
+      where: { conditionId },
+      order: [["sortOrder", "ASC"]],
+    });
+
+    const sectionSummaries: string[] = [];
+    for (const section of sections) {
+      let contentStatus = "No document linked";
+      if (section.documentId) {
+        const doc = await Document.findByPk(section.documentId);
+        if (doc) {
+          const wordCount = doc.title ? doc.title.split(/\s+/).length : 0;
+          const publishStatus = doc.publishedAt ? "Published" : "Draft";
+          contentStatus = `${publishStatus}, ~${wordCount} words in title "${doc.title}"`;
+        }
+      }
+      sectionSummaries.push(
+        `- **${section.title}** (${section.sectionType}): ${contentStatus}`
+      );
+    }
+
+    const summary = await GeminiService.summarizeForReview(
+      condition!.name,
+      sectionSummaries.join("\n")
+    );
+
+    ctx.body = {
+      data: {
+        summary,
+        conditionName: condition!.name,
+        sectionCount: sections.length,
       },
     };
   }
