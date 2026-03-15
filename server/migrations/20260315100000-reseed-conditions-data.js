@@ -159,6 +159,7 @@ module.exports = {
             template: false,
             fullWidth: false,
             insightsEnabled: true,
+            collaboratorIds: [userId],
             popularityScore: 0,
             createdAt: now,
             updatedAt: now,
