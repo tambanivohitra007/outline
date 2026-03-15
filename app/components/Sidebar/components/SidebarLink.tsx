@@ -269,6 +269,20 @@ const Link = styled(NavLink)<{
     fill: ${s("white")};
   }
 
+  &::before {
+    content: "";
+    position: absolute;
+    left: -14px;
+    top: 50%;
+    width: 14px;
+    height: 1.5px;
+    background: ${s("sidebarControlHoverBackground")};
+  }
+
+  &[aria-current="page"]::before {
+    background: ${s("sidebarActiveBackground")};
+  }
+
   ${(props) => props.$isActiveDrop && `--background: ${props.theme.slateDark};`}
 
   display: flex;
@@ -286,7 +300,7 @@ const Link = styled(NavLink)<{
     props.$isActiveDrop ? props.theme.white : props.theme.sidebarText};
   font-size: 16px;
   cursor: var(--pointer);
-  overflow: hidden;
+  overflow: visible;
   ${undraggableOnDesktop()}
 
   ${(props) =>
