@@ -146,7 +146,7 @@ const useSettingsConfig = () => {
     ];
 
     return items;
-  }, [t, can.update]);
+  }, [t, can.update, can.listUsers, can.listGroups, can.readTemplate]);
 
   return config.filter((item) => item.enabled);
 };
