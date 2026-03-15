@@ -110,7 +110,11 @@
       "Bash(taskkill //F //IM node.exe 2>/dev/null; docker compose up -d redis postgres 2>&1)",
       "Bash(docker exec:*)",
       "Bash(cd C:/Users/rindra/Projects/outline && rm -rf build/server build/plugins && node build.js 2>&1)",
-      "Bash(rm -rf build/server build/plugins && node build.js 2>&1 | tail -5)"
+      "Bash(rm -rf build/server build/plugins && node build.js 2>&1 | tail -5)",
+      "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const mm = require\\('markmap-view'\\); const src = mm.Markmap.toString\\(\\).substring\\(0, 500\\); console.log\\(src\\);\" 2>&1 | head -20)",
+      "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"\nconst mm = require\\('markmap-view'\\);\nconst src = mm.Markmap.toString\\(\\);\n// Find handleClick method\nconst idx = src.indexOf\\('handleClick'\\);\nconsole.log\\(src.substring\\(idx, idx + 500\\)\\);\n\")",
+      "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"\nconst mm = require\\('markmap-view'\\);\nconst src = mm.Markmap.toString\\(\\);\n// Find foreignObject rendering\nconst idx = src.indexOf\\('foreignObject'\\);\nconsole.log\\(src.substring\\(Math.max\\(0, idx - 200\\), idx + 300\\)\\);\n\")",
+      "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"\nconst mm = require\\('markmap-view'\\);\nconst src = mm.Markmap.toString\\(\\);\n// Find the class names used - specifically markmap-node\nconst idx = src.indexOf\\('markmap-node'\\);\nif \\(idx > 0\\) {\n  console.log\\(src.substring\\(Math.max\\(0, idx - 100\\), idx + 100\\)\\);\n} else {\n  console.log\\('markmap-node not found as literal'\\);\n}\n// Also check for the class constant M\nconst mIdx = src.indexOf\\('const M'\\);\nif \\(mIdx > 0\\) console.log\\(src.substring\\(mIdx, mIdx + 100\\)\\);\n\")"
     ]
   }
 }
