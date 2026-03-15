@@ -436,14 +436,12 @@ const FormGroup = styled.div`
   flex-direction: column;
   gap: 4px;
   flex: 1;
+  min-width: 0;
 `;
 
 const FormRow = styled(Flex)`
   gap: 12px;
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-  }
+  flex-wrap: wrap;
 `;
 
 const FormLabel = styled.label`
@@ -460,6 +458,8 @@ const FormInput = styled.input`
   color: ${s("text")};
   font-size: 14px;
   outline: none;
+  width: 100%;
+  box-sizing: border-box;
 
   &:focus {
     border-color: ${s("accent")};
