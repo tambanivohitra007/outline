@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { LeafIcon, PlusIcon, CloseIcon, TrashIcon, EditIcon } from "outline-icons";
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useCallback, useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Action } from "~/components/Actions";
@@ -19,6 +19,8 @@ import { s } from "@shared/styles";
 function Recipes() {
   const { t } = useTranslation();
   const { recipes } = useStores();
+
+  const [search, setSearch] = useState("");
 
   // Create form state
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -134,6 +136,18 @@ function Recipes() {
     [recipes, t]
   );
 
+  const filtered = useMemo(() => {
+    if (!search.trim()) {
+      return recipes.orderedData;
+    }
+    const q = search.trim().toLowerCase();
+    return recipes.orderedData.filter(
+      (r) =>
+        r.name.toLowerCase().includes(q) ||
+        r.description?.toLowerCase().includes(q)
+    );
+  }, [recipes.orderedData, search]);
+
   return (
     <Scene
       icon={<LeafIcon />}
@@ -230,13 +244,25 @@ function Recipes() {
         </CreateFormCard>
       )}
 
+      <FilterRow>
+        <SearchInput
+          placeholder={t("Search recipes\u2026")}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </FilterRow>
+
       <Subheading sticky>{t("All Recipes")}</Subheading>
 
-      {recipes.orderedData.length === 0 && recipes.isLoaded ? (
-        <Empty>{t("No recipes have been created yet.")}</Empty>
+      {filtered.length === 0 && recipes.isLoaded ? (
+        <Empty>
+          {search.trim()
+            ? t("No recipes matching your search.")
+            : t("No recipes have been created yet.")}
+        </Empty>
       ) : (
         <RecipeGrid>
-          {recipes.orderedData.map((recipe) => (
+          {filtered.map((recipe) => (
             <RecipeCard key={recipe.id}>
               <CardHeader>
                 <RecipeName>{recipe.name}</RecipeName>
@@ -523,6 +549,27 @@ const CancelButton = styled.button`
 
   &:hover {
     border-color: ${s("text")};
+  }
+`;
+
+const FilterRow = styled(Flex)`
+  margin: 16px 0;
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid ${s("divider")};
+  border-radius: 6px;
+  background: ${s("background")};
+  color: ${s("text")};
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: ${s("accent")};
   }
 `;
 
