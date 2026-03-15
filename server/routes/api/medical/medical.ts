@@ -5,6 +5,7 @@ import validate from "@server/middlewares/validate";
 import { EvidenceEntry } from "@server/models";
 import BibleService from "@server/services/medical/BibleService";
 import ClinicalTrialsService from "@server/services/medical/ClinicalTrialsService";
+import EgwService from "@server/services/medical/EgwService";
 import PubMedService from "@server/services/medical/PubMedService";
 import SnomedService from "@server/services/medical/SnomedService";
 import type { APIContext } from "@server/types";
@@ -143,6 +144,80 @@ router.post(
 
     ctx.body = {
       data: result,
+    };
+  }
+);
+
+// Bible translations
+
+router.post(
+  "medical.bible.translations",
+  auth(),
+  validate(T.MedicalBibleTranslationsSchema),
+  async (ctx: APIContext<T.MedicalBibleTranslationsReq>) => {
+    const { language } = ctx.input.body;
+    const results = await BibleService.listTranslations(language);
+
+    ctx.body = {
+      data: results,
+    };
+  }
+);
+
+// EGW (Ellen G. White) Writings
+
+router.post(
+  "medical.egw.search",
+  auth(),
+  validate(T.MedicalEgwSearchSchema),
+  async (ctx: APIContext<T.MedicalEgwSearchReq>) => {
+    const { query, limit, lang } = ctx.input.body;
+    const results = await EgwService.search(query, limit, lang);
+
+    ctx.body = {
+      data: results,
+    };
+  }
+);
+
+router.post(
+  "medical.egw.books",
+  auth(),
+  validate(T.MedicalEgwBooksSchema),
+  async (ctx: APIContext<T.MedicalEgwBooksReq>) => {
+    const { search, lang } = ctx.input.body;
+    const results = await EgwService.listBooks(search, lang);
+
+    ctx.body = {
+      data: results,
+    };
+  }
+);
+
+router.post(
+  "medical.egw.toc",
+  auth(),
+  validate(T.MedicalEgwTocSchema),
+  async (ctx: APIContext<T.MedicalEgwTocReq>) => {
+    const { bookId } = ctx.input.body;
+    const results = await EgwService.getBookToc(bookId);
+
+    ctx.body = {
+      data: results,
+    };
+  }
+);
+
+router.post(
+  "medical.egw.content",
+  auth(),
+  validate(T.MedicalEgwContentSchema),
+  async (ctx: APIContext<T.MedicalEgwContentReq>) => {
+    const { bookId, paraId } = ctx.input.body;
+    const results = await EgwService.getContent(bookId, paraId);
+
+    ctx.body = {
+      data: results,
     };
   }
 );

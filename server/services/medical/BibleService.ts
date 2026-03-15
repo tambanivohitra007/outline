@@ -11,11 +11,70 @@ interface BibleVerse {
   verseNumber: number;
 }
 
+interface BibleTranslation {
+  id: string;
+  name: string;
+  nameLocal: string;
+  abbreviation: string;
+  abbreviationLocal: string;
+  language: string;
+  description: string;
+}
+
 /**
  * Service for interacting with the API.Bible service.
  * Falls back to returning reference-only results if no API key is configured.
  */
 export default class BibleService {
+  /**
+   * Check whether the Bible API key is configured.
+   *
+   * @returns True if BIBLE_API_KEY is set.
+   */
+  static isConfigured(): boolean {
+    return !!env.BIBLE_API_KEY;
+  }
+
+  /**
+   * List available Bible translations/versions.
+   *
+   * @param language Optional language filter (e.g., "eng").
+   * @returns Available translations.
+   */
+  static async listTranslations(
+    language?: string
+  ): Promise<BibleTranslation[]> {
+    const apiKey = env.BIBLE_API_KEY;
+    if (!apiKey) {
+      return [];
+    }
+
+    const params = language ? `?language=${encodeURIComponent(language)}` : "";
+    const response = await fetch(`${BIBLE_API_URL}/bibles${params}`, {
+      headers: {
+        "api-key": apiKey,
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Bible API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const bibles = data.data ?? [];
+
+    return bibles.map((b: Record<string, unknown>) => ({
+      id: b.id ?? "",
+      name: b.name ?? "",
+      nameLocal: b.nameLocal ?? b.name ?? "",
+      abbreviation: b.abbreviation ?? "",
+      abbreviationLocal: b.abbreviationLocal ?? b.abbreviation ?? "",
+      language: (b.language as Record<string, string>)?.name ?? "",
+      description: b.description ?? "",
+    }));
+  }
+
   /**
    * Search for Bible passages matching a query.
    *
