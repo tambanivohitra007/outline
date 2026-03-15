@@ -33,7 +33,7 @@ function SearchInput(
 
   return (
     <Wrapper align="center">
-      <StyledIcon size={46} color={theme.placeholder} onClick={focusInput} />
+      <StyledIcon size={24} color={theme.textTertiary} onClick={focusInput} />
       <StyledInput
         {...rest}
         defaultValue={defaultValue}
@@ -42,25 +42,32 @@ function SearchInput(
         type="search"
         autoFocus
       />
+      <Shortcut>esc</Shortcut>
     </Wrapper>
   );
 }
 
 const Wrapper = styled(Flex)`
   position: relative;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 `;
 
 const StyledInput = styled.input`
   width: 100%;
-  padding: 10px 10px 10px 60px;
-  font-size: 30px;
+  padding: 16px 60px 16px 52px;
+  font-size: 18px;
   font-weight: 400;
   outline: none;
-  border: 0;
+  border: 1px solid ${s("inputBorder")};
   background: ${s("inputBackground")};
-  border-radius: 4px;
+  border-radius: 12px;
   color: ${s("text")};
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &:focus {
+    border-color: rgb(230, 57, 80);
+    box-shadow: 0 0 0 3px rgba(230, 57, 80, 0.15);
+  }
 
   ::-webkit-search-cancel-button {
     -webkit-appearance: none;
@@ -81,8 +88,23 @@ const StyledInput = styled.input`
 
 const StyledIcon = styled(SearchIcon)`
   position: absolute;
-  left: 8px;
-  opacity: 0.7;
+  left: 16px;
+  pointer-events: none;
+  opacity: 0.5;
+`;
+
+const Shortcut = styled.span`
+  position: absolute;
+  right: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: ${s("textTertiary")};
+  background: ${s("backgroundSecondary")};
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid ${s("inputBorder")};
+  pointer-events: none;
+  user-select: none;
 `;
 
 export default React.forwardRef(SearchInput);
