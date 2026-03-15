@@ -38,24 +38,52 @@ function execAsync(cmd) {
  * Recursively removes a directory (cross-platform).
  * @param {string} dir
  */
-function rmrf(dir) {
+function rmrf(dir, retries = 3) {
   const fs = require("fs");
-  if (fs.existsSync(dir)) {
-    fs.rmSync(dir, { recursive: true, force: true });
+  for (let i = 0; i < retries; i++) {
+    if (!fs.existsSync(dir)) {
+      return;
+    }
+    try {
+      fs.rmSync(dir, { recursive: true, force: true });
+      return;
+    } catch (err) {
+      if ((err.code === "ENOTEMPTY" || err.code === "EBUSY") && i < retries - 1) {
+        sleepSync(1000);
+      } else {
+        throw err;
+      }
+    }
   }
+}
+
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
 /**
  * Copies a file, creating the destination directory if needed (cross-platform).
  * @param {string} src
  * @param {string} dest
+ * @param {number} retries
  */
-function cpFile(src, dest) {
+function cpFile(src, dest, retries = 3) {
   if (!existsSync(src)) {
     return;
   }
   mkdirSync(path.dirname(dest), { recursive: true });
-  copyFileSync(src, dest);
+  for (let i = 0; i < retries; i++) {
+    try {
+      copyFileSync(src, dest);
+      return;
+    } catch (err) {
+      if (err.code === "EBUSY" && i < retries - 1) {
+        sleepSync(1000);
+      } else {
+        throw err;
+      }
+    }
+  }
 }
 
 /**
