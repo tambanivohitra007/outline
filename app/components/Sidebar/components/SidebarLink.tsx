@@ -288,7 +288,7 @@ const Link = styled(NavLink)<{
   display: flex;
   position: relative;
   text-overflow: ellipsis;
-  font-weight: 475;
+  font-weight: 400;
   padding: ${isMobile() ? 12 : 6}px 16px;
   border-radius: 4px 20px 20px 4px;
   min-height: 30px;

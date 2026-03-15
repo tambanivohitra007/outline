@@ -828,6 +828,18 @@ export class Environment {
   public BIBLE_API_KEY = this.toOptionalString(environment.BIBLE_API_KEY);
 
   /**
+   * EGW Writings API client ID (register at cpanel.egwwritings.org).
+   */
+  @IsOptional()
+  public EGW_CLIENT_ID = this.toOptionalString(environment.EGW_CLIENT_ID);
+
+  /**
+   * EGW Writings API client secret.
+   */
+  @IsOptional()
+  public EGW_CLIENT_SECRET = this.toOptionalString(environment.EGW_CLIENT_SECRET);
+
+  /**
    * Google Gemini API key for AI content generation.
    */
   @IsOptional()

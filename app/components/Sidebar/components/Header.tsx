@@ -106,7 +106,7 @@ const Button = styled.button`
   display: inline-flex;
   align-items: center;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   user-select: none;
   color: ${s("sidebarText")};
   position: relative;

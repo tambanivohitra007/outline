@@ -64,3 +64,49 @@ export const MedicalBibleLookupSchema = BaseSchema.extend({
 });
 
 export type MedicalBibleLookupReq = z.infer<typeof MedicalBibleLookupSchema>;
+
+export const MedicalBibleTranslationsSchema = BaseSchema.extend({
+  body: z.object({
+    language: z.string().optional(),
+  }).default({}),
+});
+
+export type MedicalBibleTranslationsReq = z.infer<typeof MedicalBibleTranslationsSchema>;
+
+// EGW (Ellen G. White) Writings
+
+export const MedicalEgwSearchSchema = BaseSchema.extend({
+  body: z.object({
+    query: z.string().min(1).max(500),
+    limit: z.number().int().positive().max(100).optional(),
+    lang: z.string().optional(),
+  }),
+});
+
+export type MedicalEgwSearchReq = z.infer<typeof MedicalEgwSearchSchema>;
+
+export const MedicalEgwBooksSchema = BaseSchema.extend({
+  body: z.object({
+    search: z.string().optional(),
+    lang: z.string().optional(),
+  }).default({}),
+});
+
+export type MedicalEgwBooksReq = z.infer<typeof MedicalEgwBooksSchema>;
+
+export const MedicalEgwTocSchema = BaseSchema.extend({
+  body: z.object({
+    bookId: z.number().int().positive(),
+  }),
+});
+
+export type MedicalEgwTocReq = z.infer<typeof MedicalEgwTocSchema>;
+
+export const MedicalEgwContentSchema = BaseSchema.extend({
+  body: z.object({
+    bookId: z.number().int().positive(),
+    paraId: z.string().min(1),
+  }),
+});
+
+export type MedicalEgwContentReq = z.infer<typeof MedicalEgwContentSchema>;

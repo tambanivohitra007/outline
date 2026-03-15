@@ -122,7 +122,11 @@
       "Bash(psql -U user -d outline -c 'SELECT s.reference, s.theme, cd.name as care_domain FROM scriptures s LEFT JOIN care_domains cd ON s.\"careDomainId\" = cd.id ORDER BY cd.name, s.reference;' 2>&1)",
       "Bash(docker ps:*)",
       "WebFetch(domain:docs.adventech.io)",
-      "WebFetch(domain:whiteestate.org)"
+      "WebFetch(domain:whiteestate.org)",
+      "WebFetch(domain:egwwritings.org)",
+      "WebFetch(domain:a.egwwritings.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:scripture.api.bible)"
     ]
   }
 }
