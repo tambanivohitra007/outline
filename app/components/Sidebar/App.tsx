@@ -31,6 +31,7 @@ import HistoryNavigation from "./components/HistoryNavigation";
 import Section from "./components/Section";
 import SidebarButton from "./components/SidebarButton";
 import SidebarLink from "./components/SidebarLink";
+import SharedWithMe from "./components/SharedWithMe";
 import Starred from "./components/Starred";
 import ToggleButton from "./components/ToggleButton";
 
@@ -156,6 +157,9 @@ function AppSidebar() {
             </Section>
             <Section>
               <Starred />
+            </Section>
+            <Section>
+              <SharedWithMe />
             </Section>
             <Section>
               <Collections />
