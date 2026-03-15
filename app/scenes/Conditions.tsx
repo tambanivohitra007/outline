@@ -1,9 +1,10 @@
 import invariant from "invariant";
 import { observer } from "mobx-react";
-import { BeakerIcon, PlusIcon } from "outline-icons";
+import { BeakerIcon, PlusIcon, TrashIcon } from "outline-icons";
 import { useEffect, useCallback, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
+import { toast } from "sonner";
 import { Action } from "~/components/Actions";
 import Button from "~/components/Button";
 import Empty from "~/components/Empty";
@@ -59,6 +60,24 @@ function Conditions() {
     invariant(res, "Condition should be created");
     history.push(conditionPath(res.id));
   }, [conditions, history, t]);
+
+  const handleDelete = useCallback(
+    async (e: React.MouseEvent, condition: { id: string; name: string }) => {
+      e.stopPropagation();
+      const confirmed = window.confirm(
+        t(
+          `Are you sure you want to delete "{{ conditionName }}"? This will also remove all backing documents and sections.`,
+          { conditionName: condition.name }
+        )
+      );
+      if (!confirmed) {
+        return;
+      }
+      await conditions.delete(condition as any);
+      toast.success(t("Condition deleted"));
+    },
+    [conditions, t]
+  );
 
   return (
     <Scene
@@ -134,9 +153,17 @@ function Conditions() {
             >
               <CardHeader>
                 <CardTitle>{condition.name}</CardTitle>
-                <StatusBadge $status={condition.status}>
-                  {condition.status}
-                </StatusBadge>
+                <CardActions>
+                  <StatusBadge $status={condition.status}>
+                    {condition.status}
+                  </StatusBadge>
+                  <DeleteButton
+                    onClick={(e) => handleDelete(e, condition)}
+                    title={t("Delete condition")}
+                  >
+                    <TrashIcon size={16} />
+                  </DeleteButton>
+                </CardActions>
               </CardHeader>
               {condition.snomedCode && (
                 <CardMeta>{t("SNOMED")}: {condition.snomedCode}</CardMeta>
@@ -219,6 +246,35 @@ const CardHeader = styled(Flex)`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+`;
+
+const CardActions = styled(Flex)`
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+`;
+
+const DeleteButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  color: ${s("textTertiary")};
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 100ms ease, color 100ms ease;
+
+  ${ConditionCard}:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    color: ${(props) => props.theme.danger};
+    background: ${(props) => props.theme.danger}10;
+  }
 `;
 
 const CardTitle = styled.h3`

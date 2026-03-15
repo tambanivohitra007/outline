@@ -4,7 +4,7 @@ import auth from "@server/middlewares/authentication";
 import { transaction } from "@server/middlewares/transaction";
 import validate from "@server/middlewares/validate";
 import conditionCreator from "@server/commands/conditionCreator";
-import { Condition, ConditionSection } from "@server/models";
+import { Collection, Condition, ConditionSection, Document } from "@server/models";
 import { authorize } from "@server/policies";
 import {
   presentCondition,
@@ -141,6 +141,42 @@ router.post(
       ctx.throw(404);
     }
     authorize(user, "delete", condition);
+
+    // Clean up backing documents linked to condition sections
+    const sections = await ConditionSection.findAll({
+      where: { conditionId: id },
+      transaction,
+    });
+
+    const documentIds = sections
+      .map((s) => s.documentId)
+      .filter((did): did is string => !!did);
+
+    if (documentIds.length > 0) {
+      await Document.destroy({
+        where: { id: documentIds },
+        transaction,
+      });
+    }
+
+    // Clean up the dedicated collection if it has no other documents
+    const collectionId = condition!.collectionId;
+    if (collectionId) {
+      const otherDocCount = await Document.count({
+        where: { collectionId },
+        transaction,
+        paranoid: true,
+      });
+
+      // Only delete if all remaining docs in the collection are the ones
+      // we just soft-deleted (i.e., no other active documents)
+      if (otherDocCount === 0) {
+        await Collection.destroy({
+          where: { id: collectionId },
+          transaction,
+        });
+      }
+    }
 
     await condition!.destroy({ transaction });
 
