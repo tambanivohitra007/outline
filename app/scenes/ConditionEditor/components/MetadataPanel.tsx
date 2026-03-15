@@ -1,6 +1,8 @@
 import { observer } from "mobx-react";
-import { useEffect } from "react";
+import { PlusIcon, CloseIcon } from "outline-icons";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import Flex from "~/components/Flex";
 import type Condition from "~/models/Condition";
 import useStores from "~/hooks/useStores";
@@ -15,6 +17,17 @@ function MetadataPanel({ condition }: Props) {
   const { t } = useTranslation();
   const { conditions, evidenceEntries, scriptures } = useStores();
 
+  const [showEvidenceForm, setShowEvidenceForm] = useState(false);
+  const [evidenceTitle, setEvidenceTitle] = useState("");
+  const [evidenceJournal, setEvidenceJournal] = useState("");
+  const [evidenceDoi, setEvidenceDoi] = useState("");
+
+  const [showScriptureForm, setShowScriptureForm] = useState(false);
+  const [scriptureRef, setScriptureRef] = useState("");
+  const [scriptureText, setScriptureText] = useState("");
+  const [isSop, setIsSop] = useState(false);
+  const [sopSource, setSopSource] = useState("");
+
   useEffect(() => {
     void evidenceEntries.fetchPage({ conditionId: condition.id });
     void scriptures.fetchPage({ conditionId: condition.id });
@@ -28,6 +41,58 @@ function MetadataPanel({ condition }: Props) {
       status: e.target.value as "draft" | "review" | "published",
     });
   };
+
+  const handleAddEvidence = useCallback(async () => {
+    if (!evidenceTitle.trim()) {
+      return;
+    }
+    await evidenceEntries.create({
+      title: evidenceTitle.trim(),
+      journal: evidenceJournal.trim() || undefined,
+      doi: evidenceDoi.trim() || undefined,
+      conditionId: condition.id,
+    });
+    setEvidenceTitle("");
+    setEvidenceJournal("");
+    setEvidenceDoi("");
+    setShowEvidenceForm(false);
+    toast.success(t("Evidence entry added"));
+  }, [evidenceTitle, evidenceJournal, evidenceDoi, condition.id, evidenceEntries, t]);
+
+  const handleDeleteEvidence = useCallback(
+    async (entry: { id: string }) => {
+      await evidenceEntries.delete(entry as any);
+      toast.success(t("Evidence entry removed"));
+    },
+    [evidenceEntries, t]
+  );
+
+  const handleAddScripture = useCallback(async () => {
+    if (!scriptureRef.trim()) {
+      return;
+    }
+    await scriptures.create({
+      reference: scriptureRef.trim(),
+      text: scriptureText.trim() || undefined,
+      spiritOfProphecy: isSop,
+      sopSource: isSop && sopSource.trim() ? sopSource.trim() : undefined,
+      conditionId: condition.id,
+    });
+    setScriptureRef("");
+    setScriptureText("");
+    setIsSop(false);
+    setSopSource("");
+    setShowScriptureForm(false);
+    toast.success(t("Scripture reference added"));
+  }, [scriptureRef, scriptureText, isSop, sopSource, condition.id, scriptures, t]);
+
+  const handleDeleteScripture = useCallback(
+    async (scripture: { id: string }) => {
+      await scriptures.delete(scripture as any);
+      toast.success(t("Scripture reference removed"));
+    },
+    [scriptures, t]
+  );
 
   const evidence = evidenceEntries.forCondition(condition.id);
   const conditionScriptures = scriptures.forCondition(condition.id);
@@ -59,24 +124,70 @@ function MetadataPanel({ condition }: Props) {
       </PanelSection>
 
       <PanelSection>
-        <PanelTitle>
-          {t("Evidence")} ({evidence.length})
-        </PanelTitle>
-        {evidence.length === 0 ? (
+        <SectionHeader>
+          <PanelTitle>
+            {t("Evidence")} ({evidence.length})
+          </PanelTitle>
+          <AddButton
+            onClick={() => setShowEvidenceForm(!showEvidenceForm)}
+            title={t("Add evidence")}
+          >
+            <PlusIcon size={14} />
+          </AddButton>
+        </SectionHeader>
+
+        {showEvidenceForm && (
+          <InlineForm>
+            <FormInput
+              placeholder={t("Title (required)")}
+              value={evidenceTitle}
+              onChange={(e) => setEvidenceTitle(e.target.value)}
+              autoFocus
+            />
+            <FormInput
+              placeholder={t("Journal")}
+              value={evidenceJournal}
+              onChange={(e) => setEvidenceJournal(e.target.value)}
+            />
+            <FormInput
+              placeholder={t("DOI")}
+              value={evidenceDoi}
+              onChange={(e) => setEvidenceDoi(e.target.value)}
+            />
+            <FormActions>
+              <FormButton onClick={handleAddEvidence} $primary>
+                {t("Add")}
+              </FormButton>
+              <FormButton onClick={() => setShowEvidenceForm(false)}>
+                {t("Cancel")}
+              </FormButton>
+            </FormActions>
+          </InlineForm>
+        )}
+
+        {evidence.length === 0 && !showEvidenceForm ? (
           <EmptyHint>{t("No evidence entries linked.")}</EmptyHint>
         ) : (
           <ItemList>
             {evidence.slice(0, 5).map((entry) => (
               <EvidenceItem key={entry.id}>
-                <EvidenceTitle>{entry.title}</EvidenceTitle>
-                {entry.journal && (
-                  <EvidenceMeta>{entry.journal}</EvidenceMeta>
-                )}
+                <ItemContent>
+                  <EvidenceTitle>{entry.title}</EvidenceTitle>
+                  {entry.journal && (
+                    <EvidenceMeta>{entry.journal}</EvidenceMeta>
+                  )}
+                </ItemContent>
+                <RemoveButton
+                  onClick={() => handleDeleteEvidence(entry)}
+                  title={t("Remove")}
+                >
+                  <CloseIcon size={12} />
+                </RemoveButton>
               </EvidenceItem>
             ))}
             {evidence.length > 5 && (
               <MoreLink>
-                {t("and {{count}} more...", { count: evidence.length - 5 })}
+                {t("and {{count}} more\u2026", { count: evidence.length - 5 })}
               </MoreLink>
             )}
           </ItemList>
@@ -84,19 +195,79 @@ function MetadataPanel({ condition }: Props) {
       </PanelSection>
 
       <PanelSection>
-        <PanelTitle>
-          {t("Scriptures")} ({conditionScriptures.length})
-        </PanelTitle>
-        {conditionScriptures.length === 0 ? (
+        <SectionHeader>
+          <PanelTitle>
+            {t("Scriptures")} ({conditionScriptures.length})
+          </PanelTitle>
+          <AddButton
+            onClick={() => setShowScriptureForm(!showScriptureForm)}
+            title={t("Add scripture")}
+          >
+            <PlusIcon size={14} />
+          </AddButton>
+        </SectionHeader>
+
+        {showScriptureForm && (
+          <InlineForm>
+            <FormInput
+              placeholder={t("Reference, e.g. John 3:16 (required)")}
+              value={scriptureRef}
+              onChange={(e) => setScriptureRef(e.target.value)}
+              autoFocus
+            />
+            <FormTextarea
+              placeholder={t("Text (optional)")}
+              value={scriptureText}
+              onChange={(e) => setScriptureText(e.target.value)}
+              rows={2}
+            />
+            <CheckboxRow>
+              <input
+                type="checkbox"
+                id="sop-checkbox"
+                checked={isSop}
+                onChange={(e) => setIsSop(e.target.checked)}
+              />
+              <CheckboxLabel htmlFor="sop-checkbox">
+                {t("Spirit of Prophecy")}
+              </CheckboxLabel>
+            </CheckboxRow>
+            {isSop && (
+              <FormInput
+                placeholder={t("Source book")}
+                value={sopSource}
+                onChange={(e) => setSopSource(e.target.value)}
+              />
+            )}
+            <FormActions>
+              <FormButton onClick={handleAddScripture} $primary>
+                {t("Add")}
+              </FormButton>
+              <FormButton onClick={() => setShowScriptureForm(false)}>
+                {t("Cancel")}
+              </FormButton>
+            </FormActions>
+          </InlineForm>
+        )}
+
+        {conditionScriptures.length === 0 && !showScriptureForm ? (
           <EmptyHint>{t("No scripture references linked.")}</EmptyHint>
         ) : (
           <ItemList>
             {conditionScriptures.slice(0, 5).map((scripture) => (
               <ScriptureItem key={scripture.id}>
-                <ScriptureRef>{scripture.reference}</ScriptureRef>
-                {scripture.spiritOfProphecy && (
-                  <SopBadge>{t("SoP")}</SopBadge>
-                )}
+                <ItemContent>
+                  <ScriptureRef>{scripture.reference}</ScriptureRef>
+                  {scripture.spiritOfProphecy && (
+                    <SopBadge>{t("SoP")}</SopBadge>
+                  )}
+                </ItemContent>
+                <RemoveButton
+                  onClick={() => handleDeleteScripture(scripture)}
+                  title={t("Remove")}
+                >
+                  <CloseIcon size={12} />
+                </RemoveButton>
               </ScriptureItem>
             ))}
           </ItemList>
@@ -120,6 +291,11 @@ const PanelSection = styled.div`
   }
 `;
 
+const SectionHeader = styled(Flex)`
+  justify-content: space-between;
+  align-items: center;
+`;
+
 const PanelTitle = styled.h4`
   margin: 0 0 8px 0;
   font-size: 13px;
@@ -127,6 +303,25 @@ const PanelTitle = styled.h4`
   text-transform: uppercase;
   color: ${s("textTertiary")};
   letter-spacing: 0.5px;
+`;
+
+const AddButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid ${s("divider")};
+  border-radius: 4px;
+  background: none;
+  color: ${s("textTertiary")};
+  cursor: pointer;
+  transition: all 100ms ease;
+
+  &:hover {
+    color: ${s("accent")};
+    border-color: ${s("accent")};
+  }
 `;
 
 const StatusSelect = styled.select`
@@ -166,10 +361,17 @@ const EmptyHint = styled.div`
 const ItemList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 `;
 
-const EvidenceItem = styled.div`
+const ItemContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const EvidenceItem = styled(Flex)`
+  align-items: flex-start;
+  gap: 4px;
   padding: 6px 0;
 `;
 
@@ -188,7 +390,7 @@ const EvidenceMeta = styled.div`
 
 const ScriptureItem = styled(Flex)`
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   padding: 4px 0;
 `;
 
@@ -204,12 +406,115 @@ const SopBadge = styled.span`
   border-radius: 3px;
   background: #e8d5f5;
   color: #6b21a8;
+  flex-shrink: 0;
+`;
+
+const RemoveButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: none;
+  border-radius: 3px;
+  color: ${s("textTertiary")};
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 100ms ease, color 100ms ease;
+
+  ${EvidenceItem}:hover &,
+  ${ScriptureItem}:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    color: ${(props) => props.theme.danger};
+  }
 `;
 
 const MoreLink = styled.div`
   font-size: 12px;
   color: ${s("accent")};
   cursor: pointer;
+`;
+
+const InlineForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 8px;
+  border: 1px solid ${s("divider")};
+  border-radius: 6px;
+  background: ${s("sidebarBackground")};
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid ${s("divider")};
+  border-radius: 4px;
+  background: ${s("background")};
+  color: ${s("text")};
+  font-size: 12px;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: ${s("accent")};
+  }
+`;
+
+const FormTextarea = styled.textarea`
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid ${s("divider")};
+  border-radius: 4px;
+  background: ${s("background")};
+  color: ${s("text")};
+  font-size: 12px;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: ${s("accent")};
+  }
+`;
+
+const CheckboxRow = styled(Flex)`
+  align-items: center;
+  gap: 6px;
+`;
+
+const CheckboxLabel = styled.label`
+  font-size: 12px;
+  color: ${s("textSecondary")};
+  cursor: pointer;
+`;
+
+const FormActions = styled(Flex)`
+  gap: 6px;
+  justify-content: flex-end;
+`;
+
+const FormButton = styled.button<{ $primary?: boolean }>`
+  padding: 4px 12px;
+  border: 1px solid ${(props) => (props.$primary ? "transparent" : props.theme.divider)};
+  border-radius: 4px;
+  background: ${(props) => (props.$primary ? props.theme.accent : "transparent")};
+  color: ${(props) => (props.$primary ? "white" : props.theme.textSecondary)};
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 100ms ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
 `;
 
 export default observer(MetadataPanel);
