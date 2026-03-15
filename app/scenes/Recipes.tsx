@@ -185,7 +185,8 @@ function Recipes() {
     return recipes.orderedData.filter(
       (r) =>
         r.name.toLowerCase().includes(q) ||
-        r.description?.toLowerCase().includes(q)
+        r.description?.toLowerCase().includes(q) ||
+        r.dietaryTags?.some((tag) => tag.toLowerCase().includes(q))
     );
   }, [recipes.orderedData, search]);
 
