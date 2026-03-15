@@ -7,6 +7,7 @@ import Flex from "~/components/Flex";
 import type Condition from "~/models/Condition";
 import type Intervention from "~/models/Intervention";
 import useStores from "~/hooks/useStores";
+import { client } from "~/utils/ApiClient";
 import styled from "styled-components";
 import { s } from "@shared/styles";
 
@@ -26,6 +27,11 @@ function MetadataPanel({ condition }: Props) {
 
   const [showInterventionSearch, setShowInterventionSearch] = useState(false);
   const [interventionQuery, setInterventionQuery] = useState("");
+
+  // AI suggestions state
+  const [aiSuggestions, setAiSuggestions] = useState<string | null>(null);
+  const [aiSectionType, setAiSectionType] = useState("solutions");
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
   const [evidenceTitle, setEvidenceTitle] = useState("");
@@ -126,6 +132,24 @@ function MetadataPanel({ condition }: Props) {
     },
     [scriptures, t]
   );
+
+  const handleGetSuggestions = useCallback(async () => {
+    setIsLoadingSuggestions(true);
+    setAiSuggestions(null);
+    try {
+      const res = await client.post("/ai.suggest", {
+        conditionId: condition.id,
+        sectionType: aiSectionType,
+      });
+      setAiSuggestions(res.data?.suggestions ?? "");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : t("Failed to get suggestions")
+      );
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  }, [condition.id, aiSectionType, t]);
 
   const links = conditionInterventions.forCondition(condition.id);
   const linkedInterventionIds = new Set(links.map((l) => l.interventionId));
@@ -382,6 +406,35 @@ function MetadataPanel({ condition }: Props) {
               </ScriptureItem>
             ))}
           </ItemList>
+        )}
+      </PanelSection>
+
+      <PanelSection>
+        <PanelTitle>{t("AI Suggestions")}</PanelTitle>
+        <AISuggestRow>
+          <AISectionSelect
+            value={aiSectionType}
+            onChange={(e) => {
+              setAiSectionType(e.target.value);
+              setAiSuggestions(null);
+            }}
+          >
+            <option value="risk_factors">{t("Risk Factors")}</option>
+            <option value="physiology">{t("Physiology")}</option>
+            <option value="complications">{t("Complications")}</option>
+            <option value="solutions">{t("Solutions")}</option>
+            <option value="bible_sop">{t("Bible & SoP")}</option>
+            <option value="research_ideas">{t("Research Ideas")}</option>
+          </AISectionSelect>
+          <SuggestButton
+            onClick={handleGetSuggestions}
+            disabled={isLoadingSuggestions}
+          >
+            {isLoadingSuggestions ? t("Loading\u2026") : t("Suggest")}
+          </SuggestButton>
+        </AISuggestRow>
+        {aiSuggestions && (
+          <SuggestionsContent>{aiSuggestions}</SuggestionsContent>
         )}
       </PanelSection>
     </Panel>
@@ -663,6 +716,58 @@ const FormButton = styled.button<{ $primary?: boolean }>`
   &:hover {
     opacity: 0.9;
   }
+`;
+
+const AISuggestRow = styled(Flex)`
+  gap: 6px;
+  margin-bottom: 8px;
+`;
+
+const AISectionSelect = styled.select`
+  flex: 1;
+  padding: 5px 8px;
+  border: 1px solid ${s("divider")};
+  border-radius: 4px;
+  background: ${s("background")};
+  color: ${s("text")};
+  font-size: 12px;
+`;
+
+const SuggestButton = styled.button`
+  padding: 5px 12px;
+  border: none;
+  border-radius: 4px;
+  background: ${s("accent")};
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 100ms ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const SuggestionsContent = styled.pre`
+  font-size: 12px;
+  line-height: 1.5;
+  color: ${s("text")};
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid ${s("divider")};
+  border-radius: 4px;
+  background: ${s("sidebarBackground")};
 `;
 
 export default observer(MetadataPanel);
