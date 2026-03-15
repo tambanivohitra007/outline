@@ -8029,6 +8029,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/dompurify@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "@types/dompurify@npm:3.2.0"
+  dependencies:
+    dompurify: "npm:*"
+  checksum: 10c0/e83fec586ffbb1b43f7c8479f2a99c223814d240db912d53fb126aaeea52a4091deceeb75632b5d76004d88ef0fbf444984887b121dece6fa69f4172ed4b2b07
+  languageName: node
+  linkType: hard
+
 "@types/dotenv@npm:^8.2.3":
   version: 8.2.3
   resolution: "@types/dotenv@npm:8.2.3"
@@ -11931,7 +11940,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:^3.2.5":
+"dompurify@npm:*, dompurify@npm:^3.2.5, dompurify@npm:^3.3.1":
   version: 3.3.1
   resolution: "dompurify@npm:3.3.1"
   dependencies:
@@ -17795,6 +17804,7 @@ __metadata:
     "@types/crypto-js": "npm:^4.2.2"
     "@types/d3": "npm:^7"
     "@types/diff": "npm:^5.0.9"
+    "@types/dompurify": "npm:^3.2.0"
     "@types/dotenv": "npm:^8.2.3"
     "@types/emoji-regex": "npm:^9.2.2"
     "@types/escape-html": "npm:^1.0.4"
@@ -17885,6 +17895,7 @@ __metadata:
     dd-trace: "npm:^5.82.0"
     diff: "npm:^5.2.0"
     discord-api-types: "npm:^0.38.36"
+    dompurify: "npm:^3.3.1"
     email-providers: "npm:^1.14.0"
     emoji-mart: "npm:^5.6.0"
     emoji-regex: "npm:^10.6.0"

@@ -64,7 +64,7 @@ function cpFile(src, dest) {
  * @param {string} dir
  */
 function fixRequirePaths(dir) {
-  if (!existsSync(dir)) {
+  if (process.platform !== "win32" || !existsSync(dir)) {
     return;
   }
   const entries = readdirSync(dir, { withFileTypes: true });

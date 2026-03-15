@@ -55,7 +55,7 @@ function Embeds() {
         (team.getPreference(TeamPreference.DisabledEmbeds) as string[]) || [];
 
       const updated = enabled
-        ? disabledEmbeds.filter((t) => t !== id)
+        ? disabledEmbeds.filter((embedId) => embedId !== id)
         : [...disabledEmbeds, id];
 
       team.setPreference(TeamPreference.DisabledEmbeds, updated);
@@ -85,7 +85,7 @@ function Embeds() {
         [];
 
       const updated = enabled
-        ? disabled.filter((t) => t !== id)
+        ? disabled.filter((blockId) => blockId !== id)
         : [...disabled, id];
 
       team.setPreference(TeamPreference.DisabledMedicalBlocks, updated);
