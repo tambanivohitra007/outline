@@ -4,12 +4,26 @@ import auth from "@server/middlewares/authentication";
 import { transaction } from "@server/middlewares/transaction";
 import validate from "@server/middlewares/validate";
 import conditionCreator from "@server/commands/conditionCreator";
-import { Collection, Condition, ConditionSection, Document } from "@server/models";
+import {
+  CareDomain,
+  Collection,
+  Condition,
+  ConditionIntervention,
+  ConditionSection,
+  Document,
+  EvidenceEntry,
+  Intervention,
+  Scripture,
+} from "@server/models";
 import { DocumentHelper } from "@server/models/helpers/DocumentHelper";
 import { authorize } from "@server/policies";
 import {
   presentCondition,
+  presentConditionIntervention,
+  presentEvidenceEntry,
+  presentIntervention,
   presentPolicies,
+  presentScripture,
 } from "@server/presenters";
 import type { APIContext } from "@server/types";
 import pagination from "../middlewares/pagination";
@@ -271,11 +285,31 @@ router.post(
     }
     authorize(user, "read", condition);
 
-    const sections = await ConditionSection.findAll({
-      where: { conditionId: id },
-      include: [{ model: Document, as: "document" }],
-      order: [["sortOrder", "ASC"]],
-    });
+    // Fetch all related data in parallel
+    const [sections, conditionInterventions, evidence, scriptures] =
+      await Promise.all([
+        ConditionSection.findAll({
+          where: { conditionId: id },
+          include: [{ model: Document, as: "document" }],
+          order: [["sortOrder", "ASC"]],
+        }),
+        ConditionIntervention.findAll({
+          where: { conditionId: id },
+          include: [
+            { model: Intervention, as: "intervention" },
+            { model: CareDomain, as: "careDomain" },
+          ],
+          order: [["sortOrder", "ASC"]],
+        }),
+        EvidenceEntry.findAll({
+          where: { conditionId: id },
+          order: [["createdAt", "DESC"]],
+        }),
+        Scripture.findAll({
+          where: { conditionId: id },
+          order: [["createdAt", "DESC"]],
+        }),
+      ]);
 
     const compiledSections = await Promise.all(
       sections.map(async (section) => {
@@ -294,10 +328,22 @@ router.post(
       })
     );
 
+    // Build interventions with their linked data
+    const interventionsData = conditionInterventions.map((ci) => ({
+      ...presentConditionIntervention(ci),
+      intervention: ci.intervention
+        ? presentIntervention(ci.intervention)
+        : null,
+      careDomainName: ci.careDomain?.name ?? null,
+    }));
+
     ctx.body = {
       data: {
         condition: presentCondition(condition),
         sections: compiledSections,
+        interventions: interventionsData,
+        evidence: evidence.map(presentEvidenceEntry),
+        scriptures: scriptures.map(presentScripture),
       },
     };
   }
