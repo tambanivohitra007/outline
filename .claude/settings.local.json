@@ -95,7 +95,22 @@
       "Bash(find /c/Users/rindra/Projects/outline/server/models -name \"*User*\" -o -name \"*Authentication*\" | grep -E \"\\\\.\\(ts|js\\)$\" | head -15)",
       "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const icons = require\\('outline-icons'\\); console.log\\(Object.keys\\(icons\\).filter\\(k => /zoom|expand|collapse|full|fit|plus|minus|maximize|minimize|center/i.test\\(k\\)\\).join\\('\\\\n'\\)\\)\")",
       "Bash(node -e \"\nconst { Sequelize } = require\\('sequelize'\\);\nconst db = new Sequelize\\('postgres://user:pass@localhost:5432/outline', { logging: false }\\);\n\\(async \\(\\) => {\n  const [cols] = await db.query\\(\\\\\"SELECT column_name FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'passwordHash'\\\\\"\\);\n  console.log\\('passwordHash column:', cols.length > 0 ? 'EXISTS' : 'MISSING'\\);\n  await db.close\\(\\);\n}\\)\\(\\);\n\" 2>&1)",
-      "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const mm = require\\('markmap-view'\\); const proto = Object.getOwnPropertyNames\\(mm.Markmap.prototype\\); console.log\\(proto.join\\('\\\\n'\\)\\)\")"
+      "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const mm = require\\('markmap-view'\\); const proto = Object.getOwnPropertyNames\\(mm.Markmap.prototype\\); console.log\\(proto.join\\('\\\\n'\\)\\)\")",
+      "Bash(node -e \"\nconst bcrypt = require\\('bcryptjs'\\);\nconst { Sequelize } = require\\('sequelize'\\);\nconst db = new Sequelize\\('postgres://user:pass@localhost:5432/outline', { logging: false }\\);\n\\(async \\(\\) => {\n  const hash = await bcrypt.hash\\('password123', 10\\);\n  await db.query\\('UPDATE users SET \\\\\"passwordHash\\\\\" = :hash WHERE email = :email', {\n    replacements: { hash, email: 'rindra.it@gmail.com' }\n  }\\);\n  console.log\\('Set password for rindra.it@gmail.com to: password123'\\);\n  await db.close\\(\\);\n}\\)\\(\\);\n\" 2>&1)",
+      "Bash(taskkill //F //IM node.exe 2>&1; sleep 2; cd C:/Users/rindra/Projects/outline && yarn dev:watch 2>&1 | head -20)",
+      "Bash(sleep 15 && tasklist //FI \"IMAGENAME eq node.exe\" 2>/dev/null | head -5)",
+      "Bash(taskkill //F //IM node.exe 2>&1 | head -5)",
+      "Bash(cd C:/Users/rindra/Projects/outline && node build.js 2>&1 | tail -20)",
+      "Bash(cd C:/Users/rindra/Projects/outline && node build.js 2>&1)",
+      "Bash(taskkill //F //IM node.exe 2>/dev/null; sleep 2)",
+      "Bash(cd C:/Users/rindra/Projects/outline && yarn dev:backend 2>&1 | head -30)",
+      "Bash(node -e \"\nconst { Sequelize } = require\\('sequelize'\\);\nconst db = new Sequelize\\('postgres://user:pass@localhost:5432/outline', { logging: false }\\);\n\\(async \\(\\) => {\n  const [rows] = await db.query\\(\\\\\"SELECT name FROM \\\\\\\\\\\\\"SequelizeMeta\\\\\\\\\\\\\" WHERE name LIKE '%password%'\\\\\"\\);\n  console.log\\('Migration records:', rows\\);\n  await db.close\\(\\);\n}\\)\\(\\);\n\" 2>&1)",
+      "Bash(cd C:/Users/rindra/Projects/outline && node -e \"\nrequire\\('dotenvx'\\).config\\(\\);\nconst { User } = require\\('./build/server/models'\\);\nconsole.log\\('User model loaded OK'\\);\nconsole.log\\('passwordHash attr:', !!User.rawAttributes.passwordHash\\);\n\" 2>&1)",
+      "Bash(cd C:/Users/rindra/Projects/outline && npx dotenvx run -- node --inspect=0.0.0.0:9229 build/server/index.js 2>&1 | head -40)",
+      "Bash(taskkill //F //IM node.exe 2>/dev/null; docker compose up -d redis postgres 2>&1)",
+      "Bash(docker exec:*)",
+      "Bash(cd C:/Users/rindra/Projects/outline && rm -rf build/server build/plugins && node build.js 2>&1)",
+      "Bash(rm -rf build/server build/plugins && node build.js 2>&1 | tail -5)"
     ]
   }
 }
