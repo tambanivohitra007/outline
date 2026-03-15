@@ -1,11 +1,13 @@
 import { observer } from "mobx-react";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
 import { toast } from "sonner";
 import Flex from "~/components/Flex";
 import type Condition from "~/models/Condition";
 import useStores from "~/hooks/useStores";
 import { client } from "~/utils/ApiClient";
+import { conditionCompiledPath } from "~/utils/routeHelpers";
 import styled from "styled-components";
 import { s } from "@shared/styles";
 
@@ -24,6 +26,7 @@ const SECTION_TYPE_LABELS: Record<string, string> = {
 
 function ConditionHeader({ condition }: Props) {
   const { t } = useTranslation();
+  const history = useHistory();
   const { conditions } = useStores();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(condition.name);
@@ -61,6 +64,10 @@ function ConditionHeader({ condition }: Props) {
     },
     [conditions, condition, t]
   );
+
+  const handleViewCompiled = useCallback(() => {
+    history.push(conditionCompiledPath(condition.id));
+  }, [history, condition.id]);
 
   const handleReviewSummary = useCallback(async () => {
     setIsLoadingReview(true);
@@ -156,6 +163,9 @@ function ConditionHeader({ condition }: Props) {
             {t("Unpublish")}
           </StatusButton>
         )}
+        <CompileButton onClick={handleViewCompiled}>
+          {t("View Compiled Document")}
+        </CompileButton>
         <ReviewButton
           onClick={handleReviewSummary}
           disabled={isLoadingReview}
@@ -288,6 +298,22 @@ const StatusButton = styled.button<{ $variant: string }>`
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+`;
+
+const CompileButton = styled.button`
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 100ms ease;
+  border: 1px solid ${s("accent")};
+  background: ${s("accent")};
+  color: white;
+
+  &:hover {
+    opacity: 0.85;
   }
 `;
 
