@@ -12,8 +12,10 @@ import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import Icon from "@shared/components/Icon";
 import type { MenuItem } from "@shared/editor/types";
+import { TeamPreference } from "@shared/types";
 import { ProsemirrorHelper } from "@shared/utils/ProsemirrorHelper";
 import { TextHelper } from "@shared/utils/TextHelper";
+import useCurrentTeam from "~/hooks/useCurrentTeam";
 import useCurrentUser from "~/hooks/useCurrentUser";
 import useDictionary from "~/hooks/useDictionary";
 import useStores from "~/hooks/useStores";
@@ -117,12 +119,20 @@ type InsertMode = "bible" | "egw" | "ai";
 type Props = Omit<SuggestionsMenuProps, "renderMenuItem" | "items"> &
   Required<Pick<SuggestionsMenuProps, "embeds">>;
 
+/** Medical block item definitions with stable IDs for toggling. */
+export const MEDICAL_BLOCK_ITEMS = [
+  { id: "bible", labelKey: "Bible verse" },
+  { id: "egw", labelKey: "Spirit of Prophecy" },
+  { id: "ai", labelKey: "AI explanation" },
+] as const;
+
 function BlockMenu(props: Props) {
   const { t } = useTranslation();
   const dictionary = useDictionary();
   const editor = useEditor();
   const { elementRef } = editor;
   const templateMenuItem = useTemplateMenuItem();
+  const team = useCurrentTeam();
   const [insertMode, setInsertMode] = useState<InsertMode | null>(null);
 
   const documentId = editor.props.id;
@@ -130,33 +140,50 @@ function BlockMenu(props: Props) {
   const document = documentId ? documents.get(documentId) : undefined;
   const documentTitle = document?.title ?? "";
 
-  const medicalItems: MenuItem[] = useMemo(
-    () => [
-      { name: "separator" } as MenuItem,
+  const disabledMedical =
+    (team.getPreference(TeamPreference.DisabledMedicalBlocks) as string[]) ||
+    [];
+
+  const medicalItems: MenuItem[] = useMemo(() => {
+    const allItems: Array<{ id: string; item: MenuItem }> = [
       {
-        name: "noop",
-        title: t("Bible verse"),
-        icon: <BookmarkedIcon />,
-        keywords: "bible verse scripture reference",
-        onClick: () => setInsertMode("bible"),
+        id: "bible",
+        item: {
+          name: "noop",
+          title: t("Bible verse"),
+          icon: <BookmarkedIcon />,
+          keywords: "bible verse scripture reference",
+          onClick: () => setInsertMode("bible"),
+        },
       },
       {
-        name: "noop",
-        title: t("Spirit of Prophecy"),
-        icon: <LightBulbIcon />,
-        keywords: "egw ellen white spirit prophecy sop quote",
-        onClick: () => setInsertMode("egw"),
+        id: "egw",
+        item: {
+          name: "noop",
+          title: t("Spirit of Prophecy"),
+          icon: <LightBulbIcon />,
+          keywords: "egw ellen white spirit prophecy sop quote",
+          onClick: () => setInsertMode("egw"),
+        },
       },
       {
-        name: "noop",
-        title: t("AI explanation"),
-        icon: <SparklesIcon />,
-        keywords: "ai explain generate medical",
-        onClick: () => setInsertMode("ai"),
+        id: "ai",
+        item: {
+          name: "noop",
+          title: t("AI explanation"),
+          icon: <SparklesIcon />,
+          keywords: "ai explain generate medical",
+          onClick: () => setInsertMode("ai"),
+        },
       },
-    ],
-    [t]
-  );
+    ];
+
+    const enabled = allItems.filter((i) => !disabledMedical.includes(i.id));
+    if (enabled.length === 0) {
+      return [];
+    }
+    return [{ name: "separator" } as MenuItem, ...enabled.map((i) => i.item)];
+  }, [t, disabledMedical]);
 
   const items = useMemo(() => {
     const baseItems = getMenuItems(dictionary, elementRef);
