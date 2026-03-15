@@ -1,11 +1,14 @@
 import { observer } from "mobx-react";
-import { PlusIcon, CloseIcon } from "outline-icons";
+import { PlusIcon, CloseIcon, SearchIcon } from "outline-icons";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import Flex from "~/components/Flex";
 import type Condition from "~/models/Condition";
 import type Intervention from "~/models/Intervention";
+import BibleSearch from "~/components/medical/BibleSearch";
+import ClinicalTrialSearch from "~/components/medical/ClinicalTrialSearch";
+import PubMedSearch from "~/components/medical/PubMedSearch";
 import useStores from "~/hooks/useStores";
 import { client } from "~/utils/ApiClient";
 import styled from "styled-components";
@@ -32,6 +35,10 @@ function MetadataPanel({ condition }: Props) {
   const [aiSuggestions, setAiSuggestions] = useState<string | null>(null);
   const [aiSectionType, setAiSectionType] = useState("solutions");
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+
+  const [showPubMedSearch, setShowPubMedSearch] = useState(false);
+  const [showClinicalTrials, setShowClinicalTrials] = useState(false);
+  const [showBibleSearch, setShowBibleSearch] = useState(false);
 
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
   const [evidenceTitle, setEvidenceTitle] = useState("");
@@ -263,13 +270,34 @@ function MetadataPanel({ condition }: Props) {
           <PanelTitle>
             {t("Evidence")} ({evidence.length})
           </PanelTitle>
-          <AddButton
-            onClick={() => setShowEvidenceForm(!showEvidenceForm)}
-            title={t("Add evidence")}
-          >
-            <PlusIcon size={14} />
-          </AddButton>
+          <Flex gap={4}>
+            <AddButton
+              onClick={() => setShowPubMedSearch(!showPubMedSearch)}
+              title={t("Search PubMed")}
+            >
+              <SearchIcon size={14} />
+            </AddButton>
+            <AddButton
+              onClick={() => setShowEvidenceForm(!showEvidenceForm)}
+              title={t("Add manually")}
+            >
+              <PlusIcon size={14} />
+            </AddButton>
+          </Flex>
         </SectionHeader>
+
+        {showPubMedSearch && (
+          <SearchPanel>
+            <PubMedSearch
+              conditionId={condition.id}
+              onImport={() => {
+                void evidenceEntries.fetchPage({ conditionId: condition.id });
+                setShowPubMedSearch(false);
+                toast.success(t("Evidence imported from PubMed"));
+              }}
+            />
+          </SearchPanel>
+        )}
 
         {showEvidenceForm && (
           <InlineForm>
@@ -331,16 +359,64 @@ function MetadataPanel({ condition }: Props) {
 
       <PanelSection>
         <SectionHeader>
+          <PanelTitle>{t("Clinical Trials")}</PanelTitle>
+          <AddButton
+            onClick={() => setShowClinicalTrials(!showClinicalTrials)}
+            title={t("Search clinical trials")}
+          >
+            <SearchIcon size={14} />
+          </AddButton>
+        </SectionHeader>
+        {showClinicalTrials && (
+          <SearchPanel>
+            <ClinicalTrialSearch defaultQuery={condition.name} />
+          </SearchPanel>
+        )}
+        {!showClinicalTrials && (
+          <EmptyHint>
+            {t("Search ClinicalTrials.gov for related studies.")}
+          </EmptyHint>
+        )}
+      </PanelSection>
+
+      <PanelSection>
+        <SectionHeader>
           <PanelTitle>
             {t("Scriptures")} ({conditionScriptures.length})
           </PanelTitle>
-          <AddButton
-            onClick={() => setShowScriptureForm(!showScriptureForm)}
-            title={t("Add scripture")}
-          >
-            <PlusIcon size={14} />
-          </AddButton>
+          <Flex gap={4}>
+            <AddButton
+              onClick={() => setShowBibleSearch(!showBibleSearch)}
+              title={t("Search Bible")}
+            >
+              <SearchIcon size={14} />
+            </AddButton>
+            <AddButton
+              onClick={() => setShowScriptureForm(!showScriptureForm)}
+              title={t("Add manually")}
+            >
+              <PlusIcon size={14} />
+            </AddButton>
+          </Flex>
         </SectionHeader>
+
+        {showBibleSearch && (
+          <SearchPanel>
+            <BibleSearch
+              defaultQuery="health healing"
+              onSelect={async (reference, text) => {
+                await scriptures.create({
+                  reference,
+                  text,
+                  spiritOfProphecy: false,
+                  conditionId: condition.id,
+                });
+                setShowBibleSearch(false);
+                toast.success(t("Scripture reference added"));
+              }}
+            />
+          </SearchPanel>
+        )}
 
         {showScriptureForm && (
           <InlineForm>
@@ -716,6 +792,14 @@ const FormButton = styled.button<{ $primary?: boolean }>`
   &:hover {
     opacity: 0.9;
   }
+`;
+
+const SearchPanel = styled.div`
+  margin-bottom: 8px;
+  padding: 8px;
+  border: 1px solid ${s("divider")};
+  border-radius: 6px;
+  background: ${s("sidebarBackground")};
 `;
 
 const AISuggestRow = styled(Flex)`
