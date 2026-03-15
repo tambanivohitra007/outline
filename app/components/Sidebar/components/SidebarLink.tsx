@@ -276,7 +276,7 @@ const Link = styled(NavLink)<{
   text-overflow: ellipsis;
   font-weight: 475;
   padding: ${isMobile() ? 12 : 6}px 16px;
-  border-radius: 4px;
+  border-radius: 4px 20px 20px 4px;
   min-height: 30px;
   user-select: none;
   white-space: nowrap;
@@ -307,7 +307,7 @@ const Link = styled(NavLink)<{
         right: 0;
         bottom: 0;
         pointer-events: none;
-        border-radius: 4px;
+        border-radius: 4px 20px 20px 4px;
         border: 1.5px dashed ${props.theme.sidebarDraftBorder};
       }
     `}
@@ -329,7 +329,7 @@ const Link = styled(NavLink)<{
   }
 
   ${breakpoint("tablet")`
-    padding: 3px 8px 3px 12px;
+    padding: 10px 8px 10px 12px;
     font-size: 14px;
   `}
 
