@@ -15,15 +15,6 @@ interface Props {
   condition: Condition;
 }
 
-const SECTION_TYPE_LABELS: Record<string, string> = {
-  risk_factors: "Risk Factors",
-  physiology: "Physiology",
-  complications: "Complications",
-  solutions: "Solutions",
-  bible_sop: "Bible & Spirit of Prophecy",
-  research_ideas: "Research Ideas",
-};
-
 function ConditionHeader({ condition }: Props) {
   const { t } = useTranslation();
   const history = useHistory();

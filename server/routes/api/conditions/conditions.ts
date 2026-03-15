@@ -267,9 +267,9 @@ router.post(
 
     const condition = await Condition.findByPk(id);
     if (!condition || condition.teamId !== user.teamId) {
-      ctx.throw(404);
+      return ctx.throw(404);
     }
-    authorize(user, "read", condition!);
+    authorize(user, "read", condition);
 
     const sections = await ConditionSection.findAll({
       where: { conditionId: id },
@@ -296,7 +296,7 @@ router.post(
 
     ctx.body = {
       data: {
-        condition: presentCondition(condition!),
+        condition: presentCondition(condition),
         sections: compiledSections,
       },
     };

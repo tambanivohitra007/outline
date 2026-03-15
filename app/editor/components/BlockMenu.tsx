@@ -140,9 +140,13 @@ function BlockMenu(props: Props) {
   const document = documentId ? documents.get(documentId) : undefined;
   const documentTitle = document?.title ?? "";
 
-  const disabledMedical =
-    (team.getPreference(TeamPreference.DisabledMedicalBlocks) as string[]) ||
-    [];
+  const disabledMedicalRaw = team.getPreference(
+    TeamPreference.DisabledMedicalBlocks
+  );
+  const disabledMedical = Array.isArray(disabledMedicalRaw)
+    ? disabledMedicalRaw
+    : [];
+  const disabledMedicalKey = disabledMedical.join(",");
 
   const medicalItems: MenuItem[] = useMemo(() => {
     const allItems: Array<{ id: string; item: MenuItem }> = [
@@ -183,7 +187,8 @@ function BlockMenu(props: Props) {
       return [];
     }
     return [{ name: "separator" } as MenuItem, ...enabled.map((i) => i.item)];
-  }, [t, disabledMedical]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t, disabledMedicalKey]);
 
   const items = useMemo(() => {
     const baseItems = getMenuItems(dictionary, elementRef);

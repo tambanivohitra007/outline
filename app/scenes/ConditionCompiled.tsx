@@ -1,17 +1,20 @@
-import { observer } from "mobx-react";
+import DOMPurify from "dompurify";
+import markdownit from "markdown-it";
 import { PrintIcon, BackIcon } from "outline-icons";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import type { RouteComponentProps } from "react-router-dom";
+import { toast } from "sonner";
+import styled from "styled-components";
+import { s } from "@shared/styles";
 import Flex from "~/components/Flex";
 import PlaceholderDocument from "~/components/PlaceholderDocument";
 import Scene from "~/components/Scene";
-import useStores from "~/hooks/useStores";
 import { client } from "~/utils/ApiClient";
 import { conditionPath } from "~/utils/routeHelpers";
-import styled from "styled-components";
-import { s } from "@shared/styles";
+
+const md = markdownit({ html: false, breaks: true, linkify: false });
 
 interface CompiledSection {
   id: string;
@@ -38,10 +41,19 @@ type Params = {
 
 type Props = RouteComponentProps<Params>;
 
+/**
+ * Safely convert markdown to sanitized HTML.
+ *
+ * @param content Markdown string.
+ * @returns Sanitized HTML string.
+ */
+function markdownToHtml(content: string): string {
+  return DOMPurify.sanitize(md.render(content));
+}
+
 function ConditionCompiled({ match }: Props) {
   const { t } = useTranslation();
   const history = useHistory();
-  const { conditions } = useStores();
   const { id } = match.params;
   const [data, setData] = useState<CompiledData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,7 +90,24 @@ function ConditionCompiled({ match }: Props) {
       return;
     }
     const full = buildFullMarkdown(data);
-    await navigator.clipboard.writeText(full);
+    try {
+      await navigator.clipboard.writeText(full);
+      toast.success(t("Copied to clipboard"));
+    } catch {
+      toast.error(t("Failed to copy to clipboard"));
+    }
+  }, [data, t]);
+
+  const renderedSections = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+    return data.sections
+      .filter((section) => section.markdown.trim().length > 0)
+      .map((section) => ({
+        ...section,
+        html: markdownToHtml(section.markdown),
+      }));
   }, [data]);
 
   if (isLoading) {
@@ -97,8 +126,7 @@ function ConditionCompiled({ match }: Props) {
     );
   }
 
-  const { condition, sections } = data;
-  const nonEmpty = sections.filter((s) => s.markdown.trim().length > 0);
+  const { condition } = data;
 
   return (
     <Scene title={`${condition.name} - ${t("Compiled Document")}`} wide>
@@ -143,7 +171,7 @@ function ConditionCompiled({ match }: Props) {
         <TableOfContents>
           <TocTitle>{t("Table of Contents")}</TocTitle>
           <TocList>
-            {nonEmpty.map((section, idx) => (
+            {renderedSections.map((section, idx) => (
               <TocItem key={section.id}>
                 <TocLink href={`#section-${section.id}`}>
                   {idx + 1}. {section.title}
@@ -155,21 +183,21 @@ function ConditionCompiled({ match }: Props) {
 
         <Divider />
 
-        {nonEmpty.map((section, idx) => (
+        {renderedSections.map((section, idx) => (
           <SectionBlock key={section.id} id={`section-${section.id}`}>
             <SectionNumber>{idx + 1}</SectionNumber>
             <SectionTitle>{section.title}</SectionTitle>
             <SectionContent>
               <MarkdownContent
                 dangerouslySetInnerHTML={{
-                  __html: markdownToHtml(section.markdown),
+                  __html: section.html,
                 }}
               />
             </SectionContent>
           </SectionBlock>
         ))}
 
-        {nonEmpty.length === 0 && (
+        {renderedSections.length === 0 && (
           <EmptyState>
             {t("No section content has been written yet.")}
           </EmptyState>
@@ -221,60 +249,6 @@ function buildFullMarkdown(data: CompiledData): string {
   return lines.join("\n");
 }
 
-/**
- * Convert markdown text to basic HTML for display.
- * Handles headings, bold, italic, lists, paragraphs, and line breaks.
- *
- * @param md The markdown string.
- * @returns HTML string.
- */
-function markdownToHtml(md: string): string {
-  let html = md
-    // Escape HTML entities
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-
-  // Headings
-  html = html.replace(/^### (.+)$/gm, "<h4>$1</h4>");
-  html = html.replace(/^## (.+)$/gm, "<h3>$1</h3>");
-  html = html.replace(/^# (.+)$/gm, "<h2>$1</h2>");
-
-  // Bold and italic
-  html = html.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
-  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
-
-  // Unordered lists
-  html = html.replace(/^[*-] (.+)$/gm, "<li>$1</li>");
-
-  // Ordered lists
-  html = html.replace(/^\d+\. (.+)$/gm, "<li>$1</li>");
-
-  // Wrap consecutive <li> in <ul>
-  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, "<ul>$1</ul>");
-
-  // Horizontal rules
-  html = html.replace(/^---$/gm, "<hr />");
-
-  // Paragraphs: wrap lines that are not already HTML tags
-  html = html
-    .split("\n\n")
-    .map((block) => {
-      const trimmed = block.trim();
-      if (!trimmed) {
-        return "";
-      }
-      if (/^<(h[1-6]|ul|ol|li|hr|blockquote)/.test(trimmed)) {
-        return trimmed;
-      }
-      return `<p>${trimmed.replace(/\n/g, "<br />")}</p>`;
-    })
-    .join("\n");
-
-  return html;
-}
-
 // Styled components
 
 const Toolbar = styled(Flex)`
@@ -323,7 +297,7 @@ const ToolbarButton = styled.button<{ $primary?: boolean }>`
   border: ${(props) =>
     props.$primary ? "none" : `1px solid ${props.theme.divider}`};
   background: ${(props) => (props.$primary ? props.theme.accent : "transparent")};
-  color: ${(props) => (props.$primary ? "#fff" : props.theme.textSecondary)};
+  color: ${(props) => (props.$primary ? props.theme.accentText : props.theme.textSecondary)};
 
   &:hover {
     opacity: 0.85;
@@ -377,16 +351,16 @@ const StatusBadge = styled.span<{ $status: string }>`
   border-radius: 10px;
   background: ${(props) =>
     props.$status === "published"
-      ? "#d4edda"
+      ? props.theme.noticeSuccessBackground
       : props.$status === "review"
-        ? "#fff3cd"
-        : "#e2e8f0"};
+        ? props.theme.noticeInfoBackground
+        : s("backgroundSecondary")(props)};
   color: ${(props) =>
     props.$status === "published"
-      ? "#155724"
+      ? props.theme.noticeSuccessText
       : props.$status === "review"
-        ? "#856404"
-        : "#4a5568"};
+        ? props.theme.noticeInfoText
+        : s("textTertiary")(props)};
 `;
 
 const Divider = styled.hr`
@@ -441,7 +415,7 @@ const SectionNumber = styled.span`
   text-align: center;
   border-radius: 50%;
   background: ${s("accent")};
-  color: #fff;
+  color: ${s("accentText")};
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 8px;
@@ -516,8 +490,8 @@ const FooterText = styled.span`
 const ErrorMessage = styled.div`
   padding: 40px;
   text-align: center;
-  color: #dc3545;
+  color: ${s("danger")};
   font-size: 14px;
 `;
 
-export default observer(ConditionCompiled);
+export default ConditionCompiled;
