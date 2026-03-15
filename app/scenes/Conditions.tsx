@@ -14,6 +14,7 @@ import Input from "~/components/Input";
 import Scene from "~/components/Scene";
 import Subheading from "~/components/Subheading";
 import Text from "~/components/Text";
+import AISearchBar from "~/components/medical/AISearchBar";
 import useStores from "~/hooks/useStores";
 import { conditionPath } from "~/utils/routeHelpers";
 import styled from "styled-components";
@@ -124,6 +125,8 @@ function Conditions() {
           "Manage condition treatment guides with structured sections for risk factors, physiology, complications, and interventions."
         )}
       </Text>
+
+      <AISearchBar />
 
       {showCreateForm && (
         <CreateFormCard>
