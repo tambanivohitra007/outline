@@ -1,8 +1,10 @@
 import { observer } from "mobx-react";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { useHistory } from "react-router-dom";
 import type ConditionSection from "~/models/ConditionSection";
+import AIGenerateButton from "~/components/medical/AIGenerateButton";
 import useStores from "~/hooks/useStores";
 import { client } from "~/utils/ApiClient";
 import styled from "styled-components";
@@ -10,6 +12,7 @@ import { s } from "@shared/styles";
 
 interface Props {
   section: ConditionSection;
+  conditionName: string;
 }
 
 const SECTION_ICONS: Record<string, string> = {
@@ -30,7 +33,7 @@ const SECTION_DESCRIPTIONS: Record<string, string> = {
   research_ideas: "Document research gaps and potential study ideas.",
 };
 
-function SectionPanel({ section }: Props) {
+function SectionPanel({ section, conditionName }: Props) {
   const { t } = useTranslation();
   const { documents, conditionSections } = useStores();
   const history = useHistory();
@@ -103,6 +106,17 @@ function SectionPanel({ section }: Props) {
                 </PreviewContent>
                 <OpenButton>{t("Open Editor")}</OpenButton>
               </DocumentPreview>
+              <AIGenerateButton
+                conditionName={conditionName}
+                sectionType={section.sectionType}
+                onGenerated={(content) => {
+                  if (document) {
+                    void navigator.clipboard.writeText(content);
+                    toast.success(t("Content copied to clipboard. Paste it in the editor."));
+                    history.push(document.path);
+                  }
+                }}
+              />
             </EditorArea>
           ) : (
             <NoDocPlaceholder>

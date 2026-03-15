@@ -82,7 +82,7 @@ function ConditionEditor({ match }: Props) {
             </EmptyState>
           ) : (
             sections.map((section) => (
-              <SectionPanel key={section.id} section={section} />
+              <SectionPanel key={section.id} section={section} conditionName={condition.name} />
             ))
           )}
         </MainContent>
