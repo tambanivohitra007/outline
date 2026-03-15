@@ -148,6 +148,22 @@ router.post(
   }
 );
 
+// Bible chapter
+
+router.post(
+  "medical.bible.chapter",
+  auth(),
+  validate(T.MedicalBibleChapterSchema),
+  async (ctx: APIContext<T.MedicalBibleChapterReq>) => {
+    const { chapterId, translation } = ctx.input.body;
+    const result = await BibleService.getChapter(chapterId, translation);
+
+    ctx.body = {
+      data: result,
+    };
+  }
+);
+
 // Bible translations
 
 router.post(

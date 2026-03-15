@@ -215,7 +215,7 @@ const Content = styled.span`
   min-width: 0;
 `;
 
-const Actions = styled(EventBoundary)<{ $showActions?: boolean }>`
+const Actions = styled(EventBoundary) <{ $showActions?: boolean }>`
   display: inline-flex;
   visibility: ${(props) => (props.$showActions ? "visible" : "hidden")};
   position: absolute;
@@ -250,7 +250,7 @@ const HiddenDisclosure = styled(Disclosure)`
   margin-right: 6px;
 `;
 
-const Link = styled(NavLink)<{
+const Link = styled(NavLink) <{
   $isActiveDrop?: boolean;
   $isDraft?: boolean;
   $disabled?: boolean;
@@ -267,6 +267,11 @@ const Link = styled(NavLink)<{
 
   &[aria-current="page"] svg {
     fill: ${s("white")};
+  }
+
+  &[aria-current="page"] {
+    opacity: 1;
+    font-weight: 100;
   }
 
   &::before {
@@ -289,6 +294,7 @@ const Link = styled(NavLink)<{
   position: relative;
   text-overflow: ellipsis;
   font-weight: 400;
+  opacity: 0.75;
   padding: ${isMobile() ? 12 : 6}px 16px;
   border-radius: 4px 20px 20px 4px;
   min-height: 30px;

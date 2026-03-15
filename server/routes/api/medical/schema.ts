@@ -65,6 +65,15 @@ export const MedicalBibleLookupSchema = BaseSchema.extend({
 
 export type MedicalBibleLookupReq = z.infer<typeof MedicalBibleLookupSchema>;
 
+export const MedicalBibleChapterSchema = BaseSchema.extend({
+  body: z.object({
+    chapterId: z.string().min(1),
+    translation: z.string().optional(),
+  }),
+});
+
+export type MedicalBibleChapterReq = z.infer<typeof MedicalBibleChapterSchema>;
+
 export const MedicalBibleTranslationsSchema = BaseSchema.extend({
   body: z.object({
     language: z.string().optional(),
