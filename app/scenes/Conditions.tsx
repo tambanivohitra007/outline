@@ -1,6 +1,6 @@
 import invariant from "invariant";
 import { observer } from "mobx-react";
-import { BeakerIcon, PlusIcon, TrashIcon } from "outline-icons";
+import { BeakerIcon, PlusIcon, TrashIcon, CloseIcon } from "outline-icons";
 import { useEffect, useCallback, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -27,6 +27,13 @@ function Conditions() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
+  // Create form state
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createName, setCreateName] = useState("");
+  const [createSnomed, setCreateSnomed] = useState("");
+  const [createIcd, setCreateIcd] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+
   useEffect(() => {
     void conditions.fetchPage();
   }, [conditions]);
@@ -49,17 +56,34 @@ function Conditions() {
   }, [conditions.orderedData, search, statusFilter]);
 
   const handleCreate = useCallback(async () => {
-    const name = window.prompt(t("Enter the condition name:"));
-    if (!name?.trim()) {
+    if (!createName.trim()) {
       return;
     }
-    const res = await conditions.create({
-      name: name.trim(),
-      status: "draft",
-    });
-    invariant(res, "Condition should be created");
-    history.push(conditionPath(res.id));
-  }, [conditions, history, t]);
+    setIsCreating(true);
+    try {
+      const res = await conditions.create({
+        name: createName.trim(),
+        snomedCode: createSnomed.trim() || undefined,
+        icdCode: createIcd.trim() || undefined,
+        status: "draft",
+      });
+      invariant(res, "Condition should be created");
+      setCreateName("");
+      setCreateSnomed("");
+      setCreateIcd("");
+      setShowCreateForm(false);
+      history.push(conditionPath(res.id));
+    } finally {
+      setIsCreating(false);
+    }
+  }, [conditions, history, createName, createSnomed, createIcd]);
+
+  const handleCancelCreate = useCallback(() => {
+    setShowCreateForm(false);
+    setCreateName("");
+    setCreateSnomed("");
+    setCreateIcd("");
+  }, []);
 
   const handleDelete = useCallback(
     async (e: React.MouseEvent, condition: { id: string; name: string }) => {
@@ -85,7 +109,10 @@ function Conditions() {
       title={t("Conditions")}
       actions={
         <Action>
-          <Button icon={<PlusIcon />} onClick={handleCreate}>
+          <Button
+            icon={<PlusIcon />}
+            onClick={() => setShowCreateForm(true)}
+          >
             {t("New condition")}
           </Button>
         </Action>
@@ -97,6 +124,57 @@ function Conditions() {
           "Manage condition treatment guides with structured sections for risk factors, physiology, complications, and interventions."
         )}
       </Text>
+
+      {showCreateForm && (
+        <CreateFormCard>
+          <CreateFormHeader>
+            <CreateFormTitle>{t("New Condition")}</CreateFormTitle>
+            <CloseButton onClick={handleCancelCreate}>
+              <CloseIcon size={16} />
+            </CloseButton>
+          </CreateFormHeader>
+          <CreateFormFields>
+            <FormGroup>
+              <FormLabel>{t("Condition Name")} *</FormLabel>
+              <FormInput
+                placeholder={t("e.g. Type 2 Diabetes Mellitus")}
+                value={createName}
+                onChange={(e) => setCreateName(e.target.value)}
+                autoFocus
+              />
+            </FormGroup>
+            <FormRow>
+              <FormGroup>
+                <FormLabel>{t("SNOMED CT Code")}</FormLabel>
+                <FormInput
+                  placeholder={t("e.g. 44054006")}
+                  value={createSnomed}
+                  onChange={(e) => setCreateSnomed(e.target.value)}
+                />
+              </FormGroup>
+              <FormGroup>
+                <FormLabel>{t("ICD Code")}</FormLabel>
+                <FormInput
+                  placeholder={t("e.g. E11")}
+                  value={createIcd}
+                  onChange={(e) => setCreateIcd(e.target.value)}
+                />
+              </FormGroup>
+            </FormRow>
+            <FormActions>
+              <CreateButton
+                onClick={handleCreate}
+                disabled={!createName.trim() || isCreating}
+              >
+                {isCreating ? `${t("Creating")}\u2026` : t("Create Condition")}
+              </CreateButton>
+              <CancelButton onClick={handleCancelCreate}>
+                {t("Cancel")}
+              </CancelButton>
+            </FormActions>
+          </CreateFormFields>
+        </CreateFormCard>
+      )}
 
       <FilterRow>
         <SearchInput
@@ -178,6 +256,126 @@ function Conditions() {
     </Scene>
   );
 }
+
+const CreateFormCard = styled.div`
+  border: 1px solid ${s("accent")};
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  background: ${s("background")};
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+`;
+
+const CreateFormHeader = styled(Flex)`
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const CreateFormTitle = styled.h3`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: ${s("text")};
+`;
+
+const CloseButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  color: ${s("textTertiary")};
+  cursor: pointer;
+
+  &:hover {
+    color: ${s("text")};
+  }
+`;
+
+const CreateFormFields = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+`;
+
+const FormRow = styled(Flex)`
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
+`;
+
+const FormLabel = styled.label`
+  font-size: 13px;
+  font-weight: 500;
+  color: ${s("textSecondary")};
+`;
+
+const FormInput = styled.input`
+  padding: 8px 12px;
+  border: 1px solid ${s("divider")};
+  border-radius: 6px;
+  background: ${s("background")};
+  color: ${s("text")};
+  font-size: 14px;
+  outline: none;
+
+  &:focus {
+    border-color: ${s("accent")};
+  }
+`;
+
+const FormActions = styled(Flex)`
+  gap: 8px;
+  margin-top: 4px;
+`;
+
+const CreateButton = styled.button`
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  background: ${(props) => props.theme.accent};
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 100ms ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const CancelButton = styled.button`
+  padding: 8px 20px;
+  border: 1px solid ${s("divider")};
+  border-radius: 6px;
+  background: transparent;
+  color: ${s("textSecondary")};
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    border-color: ${s("text")};
+  }
+`;
 
 const FilterRow = styled(Flex)`
   gap: 16px;
