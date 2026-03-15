@@ -862,7 +862,7 @@ const FilterBar = styled(Flex)`
 
 const SearchInput = styled.input`
   flex: 1;
-  min-width: 220px;
+  min-width: 0;
   padding: 8px 12px;
   border: 1px solid ${s("divider")};
   border-radius: 6px;
@@ -870,6 +870,7 @@ const SearchInput = styled.input`
   color: ${s("text")};
   font-size: 14px;
   outline: none;
+  box-sizing: border-box;
   &:focus { border-color: ${s("accent")}; }
 `;
 
@@ -972,7 +973,7 @@ const DomainCount = styled.span`
 
 const ScriptureList = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
   gap: 12px;
 `;
 
@@ -1133,6 +1134,11 @@ const FormGroup = styled.div<{ $span?: number }>`
   flex-direction: column;
   gap: 4px;
   grid-column: ${(p) => (p.$span ? `span ${p.$span}` : "span 1")};
+  min-width: 0;
+
+  @media (max-width: 700px) {
+    grid-column: span 1;
+  }
 `;
 
 const FormLabel = styled.label`
@@ -1149,6 +1155,9 @@ const FormInput = styled.input`
   color: ${s("text")};
   font-size: 14px;
   outline: none;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   &:focus { border-color: ${s("accent")}; }
 `;
 
@@ -1162,6 +1171,9 @@ const FormTextarea = styled.textarea`
   outline: none;
   resize: vertical;
   font-family: inherit;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   &:focus { border-color: ${s("accent")}; }
 `;
 
@@ -1173,6 +1185,9 @@ const FormSelect = styled.select`
   color: ${s("text")};
   font-size: 14px;
   outline: none;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   &:focus { border-color: ${s("accent")}; }
 `;
 
@@ -1231,6 +1246,7 @@ const ApiSection = styled.div`
   border: 1px solid ${s("divider")};
   border-radius: 10px;
   overflow: hidden;
+  max-width: 100%;
 `;
 
 const ApiTabs = styled.div`
@@ -1276,6 +1292,7 @@ const ApiSearchRow = styled(Flex)`
 
 const ApiSearchInput = styled.input`
   flex: 1;
+  min-width: 0;
   padding: 10px 14px;
   border: 1px solid ${s("divider")};
   border-radius: 8px;
@@ -1283,6 +1300,7 @@ const ApiSearchInput = styled.input`
   color: ${s("text")};
   font-size: 14px;
   outline: none;
+  box-sizing: border-box;
   &:focus { border-color: ${s("accent")}; }
 `;
 
@@ -1388,7 +1406,7 @@ const EgwBrowserTitle = styled.h4`
 
 const EgwBookGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
   gap: 8px;
   margin-top: 10px;
   max-height: 300px;
