@@ -2,11 +2,9 @@ import { z } from "zod";
 import { BaseSchema } from "../schema";
 
 export const ConditionSectionsListSchema = BaseSchema.extend({
-  body: z
-    .object({
-      conditionId: z.uuid(),
-    })
-    .default({}),
+  body: z.object({
+    conditionId: z.uuid(),
+  }),
 });
 
 export type ConditionSectionsListReq = z.infer<

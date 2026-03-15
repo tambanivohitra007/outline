@@ -50,7 +50,7 @@ router.get(
       domain,
     });
 
-    Logger.info("developer", `Dev login as ${user.email}`);
+    Logger.info("lifecycle", `Dev login as ${user.email}`);
     ctx.redirect("/");
   }
 );
