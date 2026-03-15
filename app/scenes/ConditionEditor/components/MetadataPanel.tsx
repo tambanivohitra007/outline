@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import Flex from "~/components/Flex";
 import type Condition from "~/models/Condition";
+import type Intervention from "~/models/Intervention";
 import useStores from "~/hooks/useStores";
 import styled from "styled-components";
 import { s } from "@shared/styles";
@@ -15,7 +16,16 @@ interface Props {
 
 function MetadataPanel({ condition }: Props) {
   const { t } = useTranslation();
-  const { conditions, evidenceEntries, scriptures } = useStores();
+  const {
+    conditions,
+    conditionInterventions,
+    interventions,
+    evidenceEntries,
+    scriptures,
+  } = useStores();
+
+  const [showInterventionSearch, setShowInterventionSearch] = useState(false);
+  const [interventionQuery, setInterventionQuery] = useState("");
 
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
   const [evidenceTitle, setEvidenceTitle] = useState("");
@@ -29,9 +39,11 @@ function MetadataPanel({ condition }: Props) {
   const [sopSource, setSopSource] = useState("");
 
   useEffect(() => {
+    void conditionInterventions.fetchPage({ conditionId: condition.id });
+    void interventions.fetchPage();
     void evidenceEntries.fetchPage({ conditionId: condition.id });
     void scriptures.fetchPage({ conditionId: condition.id });
-  }, [condition.id, evidenceEntries, scriptures]);
+  }, [condition.id, conditionInterventions, interventions, evidenceEntries, scriptures]);
 
   const handleStatusChange = async (
     e: React.ChangeEvent<HTMLSelectElement>
@@ -41,6 +53,27 @@ function MetadataPanel({ condition }: Props) {
       status: e.target.value as "draft" | "review" | "published",
     });
   };
+
+  const handleLinkIntervention = useCallback(
+    async (intervention: Intervention) => {
+      await conditionInterventions.create({
+        conditionId: condition.id,
+        interventionId: intervention.id,
+      });
+      setInterventionQuery("");
+      setShowInterventionSearch(false);
+      toast.success(t("Intervention linked"));
+    },
+    [condition.id, conditionInterventions, t]
+  );
+
+  const handleUnlinkIntervention = useCallback(
+    async (linkId: string) => {
+      await conditionInterventions.delete({ id: linkId } as any);
+      toast.success(t("Intervention unlinked"));
+    },
+    [conditionInterventions, t]
+  );
 
   const handleAddEvidence = useCallback(async () => {
     if (!evidenceTitle.trim()) {
@@ -94,6 +127,15 @@ function MetadataPanel({ condition }: Props) {
     [scriptures, t]
   );
 
+  const links = conditionInterventions.forCondition(condition.id);
+  const linkedInterventionIds = new Set(links.map((l) => l.interventionId));
+  const availableInterventions = interventions.orderedData.filter(
+    (i) =>
+      !linkedInterventionIds.has(i.id) &&
+      (!interventionQuery.trim() ||
+        i.name.toLowerCase().includes(interventionQuery.trim().toLowerCase()))
+  );
+
   const evidence = evidenceEntries.forCondition(condition.id);
   const conditionScriptures = scriptures.forCondition(condition.id);
 
@@ -121,6 +163,75 @@ function MetadataPanel({ condition }: Props) {
           <MetaLabel>{t("ICD Code")}</MetaLabel>
           <MetaValue>{condition.icdCode || t("Not set")}</MetaValue>
         </MetaField>
+      </PanelSection>
+
+      <PanelSection>
+        <SectionHeader>
+          <PanelTitle>
+            {t("Interventions")} ({links.length})
+          </PanelTitle>
+          <AddButton
+            onClick={() => setShowInterventionSearch(!showInterventionSearch)}
+            title={t("Link intervention")}
+          >
+            <PlusIcon size={14} />
+          </AddButton>
+        </SectionHeader>
+
+        {showInterventionSearch && (
+          <InlineForm>
+            <FormInput
+              placeholder={t("Search interventions\u2026")}
+              value={interventionQuery}
+              onChange={(e) => setInterventionQuery(e.target.value)}
+              autoFocus
+            />
+            <SearchResults>
+              {availableInterventions.slice(0, 5).map((intervention) => (
+                <SearchResultItem
+                  key={intervention.id}
+                  onClick={() => handleLinkIntervention(intervention)}
+                >
+                  {intervention.name}
+                  {intervention.category && (
+                    <ResultMeta>{intervention.category}</ResultMeta>
+                  )}
+                </SearchResultItem>
+              ))}
+              {availableInterventions.length === 0 && (
+                <EmptyHint>{t("No matching interventions found.")}</EmptyHint>
+              )}
+            </SearchResults>
+          </InlineForm>
+        )}
+
+        {links.length === 0 && !showInterventionSearch ? (
+          <EmptyHint>{t("No interventions linked.")}</EmptyHint>
+        ) : (
+          <ItemList>
+            {links.map((link) => {
+              const intervention = interventions.get(link.interventionId);
+              return (
+                <InterventionItem key={link.id}>
+                  <ItemContent>
+                    <InterventionName>
+                      {intervention?.name ?? link.interventionId}
+                    </InterventionName>
+                    {link.evidenceLevel && (
+                      <EvidenceMeta>{link.evidenceLevel}</EvidenceMeta>
+                    )}
+                  </ItemContent>
+                  <RemoveButton
+                    onClick={() => handleUnlinkIntervention(link.id)}
+                    title={t("Unlink")}
+                  >
+                    <CloseIcon size={12} />
+                  </RemoveButton>
+                </InterventionItem>
+              );
+            })}
+          </ItemList>
+        )}
       </PanelSection>
 
       <PanelSection>
@@ -369,6 +480,42 @@ const ItemContent = styled.div`
   min-width: 0;
 `;
 
+const InterventionItem = styled(Flex)`
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+`;
+
+const InterventionName = styled.span`
+  font-size: 13px;
+  font-weight: 500;
+  color: ${s("text")};
+`;
+
+const SearchResults = styled.div`
+  max-height: 150px;
+  overflow-y: auto;
+`;
+
+const SearchResultItem = styled.div`
+  padding: 6px 8px;
+  font-size: 12px;
+  color: ${s("text")};
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: ${s("listItemHoverBackground")};
+  }
+`;
+
+const ResultMeta = styled.span`
+  font-size: 11px;
+  color: ${s("textTertiary")};
+  margin-left: 6px;
+`;
+
 const EvidenceItem = styled(Flex)`
   align-items: flex-start;
   gap: 4px;
@@ -424,6 +571,7 @@ const RemoveButton = styled.button`
   opacity: 0;
   transition: opacity 100ms ease, color 100ms ease;
 
+  ${InterventionItem}:hover &,
   ${EvidenceItem}:hover &,
   ${ScriptureItem}:hover & {
     opacity: 1;

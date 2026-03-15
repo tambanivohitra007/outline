@@ -7,6 +7,7 @@ import AuthenticationProvidersStore from "./AuthenticationProvidersStore";
 import CareDomainsStore from "./CareDomainsStore";
 import CollectionsStore from "./CollectionsStore";
 import CommentsStore from "./CommentsStore";
+import ConditionInterventionsStore from "./ConditionInterventionsStore";
 import ConditionSectionsStore from "./ConditionSectionsStore";
 import ConditionsStore from "./ConditionsStore";
 import DialogsStore from "./DialogsStore";
@@ -51,6 +52,7 @@ export default class RootStore {
   careDomains: CareDomainsStore;
   collections: CollectionsStore;
   conditions: ConditionsStore;
+  conditionInterventions: ConditionInterventionsStore;
   conditionSections: ConditionSectionsStore;
   groupMemberships: GroupMembershipsStore;
   comments: CommentsStore;
@@ -122,6 +124,7 @@ export default class RootStore {
     // Medical domain stores
     this.registerStore(CareDomainsStore);
     this.registerStore(ConditionsStore);
+    this.registerStore(ConditionInterventionsStore);
     this.registerStore(ConditionSectionsStore);
     this.registerStore(EvidenceEntriesStore);
     this.registerStore(InterventionsStore);
