@@ -76,6 +76,7 @@ const Title = styled(Text)`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: inherit;
 `;
 
 const Content = styled(HStack)`
