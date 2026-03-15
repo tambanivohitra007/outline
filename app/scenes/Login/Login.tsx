@@ -4,7 +4,7 @@ import { EmailIcon } from "outline-icons";
 import * as React from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useLocation, Link, Redirect } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { getCookie, setCookie } from "tiny-cookie";
 import { s } from "@shared/styles";
 import { Client, UserPreference } from "@shared/types";
@@ -35,6 +35,7 @@ import Desktop from "~/utils/Desktop";
 import isCloudHosted from "~/utils/isCloudHosted";
 import { detectLanguage } from "~/utils/language";
 import { homePath } from "~/utils/routeHelpers";
+import { fadeAndSlideUp } from "~/styles/animations";
 import AuthenticationProvider from "./components/AuthenticationProvider";
 import { BackButton } from "./components/BackButton";
 import { Notices } from "./components/Notices";
@@ -428,11 +429,6 @@ function BrandingContent() {
   );
 }
 
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
 const LoginWrapper = styled.div`
   display: flex;
   width: 100vw;
@@ -585,7 +581,7 @@ const FormContainer = styled(Flex).attrs({
   user-select: none;
   width: 90%;
   max-width: 380px;
-  animation: ${fadeIn} 400ms ease-out;
+  animation: ${fadeAndSlideUp} 400ms ease-out;
 `;
 
 const Form = styled.form`

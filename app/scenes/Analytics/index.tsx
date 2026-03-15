@@ -1,18 +1,18 @@
-import { observer } from "mobx-react";
 import { SettingsIcon } from "outline-icons";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
+import styled from "styled-components";
+import { s } from "@shared/styles";
 import Flex from "~/components/Flex";
 import Heading from "~/components/Heading";
+import Notice from "~/components/Notice";
 import PlaceholderDocument from "~/components/PlaceholderDocument";
 import Scene from "~/components/Scene";
 import Subheading from "~/components/Subheading";
 import Text from "~/components/Text";
 import { client } from "~/utils/ApiClient";
 import { conditionPath } from "~/utils/routeHelpers";
-import styled from "styled-components";
-import { s } from "@shared/styles";
 
 interface DashboardData {
   totals: {
@@ -53,10 +53,12 @@ function Analytics() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [coverage, setCoverage] = useState<CoverageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       setIsLoading(true);
+      setError(null);
       try {
         const [dashRes, covRes] = await Promise.all([
           client.post("/analytics.dashboard"),
@@ -64,12 +66,32 @@ function Analytics() {
         ]);
         setData(dashRes.data);
         setCoverage(covRes.data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : t("Failed to load analytics data.")
+        );
       } finally {
         setIsLoading(false);
       }
     }
     void load();
-  }, []);
+  }, [t]);
+
+  const maxEvidence = useMemo(
+    () =>
+      coverage
+        ? Math.max(...coverage.evidenceCoverage.map((e) => e.evidenceCount), 1)
+        : 1,
+    [coverage]
+  );
+
+  const totalDomainInterventions = useMemo(
+    () =>
+      coverage
+        ? coverage.domainBreakdown.reduce((sum, d) => sum + d.interventionCount, 0)
+        : 0,
+    [coverage]
+  );
 
   if (isLoading || !data) {
     return (
@@ -79,13 +101,13 @@ function Analytics() {
     );
   }
 
-  const maxEvidence = coverage
-    ? Math.max(...coverage.evidenceCoverage.map((e) => e.evidenceCount), 1)
-    : 1;
-
-  const totalDomainInterventions = coverage
-    ? coverage.domainBreakdown.reduce((sum, d) => sum + d.interventionCount, 0)
-    : 0;
+  if (error) {
+    return (
+      <Scene icon={<SettingsIcon />} title={t("Analytics")}>
+        <Notice>{error}</Notice>
+      </Scene>
+    );
+  }
 
   return (
     <Scene icon={<SettingsIcon />} title={t("Analytics")} wide>
@@ -512,4 +534,4 @@ const DomainBarFill = styled.div<{ $pct: number; $color: string }>`
   transition: width 500ms ease;
 `;
 
-export default observer(Analytics);
+export default Analytics;
