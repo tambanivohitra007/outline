@@ -2770,6 +2770,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.21.5, @babel/runtime@npm:^7.22.6":
+  version: 7.28.6
+  resolution: "@babel/runtime@npm:7.28.6"
+  checksum: 10c0/358cf2429992ac1c466df1a21c1601d595c46930a13c1d4662fde908d44ee78ec3c183aaff513ecb01ef8c55c3624afe0309eeeb34715672dbfadb7feedb2c0d
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.27.1, @babel/template@npm:^7.27.2, @babel/template@npm:^7.3.3":
   version: 7.27.2
   resolution: "@babel/template@npm:7.27.2"
@@ -3485,6 +3492,15 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": ~1 || ~6 || ~7
     react: ^16.3 || ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: 10c0/d4b733ad211a6cf4354564124fd1119890d5497762d6eff39e4716e6ded709a3b8ec6064cc6ab423e12f0307ad159130e3341e5e46132ad1124a16b416b4a6c7
+  languageName: node
+  linkType: hard
+
+"@gera2ld/jsx-dom@npm:^2.2.2":
+  version: 2.2.2
+  resolution: "@gera2ld/jsx-dom@npm:2.2.2"
+  dependencies:
+    "@babel/runtime": "npm:^7.21.5"
+  checksum: 10c0/57b6273772c6986e583f41302024490fde07ed24d853730b4aea09e114a739784e3821c5d052534762c72f1b56dbf2e04aabb297e1e1ed88faf42d1f4369108a
   languageName: node
   linkType: hard
 
@@ -7959,7 +7975,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3@npm:^7.4.3":
+"@types/d3@npm:^7, @types/d3@npm:^7.4.3":
   version: 7.4.3
   resolution: "@types/d3@npm:7.4.3"
   dependencies:
@@ -9104,6 +9120,15 @@ __metadata:
   peerDependencies:
     vite: ^6.3.0 || ^7.0.0-beta.0
   checksum: 10c0/0baf44affb20c3fc4fa3f321f1b11e069b9bb3323252551adc5cc980cea2eeb9919c61a3d676a564076887ceac69bdda486544bea918cb134ee9ffb444bd1cba
+  languageName: node
+  linkType: hard
+
+"@vscode/markdown-it-katex@npm:^1.1.0":
+  version: 1.1.2
+  resolution: "@vscode/markdown-it-katex@npm:1.1.2"
+  dependencies:
+    katex: "npm:^0.16.4"
+  checksum: 10c0/b6d6ff916af0a387e986598850b56735d01faac51de76e8ef7b2d3958269554f005f58c9b09a7d5fe6bfe9f08da4e50149c0e3cb0959243e405883ff83fc01ab
   languageName: node
   linkType: hard
 
@@ -13684,6 +13709,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"highlight.js@npm:^11.8.0":
+  version: 11.11.1
+  resolution: "highlight.js@npm:11.11.1"
+  checksum: 10c0/40f53ac19dac079891fcefd5bd8a21cf2e8931fd47da5bd1dca73b7e4375c1defed0636fc39120c639b9c44119b7d110f7f0c15aa899557a5a1c8910f3c0144c
+  languageName: node
+  linkType: hard
+
 "history@npm:^4.9.0":
   version: 4.10.1
   resolution: "history@npm:4.10.1"
@@ -15709,7 +15741,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"katex@npm:^0.16.22, katex@npm:^0.16.25":
+"katex@npm:^0.16.22, katex@npm:^0.16.25, katex@npm:^0.16.4, katex@npm:^0.16.8":
   version: 0.16.27
   resolution: "katex@npm:0.16.27"
   dependencies:
@@ -16646,6 +16678,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"markdown-it-ins@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "markdown-it-ins@npm:4.0.0"
+  checksum: 10c0/c6f975c2162a3547a90e4451c5a022e83fed96ee54116e252fa2125a48746deb7dfd3c3ced263e2dca54aaf3b5299c2ffd34e8c88ed01eef7a91018d888031da
+  languageName: node
+  linkType: hard
+
+"markdown-it-mark@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "markdown-it-mark@npm:4.0.0"
+  checksum: 10c0/58fa2220bb3beb911af2490dae70a1e11e8ba39f8b9ba825b2ecd8188878fe73875b504eb8a8ece6e75d94df5aa3fcfae4eaca5384aecd4da853a290069b952e
+  languageName: node
+  linkType: hard
+
+"markdown-it-sub@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "markdown-it-sub@npm:2.0.0"
+  checksum: 10c0/d92e16e1398c496c69be4a1c8a8209c408dbbb67eb99c3ed9935b637a4a7b8940456bf6036823ed9a2bf7baae7cc764dd56bae6180069f57f40b726de58e4d91
+  languageName: node
+  linkType: hard
+
+"markdown-it-sup@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "markdown-it-sup@npm:2.0.0"
+  checksum: 10c0/5cc912993e0768ef001d6c8d75ab3bf1e643639473a01b7f3526d5a2b8434e3b2e7b3b7899d8d2ba3d319632998b7a63c00d68597eb12dd91564ffbb779ebb9d
+  languageName: node
+  linkType: hard
+
 "markdown-it@npm:^14.0.0, markdown-it@npm:^14.1.0":
   version: 14.1.0
   resolution: "markdown-it@npm:14.1.0"
@@ -16668,6 +16728,64 @@ __metadata:
   bin:
     marked: bin/marked.js
   checksum: 10c0/fc6051142172454f2023f3d6b31cca92879ec8e1b96457086a54c70354c74b00e1b6543a76a1fad6d399366f52b90a848f6ffb8e1d65a5baff87f3ba9b8f1847
+  languageName: node
+  linkType: hard
+
+"markmap-common@npm:^0.18.9":
+  version: 0.18.9
+  resolution: "markmap-common@npm:0.18.9"
+  dependencies:
+    "@babel/runtime": "npm:^7.22.6"
+    "@gera2ld/jsx-dom": "npm:^2.2.2"
+    npm2url: "npm:^0.2.4"
+  checksum: 10c0/b2b25c17c1fd28b4b00d97a9ee7907ee9d492be70585e6b3ab824a761c1e7f53818d71303bf22c6cb4f27390336b8967fca6736ab649319aaba1de7424d25bbb
+  languageName: node
+  linkType: hard
+
+"markmap-html-parser@npm:0.18.11":
+  version: 0.18.11
+  resolution: "markmap-html-parser@npm:0.18.11"
+  dependencies:
+    "@babel/runtime": "npm:^7.22.6"
+    cheerio: "npm:1.0.0"
+  peerDependencies:
+    markmap-common: "*"
+  checksum: 10c0/3bf72be66b3f83b418cf265f9925530bc815108f3cff1fa5eedac565ad989b046babbd1ce45e2ecd236b3606672d0454b601965da74b47f51baae6e5373a2d1d
+  languageName: node
+  linkType: hard
+
+"markmap-lib@npm:^0.18.12":
+  version: 0.18.12
+  resolution: "markmap-lib@npm:0.18.12"
+  dependencies:
+    "@babel/runtime": "npm:^7.22.6"
+    "@vscode/markdown-it-katex": "npm:^1.1.0"
+    highlight.js: "npm:^11.8.0"
+    katex: "npm:^0.16.8"
+    markdown-it: "npm:^14.1.0"
+    markdown-it-ins: "npm:^4.0.0"
+    markdown-it-mark: "npm:^4.0.0"
+    markdown-it-sub: "npm:^2.0.0"
+    markdown-it-sup: "npm:^2.0.0"
+    markmap-html-parser: "npm:0.18.11"
+    markmap-view: "npm:0.18.12"
+    prismjs: "npm:^1.29.0"
+    yaml: "npm:^2.5.1"
+  peerDependencies:
+    markmap-common: "*"
+  checksum: 10c0/a19544003635753d578a78765931648ef35b9083070e8049f307a5fe4e81e337ddc7aa9e95784305b30f00a733cfb219914fc1bdb253ccf75a5e970e9c4c31ec
+  languageName: node
+  linkType: hard
+
+"markmap-view@npm:0.18.12, markmap-view@npm:^0.18.12":
+  version: 0.18.12
+  resolution: "markmap-view@npm:0.18.12"
+  dependencies:
+    "@babel/runtime": "npm:^7.22.6"
+    d3: "npm:^7.8.5"
+  peerDependencies:
+    markmap-common: "*"
+  checksum: 10c0/5235418f71b266d7370eeeaca06c811134130323a5a2e03792e2a83ed661700c28de6c48ec92e90b3b45e33ce599c20d2c0db755b4f436ccb2d9f14cef5d60e9
   languageName: node
   linkType: hard
 
@@ -17410,6 +17528,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"npm2url@npm:^0.2.4":
+  version: 0.2.4
+  resolution: "npm2url@npm:0.2.4"
+  checksum: 10c0/14ea53c42198efec17ba2df7c492d3b13a07ed68f2a56c606ec14ce93e43fba0b0af7408e67fc44e9f332907c87055b693d0792e88880fed9ab91583646981c8
+  languageName: node
+  linkType: hard
+
 "nth-check@npm:^2.0.1":
   version: 2.1.1
   resolution: "nth-check@npm:2.1.1"
@@ -17659,6 +17784,7 @@ __metadata:
     "@types/body-scroll-lock": "npm:^3.1.2"
     "@types/cookie": "npm:0.6.0"
     "@types/crypto-js": "npm:^4.2.2"
+    "@types/d3": "npm:^7"
     "@types/diff": "npm:^5.0.9"
     "@types/dotenv": "npm:^8.2.3"
     "@types/emoji-regex": "npm:^9.2.2"
@@ -17744,6 +17870,7 @@ __metadata:
     copy-to-clipboard: "npm:^3.3.3"
     core-js: "npm:^3.45.1"
     crypto-js: "npm:^4.2.0"
+    d3: "npm:^7"
     date-fns: "npm:^3.6.0"
     dd-trace: "npm:^5.82.0"
     diff: "npm:^5.2.0"
@@ -17801,6 +17928,9 @@ __metadata:
     markdown-it: "npm:^14.1.0"
     markdown-it-container: "npm:^3.0.0"
     markdown-it-emoji: "npm:^3.0.0"
+    markmap-common: "npm:^0.18.9"
+    markmap-lib: "npm:^0.18.12"
+    markmap-view: "npm:^0.18.12"
     mermaid: "npm:11.12.1"
     mime-types: "npm:^3.0.1"
     mobx: "npm:^4.15.4"
@@ -23304,7 +23434,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.2.2":
+"yaml@npm:^2.2.2, yaml@npm:^2.5.1":
   version: 2.8.2
   resolution: "yaml@npm:2.8.2"
   bin:

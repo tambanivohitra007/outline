@@ -53,7 +53,9 @@
       "Bash(yarn tsc:*)",
       "Bash(grep -o \"\"result\"\":\"\"[^\"\"]*\"\" C:/Users/rindra/AppData/Local/Temp/claude/c--Users-rindra-Projects-outline/4bc36ddf-05c8-48ba-afe8-491d87ee91b1/tasks/abf657e6f5ee0a5d3.output)",
       "Bash(grep -o \"\"text\"\":\"\"[^\"\"]*\"\" C:/Users/rindra/AppData/Local/Temp/claude/c--Users-rindra-Projects-outline/4bc36ddf-05c8-48ba-afe8-491d87ee91b1/tasks/abf657e6f5ee0a5d3.output)",
-      "Bash(grep -o \"\"text\"\":\"\"[^\"\"]*\"\" C:/Users/rindra/AppData/Local/Temp/claude/c--Users-rindra-Projects-outline/4bc36ddf-05c8-48ba-afe8-491d87ee91b1/tasks/a073d5faef6da1516.output)"
+      "Bash(grep -o \"\"text\"\":\"\"[^\"\"]*\"\" C:/Users/rindra/AppData/Local/Temp/claude/c--Users-rindra-Projects-outline/4bc36ddf-05c8-48ba-afe8-491d87ee91b1/tasks/a073d5faef6da1516.output)",
+      "Bash(xargs grep:*)",
+      "Bash(yarn add:*)"
     ]
   }
 }
