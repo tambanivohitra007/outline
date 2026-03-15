@@ -92,7 +92,10 @@
       "Bash(curl:*)",
       "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const glob = require\\('glob'\\); const path = require\\('path'\\); const rootDir = 'build'; const files = glob.sync\\(rootDir + '/plugins/*/server/!\\(*.test|schema\\).[jt]s'\\); console.log\\('Files found:', files.length\\); const storage = files.filter\\(f => f.includes\\('storage'\\)\\); console.log\\('Storage plugin:', storage\\);\")",
       "Bash(find /c/Users/rindra/Projects/outline/app -name \"*[Ll]ogin*\" -o -name \"*[Aa]uth*\" | grep -E \"\\\\.\\(tsx?|jsx?\\)$\" | head -20)",
-      "Bash(find /c/Users/rindra/Projects/outline/server/models -name \"*User*\" -o -name \"*Authentication*\" | grep -E \"\\\\.\\(ts|js\\)$\" | head -15)"
+      "Bash(find /c/Users/rindra/Projects/outline/server/models -name \"*User*\" -o -name \"*Authentication*\" | grep -E \"\\\\.\\(ts|js\\)$\" | head -15)",
+      "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const icons = require\\('outline-icons'\\); console.log\\(Object.keys\\(icons\\).filter\\(k => /zoom|expand|collapse|full|fit|plus|minus|maximize|minimize|center/i.test\\(k\\)\\).join\\('\\\\n'\\)\\)\")",
+      "Bash(node -e \"\nconst { Sequelize } = require\\('sequelize'\\);\nconst db = new Sequelize\\('postgres://user:pass@localhost:5432/outline', { logging: false }\\);\n\\(async \\(\\) => {\n  const [cols] = await db.query\\(\\\\\"SELECT column_name FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'passwordHash'\\\\\"\\);\n  console.log\\('passwordHash column:', cols.length > 0 ? 'EXISTS' : 'MISSING'\\);\n  await db.close\\(\\);\n}\\)\\(\\);\n\" 2>&1)",
+      "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"const mm = require\\('markmap-view'\\); const proto = Object.getOwnPropertyNames\\(mm.Markmap.prototype\\); console.log\\(proto.join\\('\\\\n'\\)\\)\")"
     ]
   }
 }
