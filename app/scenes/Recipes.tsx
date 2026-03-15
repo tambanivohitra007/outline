@@ -29,6 +29,8 @@ function Recipes() {
   const [createServings, setCreateServings] = useState("");
   const [createPrepTime, setCreatePrepTime] = useState("");
   const [createCookTime, setCreateCookTime] = useState("");
+  const [createTags, setCreateTags] = useState<string[]>([]);
+  const [createTagInput, setCreateTagInput] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   // Edit modal state
@@ -38,6 +40,8 @@ function Recipes() {
   const [editServings, setEditServings] = useState("");
   const [editPrepTime, setEditPrepTime] = useState("");
   const [editCookTime, setEditCookTime] = useState("");
+  const [editTags, setEditTags] = useState<string[]>([]);
+  const [editTagInput, setEditTagInput] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -57,17 +61,20 @@ function Recipes() {
         servings: createServings ? parseInt(createServings, 10) : undefined,
         prepTime: createPrepTime ? parseInt(createPrepTime, 10) : undefined,
         cookTime: createCookTime ? parseInt(createCookTime, 10) : undefined,
+        dietaryTags: createTags.length > 0 ? createTags : undefined,
       });
       setCreateName("");
       setCreateDescription("");
       setCreateServings("");
       setCreatePrepTime("");
       setCreateCookTime("");
+      setCreateTags([]);
+      setCreateTagInput("");
       setShowCreateForm(false);
     } finally {
       setIsCreating(false);
     }
-  }, [recipes, createName, createDescription, createServings, createPrepTime, createCookTime]);
+  }, [recipes, createName, createDescription, createServings, createPrepTime, createCookTime, createTags]);
 
   const handleCancelCreate = useCallback(() => {
     setShowCreateForm(false);
@@ -76,6 +83,8 @@ function Recipes() {
     setCreateServings("");
     setCreatePrepTime("");
     setCreateCookTime("");
+    setCreateTags([]);
+    setCreateTagInput("");
   }, []);
 
   const handleStartEdit = useCallback((recipe: Recipe) => {
@@ -85,6 +94,8 @@ function Recipes() {
     setEditServings(recipe.servings != null ? String(recipe.servings) : "");
     setEditPrepTime(recipe.prepTime != null ? String(recipe.prepTime) : "");
     setEditCookTime(recipe.cookTime != null ? String(recipe.cookTime) : "");
+    setEditTags(recipe.dietaryTags ?? []);
+    setEditTagInput("");
   }, []);
 
   const handleCancelEdit = useCallback(() => {
@@ -104,13 +115,43 @@ function Recipes() {
         servings: editServings ? parseInt(editServings, 10) : null,
         prepTime: editPrepTime ? parseInt(editPrepTime, 10) : null,
         cookTime: editCookTime ? parseInt(editCookTime, 10) : null,
+        dietaryTags: editTags.length > 0 ? editTags : null,
       });
       setEditingRecipe(null);
       toast.success(t("Recipe updated"));
     } finally {
       setIsSaving(false);
     }
-  }, [recipes, editingRecipe, editName, editDescription, editServings, editPrepTime, editCookTime, t]);
+  }, [recipes, editingRecipe, editName, editDescription, editServings, editPrepTime, editCookTime, editTags, t]);
+
+  const handleAddTag = useCallback(
+    (input: string, tags: string[], setTags: (t: string[]) => void, setInput: (v: string) => void) => {
+      const tag = input.trim();
+      if (tag && !tags.includes(tag)) {
+        setTags([...tags, tag]);
+      }
+      setInput("");
+    },
+    []
+  );
+
+  const handleTagKeyDown = useCallback(
+    (
+      e: React.KeyboardEvent<HTMLInputElement>,
+      input: string,
+      tags: string[],
+      setTags: (t: string[]) => void,
+      setInput: (v: string) => void
+    ) => {
+      if (e.key === "Enter" || e.key === ",") {
+        e.preventDefault();
+        handleAddTag(input, tags, setTags, setInput);
+      } else if (e.key === "Backspace" && !input && tags.length > 0) {
+        setTags(tags.slice(0, -1));
+      }
+    },
+    [handleAddTag]
+  );
 
   const handleModalBackdropClick = useCallback((e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
@@ -229,6 +270,27 @@ function Recipes() {
                 />
               </FormGroup>
             </FormRow>
+            <FormGroup>
+              <FormLabel>{t("Dietary Tags")}</FormLabel>
+              <TagInputWrapper>
+                {createTags.map((tag) => (
+                  <TagChip key={tag}>
+                    {tag}
+                    <TagRemove onClick={() => setCreateTags(createTags.filter((t2) => t2 !== tag))}>
+                      <CloseIcon size={10} />
+                    </TagRemove>
+                  </TagChip>
+                ))}
+                <TagInput
+                  placeholder={createTags.length === 0 ? t("e.g. vegan, gluten-free, anti-inflammatory") : ""}
+                  value={createTagInput}
+                  onChange={(e) => setCreateTagInput(e.target.value)}
+                  onKeyDown={(e) => handleTagKeyDown(e, createTagInput, createTags, setCreateTags, setCreateTagInput)}
+                  onBlur={() => handleAddTag(createTagInput, createTags, setCreateTags, setCreateTagInput)}
+                />
+              </TagInputWrapper>
+              <TagHint>{t("Press Enter or comma to add a tag")}</TagHint>
+            </FormGroup>
             <FormActions>
               <CreateButton
                 onClick={handleCreate}
@@ -372,6 +434,27 @@ function Recipes() {
                   />
                 </FormGroup>
               </FormRow>
+              <FormGroup>
+                <FormLabel>{t("Dietary Tags")}</FormLabel>
+                <TagInputWrapper>
+                  {editTags.map((tag) => (
+                    <TagChip key={tag}>
+                      {tag}
+                      <TagRemove onClick={() => setEditTags(editTags.filter((t2) => t2 !== tag))}>
+                        <CloseIcon size={10} />
+                      </TagRemove>
+                    </TagChip>
+                  ))}
+                  <TagInput
+                    placeholder={editTags.length === 0 ? t("e.g. vegan, gluten-free") : ""}
+                    value={editTagInput}
+                    onChange={(e) => setEditTagInput(e.target.value)}
+                    onKeyDown={(e) => handleTagKeyDown(e, editTagInput, editTags, setEditTags, setEditTagInput)}
+                    onBlur={() => handleAddTag(editTagInput, editTags, setEditTags, setEditTagInput)}
+                  />
+                </TagInputWrapper>
+                <TagHint>{t("Press Enter or comma to add a tag")}</TagHint>
+              </FormGroup>
               <FormActions>
                 <CreateButton
                   onClick={handleSaveEdit}
@@ -468,6 +551,68 @@ const FormGroup = styled.div`
 const FormRow = styled(Flex)`
   gap: 12px;
   flex-wrap: wrap;
+`;
+
+const TagInputWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid ${s("divider")};
+  border-radius: 6px;
+  background: ${s("background")};
+  min-height: 36px;
+  align-items: center;
+  cursor: text;
+
+  &:focus-within {
+    border-color: ${s("accent")};
+  }
+`;
+
+const TagInput = styled.input`
+  border: none;
+  outline: none;
+  background: transparent;
+  color: ${s("text")};
+  font-size: 14px;
+  flex: 1;
+  min-width: 80px;
+  padding: 2px 4px;
+`;
+
+const TagChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #d4edda;
+  color: #155724;
+`;
+
+const TagRemove = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: #155724;
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+  }
+`;
+
+const TagHint = styled.span`
+  font-size: 11px;
+  color: ${s("textTertiary")};
+  margin-top: 2px;
 `;
 
 const FormLabel = styled.label`
