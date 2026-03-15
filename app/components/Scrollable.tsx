@@ -162,16 +162,15 @@ const Wrapper = styled.div<{
 
     return "none";
   }};
-  transition: box-shadow 100ms ease-in-out;
+  transition: box-shadow 100ms ease-in-out, scrollbar-color 200ms ease-in-out;
 
   ${(props) => props.$hiddenScrollbars && hideScrollbars()}
 
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
-  transition: box-shadow 100ms ease-in-out, scrollbar-color 200ms ease-in-out;
 
   &:hover {
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    scrollbar-color: ${(props) => props.theme.scrollbarThumb} transparent;
   }
 
   &::-webkit-scrollbar {
@@ -185,15 +184,10 @@ const Wrapper = styled.div<{
   &::-webkit-scrollbar-thumb {
     background-color: transparent;
     border-radius: 3px;
-    transition: background-color 200ms ease-in-out;
   }
 
   &:hover::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.35);
+    background-color: ${(props) => props.theme.scrollbarThumb};
   }
 `;
 
