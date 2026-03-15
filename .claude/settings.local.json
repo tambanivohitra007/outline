@@ -117,7 +117,8 @@
       "Bash(cd \"C:/Users/rindra/Projects/outline\" && node -e \"\nconst mm = require\\('markmap-view'\\);\nconst src = mm.Markmap.toString\\(\\);\n// Find the class names used - specifically markmap-node\nconst idx = src.indexOf\\('markmap-node'\\);\nif \\(idx > 0\\) {\n  console.log\\(src.substring\\(Math.max\\(0, idx - 100\\), idx + 100\\)\\);\n} else {\n  console.log\\('markmap-node not found as literal'\\);\n}\n// Also check for the class constant M\nconst mIdx = src.indexOf\\('const M'\\);\nif \\(mIdx > 0\\) console.log\\(src.substring\\(mIdx, mIdx + 100\\)\\);\n\")",
       "Bash(grep:*)",
       "Bash(git log:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(ls -la /c/Users/rindra/Projects/outline/app/routes*)"
     ]
   }
 }

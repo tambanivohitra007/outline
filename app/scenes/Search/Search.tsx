@@ -29,6 +29,16 @@ interface SearchResult {
     name: string;
     slug: string;
   }>;
+  documents: Array<{
+    id: string;
+    title: string;
+    url: string;
+  }>;
+  collections: Array<{
+    id: string;
+    name: string;
+    url: string;
+  }>;
 }
 
 const CATEGORIES = [
@@ -94,6 +104,7 @@ function Search() {
       name: string;
       slug?: string;
       status?: string;
+      url?: string;
     }> = [];
     for (const c of results.conditions) {
       if (!activeCategory || activeCategory === "conditions") {
@@ -110,6 +121,21 @@ function Search() {
         items.push({ type: "recipe", ...r });
       }
     }
+    for (const d of results.documents) {
+      if (!activeCategory || activeCategory === "sections") {
+        items.push({ type: "document", id: d.id, name: d.title, url: d.url });
+      }
+    }
+    for (const c of results.collections) {
+      if (!activeCategory || activeCategory === "tags") {
+        items.push({
+          type: "collection",
+          id: c.id,
+          name: c.name,
+          url: c.url,
+        });
+      }
+    }
     return items;
   }, [results, activeCategory]);
 
@@ -121,6 +147,10 @@ function Search() {
         history.push(`/interventions`);
       } else if (item.type === "recipe") {
         history.push(`/recipes`);
+      } else if (item.type === "document" && item.url) {
+        history.push(item.url);
+      } else if (item.type === "collection" && item.url) {
+        history.push(item.url);
       }
     },
     [history]
@@ -250,7 +280,11 @@ function Search() {
                       ? "♡"
                       : item.type === "intervention"
                         ? "⚡"
-                        : "⚘"}
+                        : item.type === "document"
+                          ? "📄"
+                          : item.type === "collection"
+                            ? "📁"
+                            : "⚘"}
                   </ResultTypeIcon>
                   <ResultInfo>
                     <ResultName>{item.name}</ResultName>
@@ -556,18 +590,24 @@ const ResultTypeIcon = styled.div<{ $type: string }>`
   border-radius: 8px;
   font-size: 16px;
   flex-shrink: 0;
-  background: ${(props) =>
-    props.$type === "condition"
-      ? "#fef2f2"
-      : props.$type === "intervention"
-        ? "#f0f4f8"
-        : "#ecfdf5"};
-  color: ${(props) =>
-    props.$type === "condition"
-      ? "#e63950"
-      : props.$type === "intervention"
-        ? "#486581"
-        : "#059669"};
+  background: ${(props) => {
+    switch (props.$type) {
+      case "condition": return "#fef2f2";
+      case "intervention": return "#f0f4f8";
+      case "document": return "#eff6ff";
+      case "collection": return "#fefce8";
+      default: return "#ecfdf5";
+    }
+  }};
+  color: ${(props) => {
+    switch (props.$type) {
+      case "condition": return "#e63950";
+      case "intervention": return "#486581";
+      case "document": return "#2563eb";
+      case "collection": return "#ca8a04";
+      default: return "#059669";
+    }
+  }};
 `;
 
 const ResultInfo = styled.div`
