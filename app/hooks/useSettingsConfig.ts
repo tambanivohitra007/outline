@@ -1,4 +1,5 @@
 import {
+  BrowserIcon,
   EmailIcon,
   ProfileIcon,
   PadlockIcon,
@@ -26,6 +27,7 @@ const Notifications = lazy(() => import("~/scenes/Settings/Notifications"));
 const Preferences = lazy(() => import("~/scenes/Settings/Preferences"));
 const Profile = lazy(() => import("~/scenes/Settings/Profile"));
 const Security = lazy(() => import("~/scenes/Settings/Security"));
+const Embeds = lazy(() => import("~/scenes/Settings/Embeds"));
 const Templates = lazy(() => import("~/scenes/Settings/Templates"));
 
 export type ConfigItem = {
@@ -133,6 +135,15 @@ const useSettingsConfig = () => {
         enabled: can.listGroups,
         group: t("Workspace"),
         icon: GroupIcon,
+      },
+      {
+        name: t("Embeds"),
+        path: settingsPath("embeds"),
+        component: Embeds.Component,
+        preload: Embeds.preload,
+        enabled: can.update,
+        group: t("Workspace"),
+        icon: BrowserIcon,
       },
       {
         name: t("Templates"),
