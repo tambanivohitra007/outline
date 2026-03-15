@@ -370,59 +370,72 @@ function KnowledgeGraph() {
     }
   }, [data, isLoading]);
 
-  // Tag nodes that have detail and observe DOM changes (expand/collapse)
+  // Tag detail nodes and attach click handlers; re-run on DOM mutations
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg || !data) {
       return;
     }
 
-    // Initial tagging after a short delay for markmap to finish rendering
-    const timer = setTimeout(() => tagDetailNodes(svg, data), 350);
+    const clickHandlers: Array<{
+      el: Element;
+      handler: (e: Event) => void;
+    }> = [];
 
-    // Re-tag when markmap mutates the DOM (node expand/collapse)
+    function setup() {
+      // Clean up previous click handlers
+      for (const { el, handler } of clickHandlers) {
+        el.removeEventListener("click", handler);
+      }
+      clickHandlers.length = 0;
+
+      // Tag nodes and attach click handlers
+      tagDetailNodes(svg, data!);
+
+      const detailNodes = svg.querySelectorAll(
+        ".markmap-node[data-has-detail]"
+      );
+      detailNodes.forEach((node) => {
+        const fo = node.querySelector("foreignObject");
+        if (!fo) {
+          return;
+        }
+        // Attach to the inner div inside foreignObject (the actual visible element)
+        const inner =
+          fo.querySelector("div") ?? (fo as unknown as HTMLElement);
+        const handler = (e: Event) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const text = fo.textContent?.trim();
+          if (!text || !data) {
+            return;
+          }
+          const resolved = resolveNodeDetail(text, data);
+          if (resolved) {
+            setDetail(resolved);
+          }
+        };
+        inner.addEventListener("click", handler, true);
+        clickHandlers.push({ el: inner, handler });
+      });
+    }
+
+    const timer = setTimeout(setup, 400);
+
     const observer = new MutationObserver(() => {
-      tagDetailNodes(svg, data);
+      // Delay slightly to let markmap finish its DOM updates
+      setTimeout(setup, 100);
     });
     observer.observe(svg, { childList: true, subtree: true });
 
     return () => {
       clearTimeout(timer);
       observer.disconnect();
+      for (const { el, handler } of clickHandlers) {
+        el.removeEventListener("click", handler, true);
+      }
     };
   }, [data, isLoading]);
-
-  // Listen for clicks on markmap nodes inside the SVG
-  useEffect(() => {
-    const svg = svgRef.current;
-    if (!svg || !data) {
-      return;
-    }
-
-    function handleClick(e: MouseEvent) {
-      const target = e.target as Element;
-      // Walk up to find the markmap-node group
-      const nodeGroup = target.closest(".markmap-node");
-      if (!nodeGroup) {
-        return;
-      }
-
-      // Extract text from the foreignObject content
-      const fo = nodeGroup.querySelector("foreignObject");
-      const text = fo?.textContent?.trim();
-      if (!text || !data) {
-        return;
-      }
-
-      const resolved = resolveNodeDetail(text, data);
-      if (resolved) {
-        setDetail(resolved);
-      }
-    }
-
-    svg.addEventListener("click", handleClick);
-    return () => svg.removeEventListener("click", handleClick);
-  }, [data]);
 
   const handleCloseDetail = useCallback(() => {
     setDetail(null);
