@@ -69,6 +69,8 @@ export const TeamsUpdateSchema = BaseSchema.extend({
         disabledEmbeds: z.array(z.string()).optional(),
         /** List of disabled medical block item IDs. */
         disabledMedicalBlocks: z.array(z.string()).optional(),
+        /** The AI model to use for content generation. */
+        aiModel: z.string().max(100).optional(),
       })
       .optional(),
   }),

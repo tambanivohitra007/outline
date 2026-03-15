@@ -15,6 +15,57 @@ interface GenerateOptions {
  */
 export default class GeminiService {
   /**
+   * Generate text from a raw prompt using Gemini.
+   *
+   * @param options Raw generation options.
+   * @returns Generated text content.
+   * @throws Error if API key is not configured or API call fails.
+   */
+  static async generateRaw(options: {
+    prompt: string;
+    temperature?: number;
+    maxTokens?: number;
+  }): Promise<string> {
+    const apiKey = env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not configured");
+    }
+
+    const url = `${GEMINI_API_URL}/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      timeout: 60000,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: options.prompt }] }],
+        generationConfig: {
+          temperature: options.temperature ?? 0.7,
+          maxOutputTokens: options.maxTokens ?? 4096,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gemini API error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  }
+
+  /**
+   * Check if the Gemini API key is configured.
+   *
+   * @returns True if the API key is set.
+   */
+  static isAvailable(): boolean {
+    return !!env.GEMINI_API_KEY;
+  }
+
+  /**
    * Generate content for a condition section using Gemini.
    *
    * @param options Generation options including condition name and section type.
@@ -29,7 +80,7 @@ export default class GeminiService {
 
     const prompt = GeminiService.buildPrompt(options);
 
-    const url = `${GEMINI_API_URL}/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const url = `${GEMINI_API_URL}/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: "POST",
@@ -281,6 +332,85 @@ Keep the summary concise and actionable. Format as markdown.`;
    * @param options The generation options.
    * @returns The formatted prompt string.
    */
+  /**
+   * Build a prompt for content generation, accessible by AIService dispatcher.
+   *
+   * @param options The generation options.
+   * @returns The formatted prompt string.
+   */
+  static buildPromptPublic(options: GenerateOptions): string {
+    return GeminiService.buildPrompt(options);
+  }
+
+  /**
+   * Build a prompt for suggesting related content for a condition section.
+   *
+   * @param conditionName The condition name.
+   * @param sectionType The section type.
+   * @param existingData Context data about existing sections.
+   * @returns The formatted prompt string.
+   */
+  static buildSuggestPrompt(
+    conditionName: string,
+    sectionType: string,
+    existingData: string
+  ): string {
+    return `You are a medical knowledge assistant for lifestyle medicine. For the condition "${conditionName}", section "${sectionType.replace(/_/g, " ")}":
+
+Here is the existing data in this knowledge base:
+${existingData}
+
+Based on this, suggest:
+1. Related interventions or treatments that could be added
+2. Evidence gaps that should be filled
+3. Cross-references to other conditions that share similar interventions
+4. Potential scripture or Spirit of Prophecy references (if applicable to section type)
+
+Keep suggestions concise and actionable. Format as markdown bullet points.`;
+  }
+
+  /**
+   * Build a prompt for explaining a medical topic.
+   *
+   * @param topic The topic to explain.
+   * @param context Optional document context.
+   * @returns The formatted prompt string.
+   */
+  static buildExplainPrompt(topic: string, context?: string): string {
+    let prompt = `You are a medical knowledge assistant specializing in lifestyle medicine and integrative health.\n\n`;
+    prompt += `Provide a clear, concise explanation for: ${topic}\n\n`;
+    if (context) {
+      prompt += `Document context: ${context}\n\n`;
+    }
+    prompt += `Write in a professional medical tone. Use markdown formatting with headers and bullet points where appropriate. Be evidence-based and reference lifestyle medicine principles (NEWSTART+) when relevant.`;
+    return prompt;
+  }
+
+  /**
+   * Build a prompt for reviewing condition completeness.
+   *
+   * @param conditionName The condition name.
+   * @param sectionSummaries Summary of each section's state.
+   * @returns The formatted prompt string.
+   */
+  static buildReviewPrompt(
+    conditionName: string,
+    sectionSummaries: string
+  ): string {
+    return `You are a medical content review assistant for a lifestyle medicine knowledge base. A condition guide for "${conditionName}" is being prepared for review/publication.
+
+Here are the current sections and their content status:
+${sectionSummaries}
+
+Please provide a concise review summary that includes:
+1. **Completeness Assessment**: Which sections are well-developed vs. need more content
+2. **Content Quality Notes**: Any obvious gaps, inconsistencies, or areas needing attention
+3. **Readiness Score**: Rate overall readiness for publication (Ready / Needs Minor Edits / Needs Major Work)
+4. **Recommended Actions**: Specific next steps for the review team
+
+Keep the summary concise and actionable. Format as markdown.`;
+  }
+
   private static buildPrompt(options: GenerateOptions): string {
     const { conditionName, sectionType, existingContent, additionalContext } =
       options;

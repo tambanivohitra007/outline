@@ -137,7 +137,9 @@
       "Bash(xargs cat:*)",
       "Bash(cd C:/Users/rindra/Projects/outline && curl -s -X POST http://localhost:3000/api/conditions.list -H \"Content-Type: application/json\" -H \"Authorization: Bearer ol_api_eqTqVeKn7gvRfKCcXPP0K2uYnIgcIJ0xHjvJG5rNSbZ\" -d '{}' 2>&1 | python -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(c['id'], c['name']\\) for c in data.get\\('data',[]\\)]\" 2>&1 | head -5)",
       "Bash(ls /c/Users/rindra/Projects/outline/app/components/Markdown* 2>/dev/null; ls /c/Users/rindra/Projects/outline/shared/components/Markdown* 2>/dev/null; ls /c/Users/rindra/Projects/outline/app/components/ | grep -i mark 2>/dev/null)",
-      "Bash(grep -rn \"parser\\\\b\\\\|serializer\\\\b\" /c/Users/rindra/Projects/outline/server/editor.ts 2>/dev/null | head -10; ls /c/Users/rindra/Projects/outline/server/editor* 2>/dev/null)"
+      "Bash(grep -rn \"parser\\\\b\\\\|serializer\\\\b\" /c/Users/rindra/Projects/outline/server/editor.ts 2>/dev/null | head -10; ls /c/Users/rindra/Projects/outline/server/editor* 2>/dev/null)",
+      "Bash(cd C:/Users/rindra/Projects/outline && yarn babel --extensions .ts,.tsx server/utils/passport.ts 2>&1 | tail -15)",
+      "Bash(cd C:/Users/rindra/Projects/outline && node -e \"require\\('./build/server/middlewares/passport'\\)\" 2>&1)"
     ]
   }
 }
