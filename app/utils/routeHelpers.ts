@@ -219,6 +219,10 @@ export function patientPortalPath(): string {
   return "/patient-portal";
 }
 
+export function bibleExplorerPath(): string {
+  return "/bible-explorer";
+}
+
 export const matchCollectionSlug =
   ":collectionSlug([0-9a-zA-Z-_~]*-[a-zA-z0-9]{10,15})";
 

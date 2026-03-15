@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { SearchIcon, HomeIcon, SidebarIcon, BeakerIcon, ToolsIcon, LeafIcon, GlobeIcon, SettingsIcon } from "outline-icons";
+import { SearchIcon, HomeIcon, SidebarIcon, BeakerIcon, ToolsIcon, LeafIcon, BookmarkedIcon, GlobeIcon, SettingsIcon } from "outline-icons";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -18,6 +18,7 @@ import {
   conditionsPath,
   interventionsPath,
   recipesPath,
+  bibleExplorerPath,
   knowledgeGraphPath,
   analyticsPath,
 } from "~/utils/routeHelpers";
@@ -123,6 +124,12 @@ function AppSidebar() {
                   to={recipesPath()}
                   icon={<LeafIcon />}
                   label={t("Recipes")}
+                  exact={false}
+                />
+                <SidebarLink
+                  to={bibleExplorerPath()}
+                  icon={<BookmarkedIcon />}
+                  label={t("Bible Explorer")}
                   exact={false}
                 />
               </Header>

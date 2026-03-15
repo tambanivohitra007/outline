@@ -14,6 +14,7 @@ export default function presentScripture(scripture: Scripture) {
     spiritOfProphecy: scripture.spiritOfProphecy,
     sopSource: scripture.sopSource,
     sopPage: scripture.sopPage,
+    careDomainId: scripture.careDomainId,
     conditionId: scripture.conditionId,
     interventionId: scripture.interventionId,
     teamId: scripture.teamId,

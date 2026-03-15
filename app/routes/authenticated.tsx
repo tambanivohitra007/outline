@@ -13,6 +13,7 @@ import useCurrentTeam from "~/hooks/useCurrentTeam";
 import usePolicy from "~/hooks/usePolicy";
 import lazy from "~/utils/lazyWithRetry";
 import {
+  bibleExplorerPath,
   conditionsPath,
   conditionPath,
   draftsPath,
@@ -45,6 +46,7 @@ const RecipesScene = lazy(() => import("~/scenes/Recipes"));
 const KnowledgeGraph = lazy(() => import("~/scenes/KnowledgeGraph"));
 const AnalyticsScene = lazy(() => import("~/scenes/Analytics"));
 const PatientPortal = lazy(() => import("~/scenes/PatientPortal"));
+const BibleExplorer = lazy(() => import("~/scenes/BibleExplorer"));
 
 const RedirectDocument = ({
   match,
@@ -135,6 +137,7 @@ function AuthenticatedRoutes() {
             <Route exact path={recipesPath()} component={RecipesScene} />
             <Route exact path={knowledgeGraphPath()} component={KnowledgeGraph} />
             <Route exact path={analyticsPath()} component={AnalyticsScene} />
+            <Route exact path={bibleExplorerPath()} component={BibleExplorer} />
             <Route exact path={patientPortalPath()} component={PatientPortal} />
             <Route exact path="/404" component={Error404} />
             <SettingsRoutes />
