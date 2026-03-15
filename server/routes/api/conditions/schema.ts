@@ -21,6 +21,7 @@ export type ConditionsInfoReq = z.infer<typeof ConditionsInfoSchema>;
 export const ConditionsCreateSchema = BaseSchema.extend({
   body: z.object({
     name: z.string().min(1).max(255),
+    description: z.string().max(2000).nullish(),
     snomedCode: z.string().optional(),
     icdCode: z.string().optional(),
     collectionId: z.uuid().optional(),
@@ -33,6 +34,7 @@ export const ConditionsUpdateSchema = BaseSchema.extend({
   body: z.object({
     id: z.uuid(),
     name: z.string().min(1).max(255).optional(),
+    description: z.string().max(2000).nullish(),
     snomedCode: z.string().nullish(),
     icdCode: z.string().nullish(),
     status: z.enum(["draft", "review", "published"]).optional(),

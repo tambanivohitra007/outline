@@ -6,6 +6,7 @@ export default function presentCondition(condition: Condition) {
     id: condition.id,
     name: condition.name,
     slug: condition.slug,
+    description: condition.description,
     snomedCode: condition.snomedCode,
     icdCode: condition.icdCode,
     status: condition.status,
