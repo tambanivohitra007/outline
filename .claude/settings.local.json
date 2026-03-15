@@ -56,7 +56,9 @@
       "Bash(grep -o \"\"text\"\":\"\"[^\"\"]*\"\" C:/Users/rindra/AppData/Local/Temp/claude/c--Users-rindra-Projects-outline/4bc36ddf-05c8-48ba-afe8-491d87ee91b1/tasks/a073d5faef6da1516.output)",
       "Bash(xargs grep:*)",
       "Bash(yarn add:*)",
-      "Bash(grep -r \"CareDomain\" c:/Users/rindra/Projects/outline/server/models/*.ts)"
+      "Bash(grep -r \"CareDomain\" c:/Users/rindra/Projects/outline/server/models/*.ts)",
+      "Bash(find /c/Users/rindra/Projects/outline/server/routes/api -type d \\\\\\( -name \"*careDomain*\" -o -name \"*recipe*\" -o -name \"*condition*\" -o -name \"*intervention*\" \\\\\\) 2>/dev/null | head -20)",
+      "Bash(find /c/Users/rindra/Projects/outline/server -type f \\\\\\( -name \"*conditionRecipe*\" -o -name \"*relationsh*\" \\\\\\) 2>/dev/null | head -20)"
     ]
   }
 }
