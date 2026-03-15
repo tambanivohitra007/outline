@@ -529,11 +529,17 @@ function KnowledgeGraph() {
   const hasData = (data?.conditions.length ?? 0) > 0;
 
   return (
-    <Scene icon={<GlobeIcon />} title={t("Knowledge Graph")} centered={false}>
-      <GraphTitle>
-        <GlobeIcon size={24} />
-        {t("Knowledge Graph")}
-      </GraphTitle>
+    <Scene
+      icon={<GlobeIcon />}
+      title={t("Knowledge Graph")}
+      left={
+        <HeaderTitle>
+          <GlobeIcon size={24} />
+          {t("Knowledge Graph")}
+        </HeaderTitle>
+      }
+      centered={false}
+    >
       <GraphContainer ref={containerRef} $isFullscreen={isFullscreen}>
         {hasData && (
           <Toolbar>
@@ -676,11 +682,10 @@ const slideIn = keyframes`
   to { transform: translateX(0); }
 `;
 
-const GraphTitle = styled.div`
+const HeaderTitle = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 16px;
   font-size: 16px;
   font-weight: 600;
   color: ${s("text")};
