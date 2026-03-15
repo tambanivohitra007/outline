@@ -678,6 +678,15 @@ const GraphContainer = styled.div<{ $isFullscreen: boolean }>`
     cursor: pointer;
   }
 
+  .markmap-node[data-has-detail] foreignObject > div {
+    transition: color 100ms ease;
+  }
+
+  .markmap-node[data-has-detail] foreignObject > div:hover {
+    color: ${s("accent")} !important;
+    text-decoration: underline;
+  }
+
   .markmap-node[data-has-detail] foreignObject > div::after {
     content: "";
     display: inline-block;
