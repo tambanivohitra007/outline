@@ -21,11 +21,15 @@ interface ConditionGraph {
   slug: string;
   status: string;
   snomedCode: string | null;
+  icdCode: string | null;
   sections: Array<{ sectionType: string; title: string }>;
   interventionGroups: Array<{
     careDomain: string;
     interventions: Array<{ name: string; evidenceLevel: string | null }>;
   }>;
+  recipes: string[];
+  scriptures: Array<{ reference: string; spiritOfProphecy: boolean }>;
+  evidence: string[];
 }
 
 interface GraphData {
@@ -40,7 +44,9 @@ interface GraphData {
     conditions: number;
     interventions: number;
     careDomains: number;
-    links: number;
+    recipes: number;
+    scriptures: number;
+    evidence: number;
   };
 }
 
@@ -57,19 +63,26 @@ const SECTION_LABELS: Record<string, string> = {
 /**
  * Build a markdown string from condition-centric graph data for markmap.
  *
- * Structure:
- *   Knowledge Graph
- *   └─ Condition
- *      ├─ Overview
- *      ├─ Risk Factors / Causes
- *      ├─ Physiology & Pathophysiology
- *      ├─ Complications
- *      └─ Interventions
- *         ├─ Care Domain A
- *         │  ├─ Intervention 1
- *         │  └─ Intervention 2
- *         └─ Care Domain B
- *            └─ Intervention 3
+ * Structure per condition:
+ *   Condition (status)
+ *   ├─ Risk Factors / Causes
+ *   ├─ Physiology & Pathophysiology
+ *   ├─ Complications
+ *   ├─ Interventions
+ *   │  ├─ Care Domain A
+ *   │  │  ├─ Intervention 1 (evidence level)
+ *   │  │  └─ Intervention 2
+ *   │  └─ Care Domain B
+ *   │     └─ Intervention 3
+ *   ├─ Recipes
+ *   │  ├─ Recipe 1
+ *   │  └─ Recipe 2
+ *   ├─ Scriptures & SOP
+ *   │  ├─ John 3:16
+ *   │  └─ MH p.127 (SOP)
+ *   └─ Evidence
+ *      ├─ Study title 1
+ *      └─ Study title 2
  *
  * @param data The graph data from the API.
  * @returns A markdown string for markmap.
@@ -83,27 +96,12 @@ function buildMarkdown(data: GraphData): string {
   }
 
   for (const condition of data.conditions) {
-    lines.push(`## ${condition.name}`);
-
-    // Overview
-    const overviewParts: string[] = [];
-    if (condition.status) {
-      overviewParts.push(`Status: ${condition.status}`);
-    }
-    if (condition.snomedCode) {
-      overviewParts.push(`SNOMED: ${condition.snomedCode}`);
-    }
-    lines.push("### Overview");
-    if (overviewParts.length > 0) {
-      for (const part of overviewParts) {
-        lines.push(`- ${part}`);
-      }
-    }
+    const statusTag = condition.status ? ` *(${condition.status})*` : "";
+    lines.push(`## ${condition.name}${statusTag}`);
 
     // Sections (risk factors, physiology, complications, etc.)
     for (const section of condition.sections) {
-      const label =
-        SECTION_LABELS[section.sectionType] ?? section.title;
+      const label = SECTION_LABELS[section.sectionType] ?? section.title;
       lines.push(`### ${label}`);
     }
 
@@ -118,6 +116,31 @@ function buildMarkdown(data: GraphData): string {
             : "";
           lines.push(`- ${intervention.name}${suffix}`);
         }
+      }
+    }
+
+    // Recipes
+    if (condition.recipes.length > 0) {
+      lines.push("### Recipes");
+      for (const recipe of condition.recipes) {
+        lines.push(`- ${recipe}`);
+      }
+    }
+
+    // Scriptures & Spirit of Prophecy
+    if (condition.scriptures.length > 0) {
+      lines.push("### Scriptures & SOP");
+      for (const scripture of condition.scriptures) {
+        const sopTag = scripture.spiritOfProphecy ? " *(SOP)*" : "";
+        lines.push(`- ${scripture.reference}${sopTag}`);
+      }
+    }
+
+    // Evidence entries
+    if (condition.evidence.length > 0) {
+      lines.push("### Evidence");
+      for (const title of condition.evidence) {
+        lines.push(`- ${title}`);
       }
     }
   }
@@ -192,7 +215,9 @@ function KnowledgeGraph() {
     conditions: 0,
     interventions: 0,
     careDomains: 0,
-    links: 0,
+    recipes: 0,
+    scriptures: 0,
+    evidence: 0,
   };
 
   return (
@@ -214,12 +239,16 @@ function KnowledgeGraph() {
           <StatLabel>{t("Interventions")}</StatLabel>
         </StatCard>
         <StatCard>
-          <StatNumber>{totals.careDomains}</StatNumber>
-          <StatLabel>{t("Care Domains")}</StatLabel>
+          <StatNumber>{totals.recipes}</StatNumber>
+          <StatLabel>{t("Recipes")}</StatLabel>
         </StatCard>
         <StatCard>
-          <StatNumber>{totals.links}</StatNumber>
-          <StatLabel>{t("Connections")}</StatLabel>
+          <StatNumber>{totals.scriptures}</StatNumber>
+          <StatLabel>{t("Scriptures")}</StatLabel>
+        </StatCard>
+        <StatCard>
+          <StatNumber>{totals.evidence}</StatNumber>
+          <StatLabel>{t("Evidence")}</StatLabel>
         </StatCard>
       </StatsRow>
 
@@ -259,7 +288,7 @@ const StatsRow = styled(Flex)`
 
 const StatCard = styled.div`
   flex: 1;
-  min-width: 120px;
+  min-width: 100px;
   padding: 16px;
   border: 1px solid ${s("divider")};
   border-radius: 8px;

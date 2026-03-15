@@ -4,6 +4,7 @@ import validate from "@server/middlewares/validate";
 import {
   Condition,
   ConditionIntervention,
+  ConditionRecipe,
   ConditionSection,
   Intervention,
   EvidenceEntry,
@@ -77,38 +78,85 @@ router.post(
     const { user } = ctx.state.auth;
     const teamId = user.teamId;
 
-    const [conditions, interventions, careDomains, sections] =
-      await Promise.all([
-        Condition.findAll({
-          where: { teamId },
-          attributes: ["id", "name", "slug", "status", "snomedCode"],
-        }),
-        Intervention.findAll({
-          where: { teamId },
-          attributes: ["id", "name", "slug", "careDomainId", "category"],
-        }),
-        CareDomain.findAll({
-          attributes: ["id", "name", "slug", "color", "icon"],
-          order: [["sortOrder", "ASC"]],
-        }),
-        ConditionSection.findAll({
-          where: {},
-          attributes: [
-            "id",
-            "conditionId",
-            "sectionType",
-            "title",
-            "sortOrder",
-          ],
-          order: [["sortOrder", "ASC"]],
-        }),
-      ]);
+    // Fetch all entities in parallel
+    const [
+      conditions,
+      interventions,
+      careDomains,
+      sections,
+      recipes,
+      scriptures,
+      evidenceEntries,
+    ] = await Promise.all([
+      Condition.findAll({
+        where: { teamId },
+        attributes: ["id", "name", "slug", "status", "snomedCode", "icdCode"],
+      }),
+      Intervention.findAll({
+        where: { teamId },
+        attributes: ["id", "name", "slug", "careDomainId", "category"],
+      }),
+      CareDomain.findAll({
+        attributes: ["id", "name", "slug", "color", "icon"],
+        order: [["sortOrder", "ASC"]],
+      }),
+      ConditionSection.findAll({
+        attributes: [
+          "id",
+          "conditionId",
+          "sectionType",
+          "title",
+          "sortOrder",
+        ],
+        order: [["sortOrder", "ASC"]],
+      }),
+      Recipe.findAll({
+        where: { teamId },
+        attributes: ["id", "name"],
+      }),
+      Scripture.findAll({
+        where: { teamId },
+        attributes: [
+          "id",
+          "reference",
+          "conditionId",
+          "interventionId",
+          "spiritOfProphecy",
+        ],
+      }),
+      EvidenceEntry.findAll({
+        where: { teamId },
+        attributes: ["id", "title", "conditionId", "interventionId"],
+      }),
+    ]);
 
-    // Index care domains by id
+    const conditionIds = conditions.map((c) => c.id);
+
+    // Fetch junction tables
+    const [ciLinks, crLinks] = await Promise.all([
+      conditionIds.length > 0
+        ? ConditionIntervention.findAll({
+            where: { conditionId: conditionIds },
+            attributes: [
+              "conditionId",
+              "interventionId",
+              "careDomainId",
+              "evidenceLevel",
+            ],
+          })
+        : Promise.resolve([]),
+      conditionIds.length > 0
+        ? ConditionRecipe.findAll({
+            where: { conditionId: conditionIds },
+            attributes: ["conditionId", "recipeId", "careDomainId"],
+          })
+        : Promise.resolve([]),
+    ]);
+
+    // Index lookups
     const domainById = new Map(careDomains.map((d) => [d.id, d]));
-
-    // Index interventions by id
     const interventionById = new Map(interventions.map((i) => [i.id, i]));
+    const recipeById = new Map(recipes.map((r) => [r.id, r]));
 
     // Group sections by conditionId
     const sectionsByCondition = new Map<
@@ -124,27 +172,12 @@ router.post(
       sectionsByCondition.set(section.conditionId, list);
     }
 
-    // Get condition-intervention links
-    const conditionIds = conditions.map((c) => c.id);
-    const ciLinks =
-      conditionIds.length > 0
-        ? await ConditionIntervention.findAll({
-            where: { conditionId: conditionIds },
-            attributes: [
-              "conditionId",
-              "interventionId",
-              "careDomainId",
-              "evidenceLevel",
-            ],
-          })
-        : [];
-
-    // Group intervention links by condition, then by care domain
+    // Group intervention links by condition → care domain → interventions
     const interventionsByCondition = new Map<
       string,
       Map<
         string,
-        Array<{ interventionName: string; evidenceLevel: string | null }>
+        Array<{ name: string; evidenceLevel: string | null }>
       >
     >();
     for (const link of ciLinks) {
@@ -152,18 +185,57 @@ router.post(
       if (!intervention) {
         continue;
       }
-
       const domainId =
         link.careDomainId ?? intervention.careDomainId ?? "uncategorized";
       const condMap =
         interventionsByCondition.get(link.conditionId) ?? new Map();
       const domainList = condMap.get(domainId) ?? [];
       domainList.push({
-        interventionName: intervention.name,
+        name: intervention.name,
         evidenceLevel: link.evidenceLevel,
       });
       condMap.set(domainId, domainList);
       interventionsByCondition.set(link.conditionId, condMap);
+    }
+
+    // Group recipes by condition
+    const recipesByCondition = new Map<string, string[]>();
+    for (const link of crLinks) {
+      const recipe = recipeById.get(link.recipeId);
+      if (!recipe) {
+        continue;
+      }
+      const list = recipesByCondition.get(link.conditionId) ?? [];
+      list.push(recipe.name);
+      recipesByCondition.set(link.conditionId, list);
+    }
+
+    // Group scriptures by condition
+    const scripturesByCondition = new Map<
+      string,
+      Array<{ reference: string; spiritOfProphecy: boolean }>
+    >();
+    for (const s of scriptures) {
+      if (!s.conditionId) {
+        continue;
+      }
+      const list = scripturesByCondition.get(s.conditionId) ?? [];
+      list.push({
+        reference: s.reference,
+        spiritOfProphecy: s.spiritOfProphecy,
+      });
+      scripturesByCondition.set(s.conditionId, list);
+    }
+
+    // Group evidence by condition
+    const evidenceByCondition = new Map<string, string[]>();
+    for (const e of evidenceEntries) {
+      if (!e.conditionId) {
+        continue;
+      }
+      const list = evidenceByCondition.get(e.conditionId) ?? [];
+      list.push(e.title);
+      evidenceByCondition.set(e.conditionId, list);
     }
 
     // Build condition-centric graph data
@@ -172,7 +244,7 @@ router.post(
       const condInterventions =
         interventionsByCondition.get(condition.id) ?? new Map();
 
-      // Build interventions grouped by care domain
+      // Interventions grouped by care domain
       const interventionGroups: Array<{
         careDomain: string;
         interventions: Array<{
@@ -195,8 +267,12 @@ router.post(
         slug: condition.slug,
         status: condition.status,
         snomedCode: condition.snomedCode,
+        icdCode: condition.icdCode,
         sections: condSections,
         interventionGroups,
+        recipes: recipesByCondition.get(condition.id) ?? [],
+        scriptures: scripturesByCondition.get(condition.id) ?? [],
+        evidence: evidenceByCondition.get(condition.id) ?? [],
       };
     });
 
@@ -213,7 +289,9 @@ router.post(
           conditions: conditions.length,
           interventions: interventions.length,
           careDomains: careDomains.length,
-          links: ciLinks.length,
+          recipes: recipes.length,
+          scriptures: scriptures.length,
+          evidence: evidenceEntries.length,
         },
       },
     };
