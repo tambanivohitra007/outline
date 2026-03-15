@@ -161,6 +161,21 @@ router.post(
 );
 
 router.post(
+  "ai.explain",
+  auth(),
+  validate(T.AIExplainSchema),
+  async (ctx: APIContext<T.AIExplainReq>) => {
+    const { topic, context } = ctx.input.body;
+
+    const text = await GeminiService.explain(topic, context);
+
+    ctx.body = {
+      data: { text },
+    };
+  }
+);
+
+router.post(
   "ai.reviewSummary",
   auth(),
   validate(T.AIReviewSummarySchema),
