@@ -1,8 +1,15 @@
-import { DocumentIcon, ShapesIcon } from "outline-icons";
+import {
+  BookmarkedIcon,
+  DocumentIcon,
+  LightBulbIcon,
+  ShapesIcon,
+  SparklesIcon,
+} from "outline-icons";
 import cloneDeep from "lodash/cloneDeep";
 import { observer } from "mobx-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { createPortal } from "react-dom";
 import Icon from "@shared/components/Icon";
 import type { MenuItem } from "@shared/editor/types";
 import { ProsemirrorHelper } from "@shared/utils/ProsemirrorHelper";
@@ -12,6 +19,7 @@ import useDictionary from "~/hooks/useDictionary";
 import useStores from "~/hooks/useStores";
 import getMenuItems from "../menus/block";
 import { useEditor } from "./EditorContext";
+import MedicalInsertDialog from "./MedicalInsertDialog";
 import type { Props as SuggestionsMenuProps } from "./SuggestionsMenu";
 import SuggestionsMenu from "./SuggestionsMenu";
 import SuggestionsMenuItem from "./SuggestionsMenuItem";
@@ -104,23 +112,91 @@ function useTemplateMenuItem(): MenuItem | undefined {
   }, [user, templatesStore.orderedData, collectionId, editor, t]);
 }
 
+type InsertMode = "bible" | "egw" | "ai";
+
 type Props = Omit<SuggestionsMenuProps, "renderMenuItem" | "items"> &
   Required<Pick<SuggestionsMenuProps, "embeds">>;
 
 function BlockMenu(props: Props) {
+  const { t } = useTranslation();
   const dictionary = useDictionary();
-  const { elementRef } = useEditor();
+  const editor = useEditor();
+  const { elementRef } = editor;
   const templateMenuItem = useTemplateMenuItem();
+  const [insertMode, setInsertMode] = useState<InsertMode | null>(null);
+
+  const documentId = editor.props.id;
+  const { documents } = useStores();
+  const document = documentId ? documents.get(documentId) : undefined;
+  const documentTitle = document?.title ?? "";
+
+  const medicalItems: MenuItem[] = useMemo(
+    () => [
+      { name: "separator" } as MenuItem,
+      {
+        name: "noop",
+        title: t("Bible verse"),
+        icon: <BookmarkedIcon />,
+        keywords: "bible verse scripture reference",
+        onClick: () => setInsertMode("bible"),
+      },
+      {
+        name: "noop",
+        title: t("Spirit of Prophecy"),
+        icon: <LightBulbIcon />,
+        keywords: "egw ellen white spirit prophecy sop quote",
+        onClick: () => setInsertMode("egw"),
+      },
+      {
+        name: "noop",
+        title: t("AI explanation"),
+        icon: <SparklesIcon />,
+        keywords: "ai explain generate medical",
+        onClick: () => setInsertMode("ai"),
+      },
+    ],
+    [t]
+  );
 
   const items = useMemo(() => {
     const baseItems = getMenuItems(dictionary, elementRef);
+    const extras: MenuItem[] = [...medicalItems];
 
-    if (!templateMenuItem) {
-      return baseItems;
+    if (templateMenuItem) {
+      extras.push({ name: "separator" } as MenuItem, templateMenuItem);
     }
 
-    return [...baseItems, { name: "separator" } as MenuItem, templateMenuItem];
-  }, [dictionary, elementRef, templateMenuItem]);
+    return [...baseItems, ...extras];
+  }, [dictionary, elementRef, medicalItems, templateMenuItem]);
+
+  const handleInsert = useCallback(
+    (text: string) => {
+      setInsertMode(null);
+
+      // Insert as markdown text parsed into the editor
+      const { view } = editor;
+      const { state } = view;
+      const { $from } = state.selection;
+
+      // Use the editor's parser to convert markdown to prosemirror nodes
+      const parser = editor.parser;
+      const doc = parser.parse(text);
+
+      if (doc) {
+        const start = $from.before($from.depth);
+        const end = $from.after($from.depth);
+        view.dispatch(state.tr.replaceWith(start, end, doc.content));
+      }
+
+      requestAnimationFrame(() => view.focus());
+    },
+    [editor]
+  );
+
+  const handleCloseDialog = useCallback(() => {
+    setInsertMode(null);
+    requestAnimationFrame(() => editor.view.focus());
+  }, [editor]);
 
   const renderMenuItem = useCallback(
     (item, _index, options) => (
@@ -136,13 +212,25 @@ function BlockMenu(props: Props) {
   );
 
   return (
-    <SuggestionsMenu
-      {...props}
-      filterable
-      trigger="/"
-      renderMenuItem={renderMenuItem}
-      items={items}
-    />
+    <>
+      <SuggestionsMenu
+        {...props}
+        filterable
+        trigger="/"
+        renderMenuItem={renderMenuItem}
+        items={items}
+      />
+      {insertMode &&
+        createPortal(
+          <MedicalInsertDialog
+            mode={insertMode}
+            documentTitle={documentTitle}
+            onInsert={handleInsert}
+            onClose={handleCloseDialog}
+          />,
+          window.document.body
+        )}
+    </>
   );
 }
 
