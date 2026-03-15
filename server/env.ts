@@ -846,6 +846,18 @@ export class Environment {
   public GEMINI_API_KEY = this.toOptionalString(environment.GEMINI_API_KEY);
 
   /**
+   * OpenAI API key for AI content generation.
+   */
+  @IsOptional()
+  public OPENAI_API_KEY = this.toOptionalString(environment.OPENAI_API_KEY);
+
+  /**
+   * Anthropic API key for AI content generation.
+   */
+  @IsOptional()
+  public ANTHROPIC_API_KEY = this.toOptionalString(environment.ANTHROPIC_API_KEY);
+
+  /**
    * Cerbo EHR API base URL.
    */
   @IsOptional()

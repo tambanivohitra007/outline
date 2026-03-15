@@ -38,6 +38,7 @@ export const TeamPreferenceDefaults: TeamPreferences = {
   [TeamPreference.MCP]: true,
   [TeamPreference.DisabledEmbeds]: [],
   [TeamPreference.DisabledMedicalBlocks]: [],
+  [TeamPreference.AIModel]: "gemini-2.5-flash-preview-05-20",
 };
 
 export const UserPreferenceDefaults: UserPreferences = {

@@ -390,6 +390,8 @@ export enum TeamPreference {
   DisabledEmbeds = "disabledEmbeds",
   /** List of disabled medical block item IDs. */
   DisabledMedicalBlocks = "disabledMedicalBlocks",
+  /** The AI model to use for content generation. */
+  AIModel = "aiModel",
 }
 
 export type TeamPreferences = {
@@ -408,6 +410,7 @@ export type TeamPreferences = {
   [TeamPreference.MCP]?: boolean;
   [TeamPreference.DisabledEmbeds]?: string[];
   [TeamPreference.DisabledMedicalBlocks]?: string[];
+  [TeamPreference.AIModel]?: string;
 };
 
 export enum NavigationNodeType {

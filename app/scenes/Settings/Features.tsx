@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { CopyIcon, SparklesIcon } from "outline-icons";
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import { toast } from "sonner";
 import { TeamPreference } from "@shared/types";
@@ -9,19 +9,40 @@ import Scene from "~/components/Scene";
 import Switch from "~/components/Switch";
 import Text from "~/components/Text";
 import useCurrentTeam from "~/hooks/useCurrentTeam";
+import { client } from "~/utils/ApiClient";
 import SettingRow from "./components/SettingRow";
 import Input from "~/components/Input";
 import Tooltip from "~/components/Tooltip";
 import CopyToClipboard from "~/components/CopyToClipboard";
 import NudeButton from "~/components/NudeButton";
-import { useTheme } from "styled-components";
+import styled, { useTheme } from "styled-components";
+import { s } from "@shared/styles";
+
+interface AIModel {
+  id: string;
+  label: string;
+  provider: string;
+}
 
 function Features() {
   const { t } = useTranslation();
   const team = useCurrentTeam();
   const theme = useTheme();
+  const [availableModels, setAvailableModels] = useState<AIModel[]>([]);
 
-  const handleMCPChange = React.useCallback(
+  useEffect(() => {
+    async function loadModels() {
+      try {
+        const res = await client.post("/ai.models");
+        setAvailableModels(res.data ?? []);
+      } catch {
+        // No AI providers configured
+      }
+    }
+    void loadModels();
+  }, []);
+
+  const handleMCPChange = useCallback(
     async (checked: boolean) => {
       team.setPreference(TeamPreference.MCP, checked);
       await team.save();
@@ -30,11 +51,28 @@ function Features() {
     [team, t]
   );
 
-  const handleCopied = React.useCallback(() => {
+  const handleModelChange = useCallback(
+    async (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const modelId = e.target.value;
+      team.setPreference(TeamPreference.AIModel, modelId);
+      await team.save({ preferences: { ...team.preferences } });
+      toast.success(t("Settings saved"));
+    },
+    [team, t]
+  );
+
+  const handleCopied = useCallback(() => {
     toast.success(t("Copied to clipboard"));
   }, [t]);
 
   const mcpEndpoint = window.location.origin + "/mcp";
+
+  const currentModel = useMemo(
+    () =>
+      (team.getPreference(TeamPreference.AIModel) as string) ??
+      "gemini-2.5-flash-preview-05-20",
+    [team]
+  );
 
   return (
     <Scene title={t("AI")} icon={<SparklesIcon />}>
@@ -42,6 +80,38 @@ function Features() {
       <Text as="p" type="secondary">
         <Trans>Manage AI and integration features for your workspace.</Trans>
       </Text>
+
+      {availableModels.length > 0 && (
+        <SettingRow
+          name="aiModel"
+          label={t("AI model")}
+          description={t(
+            "Choose which AI model to use for content generation, suggestions, and explanations. Only models with configured API keys are shown."
+          )}
+        >
+          <ModelSelect value={currentModel} onChange={handleModelChange}>
+            {availableModels.map((model) => (
+              <option key={model.id} value={model.id}>
+                {model.label}
+              </option>
+            ))}
+          </ModelSelect>
+        </SettingRow>
+      )}
+
+      {availableModels.length === 0 && (
+        <SettingRow
+          name="aiModel"
+          label={t("AI model")}
+          description={t(
+            "No AI providers are configured. Set GEMINI_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY in your environment to enable AI features."
+          )}
+        >
+          <ModelSelect disabled>
+            <option>{t("No providers available")}</option>
+          </ModelSelect>
+        </SettingRow>
+      )}
 
       <SettingRow
         name={TeamPreference.MCP}
@@ -110,5 +180,26 @@ function Features() {
     </Scene>
   );
 }
+
+const ModelSelect = styled.select`
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid ${s("inputBorder")};
+  background: ${s("inputBackground")};
+  color: ${s("text")};
+  font-size: 14px;
+  min-width: 200px;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: ${s("accent")};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
 
 export default observer(Features);
