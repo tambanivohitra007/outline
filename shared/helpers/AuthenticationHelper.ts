@@ -38,7 +38,9 @@ export default class AuthenticationHelper {
     path = path.split("?")[0];
 
     const resource = path.split("/").pop() ?? "";
-    const [namespace, method] = resource.split(".");
+    const parts = resource.split(".");
+    const namespace = parts[0];
+    const method = parts[parts.length - 1];
 
     return scopes.some((scope) => {
       const [scopeNamespace, scopeMethod] = scope.match(/[:\.]/g)

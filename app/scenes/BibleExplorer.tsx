@@ -85,9 +85,11 @@ function BibleExplorer() {
   const [bibleQuery, setBibleQuery] = useState("");
   const [bibleResults, setBibleResults] = useState<BibleSearchResult[]>([]);
   const [bibleSearching, setBibleSearching] = useState(false);
+  const [bibleError, setBibleError] = useState("");
   const [egwQuery, setEgwQuery] = useState("");
   const [egwResults, setEgwResults] = useState<EgwSearchResult[]>([]);
   const [egwSearching, setEgwSearching] = useState(false);
+  const [egwError, setEgwError] = useState("");
   // EGW book browser
   const [egwBooks, setEgwBooks] = useState<EgwBook[]>([]);
   const [egwBookSearch, setEgwBookSearch] = useState("");
@@ -103,18 +105,24 @@ function BibleExplorer() {
   const handleBibleSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
       setBibleResults([]);
+      setBibleError("");
       return;
     }
     setBibleSearching(true);
+    setBibleError("");
     try {
       const res = await client.post("/medical.bible.search", { query, limit: 25 });
       setBibleResults(res.data ?? []);
-    } catch {
+      if ((res.data ?? []).length === 0) {
+        setBibleError(t("No results found for this query."));
+      }
+    } catch (err) {
       setBibleResults([]);
+      setBibleError((err as Error).message || t("Bible API request failed."));
     } finally {
       setBibleSearching(false);
     }
-  }, []);
+  }, [t]);
 
   const handleBibleQueryChange = useCallback((value: string) => {
     setBibleQuery(value);
@@ -126,18 +134,24 @@ function BibleExplorer() {
   const handleEgwSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
       setEgwResults([]);
+      setEgwError("");
       return;
     }
     setEgwSearching(true);
+    setEgwError("");
     try {
       const res = await client.post("/medical.egw.search", { query, limit: 25 });
       setEgwResults(res.data ?? []);
-    } catch {
+      if ((res.data ?? []).length === 0) {
+        setEgwError(t("No results found for this query."));
+      }
+    } catch (err) {
       setEgwResults([]);
+      setEgwError((err as Error).message || t("EGW API request failed."));
     } finally {
       setEgwSearching(false);
     }
-  }, []);
+  }, [t]);
 
   const handleEgwQueryChange = useCallback((value: string) => {
     setEgwQuery(value);
@@ -401,8 +415,8 @@ function BibleExplorer() {
                 ))}
               </ApiResultsList>
             )}
-            {!bibleSearching && bibleQuery && bibleResults.length === 0 && (
-              <ApiEmpty>{t("No results. Try a different search term, or check that BIBLE_API_KEY is configured.")}</ApiEmpty>
+            {bibleError && (
+              <ApiError>{bibleError}</ApiError>
             )}
           </ApiPanel>
         )}
@@ -444,8 +458,8 @@ function BibleExplorer() {
               </ApiResultsList>
             )}
 
-            {!egwSearching && egwQuery && egwResults.length === 0 && (
-              <ApiEmpty>{t("No results. Try a different search term, or check that EGW_CLIENT_ID and EGW_CLIENT_SECRET are configured.")}</ApiEmpty>
+            {egwError && (
+              <ApiError>{egwError}</ApiError>
             )}
 
             {/* EGW Book Browser */}
@@ -1294,11 +1308,15 @@ const ApiStatus = styled.div`
   margin-top: 8px;
 `;
 
-const ApiEmpty = styled.div`
+const ApiError = styled.div`
   font-size: 13px;
-  color: ${s("textTertiary")};
-  padding: 16px;
+  color: ${(p) => p.theme.danger};
+  padding: 12px 16px;
   text-align: center;
+  background: ${(p) => p.theme.danger}08;
+  border: 1px solid ${(p) => p.theme.danger}20;
+  border-radius: 6px;
+  margin-top: 8px;
 `;
 
 const ApiResultsList = styled.div`
