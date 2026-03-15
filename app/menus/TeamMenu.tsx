@@ -6,7 +6,6 @@ import {
   logout,
 } from "~/actions/definitions/navigation";
 import {
-  createTeam,
   switchTeamsList,
   desktopLoginTeam,
 } from "~/actions/definitions/teams";
@@ -28,7 +27,6 @@ const TeamMenu: React.FC = ({ children }: Props) => {
   const actions = React.useMemo(
     () => [
       ...switchTeamsList(context),
-      createTeam,
       desktopLoginTeam,
       ActionSeparator,
       navigateToWorkspaceSettings,

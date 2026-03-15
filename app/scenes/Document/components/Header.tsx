@@ -37,7 +37,6 @@ import TemplatesMenu from "~/menus/TemplatesMenu";
 import { documentEditPath } from "~/utils/routeHelpers";
 import ObservingBanner from "./ObservingBanner";
 import PublicBreadcrumb from "./PublicBreadcrumb";
-import ShareButton from "./ShareButton";
 import { AppearanceAction } from "~/components/Sharing/components/Actions";
 import useShare from "@shared/hooks/useShare";
 import { type Editor } from "~/editor";
@@ -266,11 +265,6 @@ function DocumentHeader({
                   document={document as Document}
                   onSelectTemplate={onSelectTemplate}
                 />
-              </Action>
-            )}
-            {!isEditing && !isRevision && can.update && (
-              <Action>
-                <ShareButton document={document} />
               </Action>
             )}
             {isEditing && (

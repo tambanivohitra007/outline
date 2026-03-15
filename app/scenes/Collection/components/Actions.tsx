@@ -16,12 +16,9 @@ import {
 import useCurrentUser from "~/hooks/useCurrentUser";
 import type { SidebarContextType } from "~/components/Sidebar/components/SidebarContext";
 import { CollectionTab } from "./Navigation";
-import lazyWithRetry from "~/utils/lazyWithRetry";
 import history from "~/utils/history";
 import RegisterKeyDown from "~/components/RegisterKeyDown";
 import { useCallback } from "react";
-
-const ShareButton = lazyWithRetry(() => import("./ShareButton"));
 
 type Props = {
   /** The collection for which to render actions */
@@ -53,11 +50,6 @@ function Actions({ collection, isEditing, sidebarContext }: Props) {
 
   return (
     <>
-      {(!isEditing || !user?.separateEditMode) && (
-        <Action>
-          <ShareButton collection={collection} />
-        </Action>
-      )}
       {!isEditing && user?.separateEditMode && (
         <Action>
           <RegisterKeyDown trigger="e" handler={goToEdit} />

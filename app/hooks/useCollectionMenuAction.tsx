@@ -9,8 +9,6 @@ import {
   unstarCollection,
   searchInCollection,
   createTemplate,
-  archiveCollection,
-  restoreCollection,
   subscribeCollection,
   unsubscribeCollection,
   createDocument,
@@ -39,7 +37,6 @@ export function useCollectionMenuAction({ collectionId, onRename }: Props) {
 
   const actions = useMemo(
     () => [
-      restoreCollection,
       starCollection,
       unstarCollection,
       subscribeCollection,
@@ -60,7 +57,6 @@ export function useCollectionMenuAction({ collectionId, onRename }: Props) {
       createTemplate,
       sortCollection,
       exportCollection,
-      archiveCollection,
       searchInCollection,
       ActionSeparator,
       deleteCollection,
