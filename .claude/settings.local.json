@@ -46,7 +46,8 @@
       "Read(//tmp/**)",
       "Bash(grep -c \"response.json\\\\|response.text\\\\|\\\\.json\\(\\)\\\\|\\\\.text\\(\\)\" server/services/medical/*.ts server/services/ai/*.ts server/services/fhir/CerboService.ts)",
       "Bash(yarn build:i18n)",
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Bash(node -e \"console.log\\(''NODE_ENV:'', process.env.NODE_ENV\\)\")"
     ]
   }
 }

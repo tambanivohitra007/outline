@@ -27,7 +27,7 @@ function dev() {
 }
 
 router.get(
-  "/developer.login",
+  "developer.login",
   dev(),
   async (ctx: Context) => {
     const user = await User.findOne({
