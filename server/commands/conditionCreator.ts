@@ -105,7 +105,7 @@ export default async function conditionCreator(
       title: `${name} \u2014 ${sectionDef.title}`,
       collectionId: resolvedCollectionId,
       icon: sectionDef.icon,
-      publish: true,
+      publish: false,
     });
 
     await ConditionSection.create(

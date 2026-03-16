@@ -165,32 +165,69 @@ router.post(
     // Sync backing document publish state with condition status
     const sections = await ConditionSection.findAll({
       where: { conditionId: id },
+      include: [{ model: Document.unscoped(), as: "document" }],
       transaction,
     });
 
-    const documentIds = sections
-      .map((s) => s.documentId)
-      .filter((did): did is string => !!did);
+    const collectionId = condition!.collectionId;
 
-    if (documentIds.length > 0) {
-      if (status === "published" || status === "review") {
-        // Publish all section documents that are still drafts
-        await Document.update(
-          { publishedAt: new Date() },
-          {
-            where: { id: documentIds, publishedAt: null },
+    if (status === "published" || status === "review") {
+      // Publish draft documents and add them to the collection structure
+      const collection = collectionId
+        ? await Collection.findByPk(collectionId, {
             transaction,
+            lock: Transaction.LOCK.UPDATE,
+          })
+        : null;
+
+      for (const section of sections) {
+        if (!section.document) {
+          continue;
+        }
+        if (!section.document.publishedAt) {
+          section.document.publishedAt = new Date();
+          section.document.collectionId = collectionId;
+          await section.document.save({ transaction });
+
+          if (collection) {
+            await collection.addDocumentToStructure(section.document, undefined, {
+              transaction,
+              save: false,
+            });
           }
-        );
-      } else if (status === "draft") {
-        // Unpublish all section documents back to drafts
-        await Document.update(
-          { publishedAt: null },
-          {
-            where: { id: documentIds },
+        }
+      }
+
+      if (collection) {
+        await collection.save({ transaction, silent: true });
+      }
+    } else if (status === "draft") {
+      // Move documents back to drafts and remove from collection structure
+      const collection = collectionId
+        ? await Collection.findByPk(collectionId, {
             transaction,
+            lock: Transaction.LOCK.UPDATE,
+          })
+        : null;
+
+      for (const section of sections) {
+        if (!section.document) {
+          continue;
+        }
+        if (section.document.publishedAt) {
+          if (collection) {
+            await collection.removeDocumentInStructure(section.document, {
+              transaction,
+              save: false,
+            });
           }
-        );
+          section.document.publishedAt = null;
+          await section.document.save({ transaction });
+        }
+      }
+
+      if (collection) {
+        await collection.save({ transaction, silent: true });
       }
     }
 
