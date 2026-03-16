@@ -6,6 +6,7 @@ import auth from "@server/middlewares/authentication";
 import { transaction } from "@server/middlewares/transaction";
 import validate from "@server/middlewares/validate";
 import conditionCreator from "@server/commands/conditionCreator";
+import helpCollectionSeeder from "@server/commands/helpCollectionSeeder";
 import {
   CareDomain,
   Collection,
@@ -456,6 +457,33 @@ router.post(
         repaired,
         conditionName: condition.name,
         collectionId: condition.collectionId,
+      },
+    };
+  }
+);
+
+router.post(
+  "conditions.seedHelp",
+  auth(),
+  transaction(),
+  async (ctx: APIContext) => {
+    const { user } = ctx.state.auth;
+
+    if (!user.isAdmin) {
+      ctx.throw(403, "Only administrators can seed the help collection");
+    }
+
+    const team = await user.$get("team");
+    if (!team) {
+      ctx.throw(404);
+    }
+
+    const collection = await helpCollectionSeeder(ctx, team!, user);
+
+    ctx.body = {
+      data: {
+        seeded: !!collection,
+        collectionId: collection?.id ?? null,
       },
     };
   }

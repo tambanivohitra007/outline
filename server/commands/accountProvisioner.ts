@@ -21,6 +21,7 @@ import { DocumentHelper } from "@server/models/helpers/DocumentHelper";
 import { sequelize } from "@server/storage/database";
 import { PluginManager } from "@server/utils/PluginManager";
 import groupsSyncer from "./groupsSyncer";
+import helpCollectionSeeder from "./helpCollectionSeeder";
 import teamProvisioner from "./teamProvisioner";
 import userProvisioner from "./userProvisioner";
 import type { APIContext } from "@server/types";
@@ -220,6 +221,7 @@ async function accountProvisioner(
 
     if (provision) {
       await provisionFirstCollection(ctx, team, user);
+      await provisionHelpCollection(ctx, team, user);
     }
   }
 
@@ -326,6 +328,22 @@ async function provisionFirstCollection(
         silent: true,
       });
     }
+  });
+}
+
+async function provisionHelpCollection(
+  ctx: APIContext,
+  team: Team,
+  user: User
+) {
+  await sequelize.transaction(async (transaction) => {
+    const context = createContext({
+      ...ctx,
+      transaction,
+      user,
+    });
+
+    await helpCollectionSeeder(context, team, user);
   });
 }
 
