@@ -32,7 +32,7 @@ export default class GeminiService {
       throw new Error("GEMINI_API_KEY is not configured");
     }
 
-    const url = `${GEMINI_API_URL}/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+    const url = `${GEMINI_API_URL}/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: "POST",
@@ -80,7 +80,7 @@ export default class GeminiService {
 
     const prompt = GeminiService.buildPrompt(options);
 
-    const url = `${GEMINI_API_URL}/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+    const url = `${GEMINI_API_URL}/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: "POST",

@@ -1,5 +1,6 @@
 import { Op } from "sequelize";
 import Router from "koa-router";
+import Logger from "@server/logging/Logger";
 import auth from "@server/middlewares/authentication";
 import validate from "@server/middlewares/validate";
 import {
@@ -18,7 +19,7 @@ import {
 } from "@server/presenters";
 import { TeamPreference } from "@shared/types";
 import { TeamPreferenceDefaults } from "@shared/constants";
-import AIService from "@server/services/ai/AIService";
+import AIService, { AI_MODELS, type AIModelId } from "@server/services/ai/AIService";
 import GeminiService from "@server/services/ai/GeminiService";
 import type { APIContext } from "@server/types";
 import * as T from "./schema";
@@ -45,9 +46,14 @@ router.post(
     const { user } = ctx.state.auth;
 
     const team = await Team.findByPk(user.teamId);
-    const modelId =
+    let modelId =
       (team?.getPreference(TeamPreference.AIModel) as string) ??
       TeamPreferenceDefaults[TeamPreference.AIModel]!;
+
+    // Fall back to default if the stored model ID is no longer valid
+    if (!AI_MODELS[modelId as AIModelId]) {
+      modelId = TeamPreferenceDefaults[TeamPreference.AIModel]!;
+    }
 
     const prompt = GeminiService.buildPromptPublic({
       conditionName,
@@ -56,15 +62,24 @@ router.post(
       additionalContext,
     });
 
-    const content = await AIService.generate(modelId, { prompt });
+    try {
+      const content = await AIService.generate(modelId, { prompt });
 
-    ctx.body = {
-      data: {
-        content,
-        sectionType,
+      ctx.body = {
+        data: {
+          content,
+          sectionType,
+          conditionName,
+        },
+      };
+    } catch (err) {
+      Logger.error("AI content generation failed", err, {
+        modelId,
         conditionName,
-      },
-    };
+        sectionType,
+      });
+      ctx.throw(502, `AI generation failed: ${(err as Error).message}`);
+    }
   }
 );
 
@@ -158,9 +173,13 @@ router.post(
     }
 
     const team = await Team.findByPk(user.teamId);
-    const modelId =
+    let modelId =
       (team?.getPreference(TeamPreference.AIModel) as string) ??
       TeamPreferenceDefaults[TeamPreference.AIModel]!;
+
+    if (!AI_MODELS[modelId as AIModelId]) {
+      modelId = TeamPreferenceDefaults[TeamPreference.AIModel]!;
+    }
 
     const sections = await ConditionSection.findAll({
       where: { conditionId },
@@ -176,18 +195,23 @@ router.post(
       existingData
     );
 
-    const suggestions = await AIService.generate(modelId, {
-      prompt,
-      temperature: 0.5,
-    });
+    try {
+      const suggestions = await AIService.generate(modelId, {
+        prompt,
+        temperature: 0.5,
+      });
 
-    ctx.body = {
-      data: {
-        suggestions,
-        conditionName: condition!.name,
-        sectionType,
-      },
-    };
+      ctx.body = {
+        data: {
+          suggestions,
+          conditionName: condition!.name,
+          sectionType,
+        },
+      };
+    } catch (err) {
+      Logger.error("AI suggest failed", err, { modelId, conditionId });
+      ctx.throw(502, `AI generation failed: ${(err as Error).message}`);
+    }
   }
 );
 
@@ -200,19 +224,29 @@ router.post(
     const { user } = ctx.state.auth;
 
     const team = await Team.findByPk(user.teamId);
-    const modelId =
+    let modelId =
       (team?.getPreference(TeamPreference.AIModel) as string) ??
       TeamPreferenceDefaults[TeamPreference.AIModel]!;
 
-    const prompt = GeminiService.buildExplainPrompt(topic, context);
-    const text = await AIService.generate(modelId, {
-      prompt,
-      temperature: 0.4,
-    });
+    if (!AI_MODELS[modelId as AIModelId]) {
+      modelId = TeamPreferenceDefaults[TeamPreference.AIModel]!;
+    }
 
-    ctx.body = {
-      data: { text },
-    };
+    const prompt = GeminiService.buildExplainPrompt(topic, context);
+
+    try {
+      const text = await AIService.generate(modelId, {
+        prompt,
+        temperature: 0.4,
+      });
+
+      ctx.body = {
+        data: { text },
+      };
+    } catch (err) {
+      Logger.error("AI explain failed", err, { modelId, topic });
+      ctx.throw(502, `AI generation failed: ${(err as Error).message}`);
+    }
   }
 );
 
@@ -230,9 +264,13 @@ router.post(
     }
 
     const team = await Team.findByPk(user.teamId);
-    const modelId =
+    let modelId =
       (team?.getPreference(TeamPreference.AIModel) as string) ??
       TeamPreferenceDefaults[TeamPreference.AIModel]!;
+
+    if (!AI_MODELS[modelId as AIModelId]) {
+      modelId = TeamPreferenceDefaults[TeamPreference.AIModel]!;
+    }
 
     const sections = await ConditionSection.findAll({
       where: { conditionId },
@@ -260,18 +298,23 @@ router.post(
       sectionSummaries.join("\n")
     );
 
-    const summary = await AIService.generate(modelId, {
-      prompt,
-      temperature: 0.3,
-    });
+    try {
+      const summary = await AIService.generate(modelId, {
+        prompt,
+        temperature: 0.3,
+      });
 
-    ctx.body = {
-      data: {
-        summary,
-        conditionName: condition!.name,
-        sectionCount: sections.length,
-      },
-    };
+      ctx.body = {
+        data: {
+          summary,
+          conditionName: condition!.name,
+          sectionCount: sections.length,
+        },
+      };
+    } catch (err) {
+      Logger.error("AI review summary failed", err, { modelId, conditionId });
+      ctx.throw(502, `AI generation failed: ${(err as Error).message}`);
+    }
   }
 );
 

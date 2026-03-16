@@ -5,8 +5,8 @@ import OpenAIService from "./OpenAIService";
 
 /** Supported AI model identifiers. */
 export const AI_MODELS = {
-  "gemini-2.5-flash-preview-05-20": {
-    label: "Gemini 2.5 Flash",
+  "gemini-2.0-flash": {
+    label: "Gemini 2.0 Flash",
     provider: "gemini",
   },
   "gpt-5": {
