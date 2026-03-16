@@ -60,11 +60,16 @@ export default class CollectionsStore extends Store<Collection> {
   @computed
   get sidebarCollections(): Collection[] {
     const user = this.rootStore.auth.user;
+    const isHelpCollection = (c: Collection) =>
+      c.name === "Help & Documentation";
+
     if (user?.isAdmin) {
-      return this.allActive;
+      return this.allActive.filter((c) => !isHelpCollection(c));
     }
     const conditionIds = this.conditionCollectionIds;
-    return this.allActive.filter((c) => !conditionIds.has(c.id));
+    return this.allActive.filter(
+      (c) => !conditionIds.has(c.id) && !isHelpCollection(c)
+    );
   }
 
   @computed
