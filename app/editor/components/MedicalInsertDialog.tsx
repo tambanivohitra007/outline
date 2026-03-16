@@ -1,9 +1,12 @@
 import { CloseIcon } from "outline-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import MarkdownIt from "markdown-it";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled, { keyframes } from "styled-components";
 import { s } from "@shared/styles";
 import { client } from "~/utils/ApiClient";
+
+const md = new MarkdownIt({ linkify: true, typographer: true });
 
 type InsertMode = "bible" | "egw" | "ai";
 
@@ -161,6 +164,8 @@ function MedicalInsertDialog({
     }
   }, [aiText, onInsert]);
 
+  const aiHtml = useMemo(() => (aiText ? md.render(aiText) : ""), [aiText]);
+
   const title =
     mode === "bible"
       ? t("Insert Bible verse")
@@ -241,10 +246,7 @@ function MedicalInsertDialog({
 
           {mode === "ai" && aiText && (
             <AIResultArea>
-              <AIResultText>{aiText}</AIResultText>
-              <AIInsertButton onClick={handleInsertAI}>
-                {t("Insert into document")}
-              </AIInsertButton>
+              <AIResultText dangerouslySetInnerHTML={{ __html: aiHtml }} />
             </AIResultArea>
           )}
 
@@ -256,6 +258,14 @@ function MedicalInsertDialog({
               <EmptyMessage>{t("No results found.")}</EmptyMessage>
             )}
         </ResultsArea>
+
+        {mode === "ai" && aiText && (
+          <StickyFooter>
+            <AIInsertButton onClick={handleInsertAI}>
+              {t("Insert into document")}
+            </AIInsertButton>
+          </StickyFooter>
+        )}
       </Dialog>
     </Overlay>
   );
@@ -452,14 +462,66 @@ const AIResultText = styled.div`
   font-size: 14px;
   color: ${s("text")};
   line-height: 1.7;
-  white-space: pre-wrap;
-  margin-bottom: 12px;
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 12px 0 6px;
+    font-weight: 600;
+    color: ${s("text")};
+  }
+
+  h1 { font-size: 1.3em; }
+  h2 { font-size: 1.15em; }
+  h3 { font-size: 1.05em; }
+
+  p {
+    margin: 0 0 8px;
+  }
+
+  ul, ol {
+    margin: 0 0 8px;
+    padding-left: 20px;
+  }
+
+  li {
+    margin-bottom: 4px;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  code {
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    background: ${s("codeBackground")};
+  }
+
+  blockquote {
+    margin: 8px 0;
+    padding: 4px 12px;
+    border-left: 3px solid ${s("accent")};
+    color: ${s("textSecondary")};
+  }
+
+  a {
+    color: ${s("accent")};
+    text-decoration: underline;
+  }
+`;
+
+const StickyFooter = styled.div`
+  flex-shrink: 0;
+  padding: 12px 20px;
+  border-top: 1px solid ${s("divider")};
+  background: ${s("background")};
+  border-radius: 0 0 12px 12px;
 `;
 
 const AIInsertButton = styled.button`
   display: block;
   width: 100%;
-  padding: 8px 16px;
+  padding: 10px 16px;
   font-size: 13px;
   font-weight: 600;
   border: none;
