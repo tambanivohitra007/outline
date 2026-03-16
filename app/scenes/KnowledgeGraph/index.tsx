@@ -734,6 +734,10 @@ const GraphContainer = styled.div<{ $isFullscreen: boolean }>`
     height: 100%;
   }
 
+  .markmap-node foreignObject > div {
+    color: ${s("text")} !important;
+  }
+
   .markmap-node[data-has-detail] foreignObject {
     cursor: pointer;
   }
