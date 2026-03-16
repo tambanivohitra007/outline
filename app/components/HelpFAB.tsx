@@ -1,6 +1,22 @@
 import { observer } from "mobx-react";
 import MarkdownIt from "markdown-it";
-import { QuestionMarkIcon, CloseIcon, BackIcon } from "outline-icons";
+import {
+  QuestionMarkIcon,
+  CloseIcon,
+  BackIcon,
+  HomeIcon,
+  LightningIcon,
+  BeakerIcon,
+  DocumentIcon,
+  ToolsIcon,
+  BookmarkedIcon,
+  ShuffleIcon,
+  SparklesIcon,
+  SettingsIcon,
+  LeafIcon,
+  ExportIcon,
+} from "outline-icons";
+import type { ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled, { keyframes } from "styled-components";
@@ -11,7 +27,7 @@ const md = new MarkdownIt({ linkify: true, typographer: true });
 interface HelpTopic {
   id: string;
   title: string;
-  icon: string;
+  icon: ReactNode;
   content: string;
 }
 
@@ -19,7 +35,7 @@ const HELP_TOPICS: HelpTopic[] = [
   {
     id: "welcome",
     title: "Welcome",
-    icon: "\u{1F3E0}",
+    icon: <HomeIcon size={20} />,
     content: `Welcome to the **Lifestyle Medicine** knowledge base \u2014 a collaborative platform for building evidence-based treatment guides using the NEWSTART+ lifestyle medicine framework.
 
 ## What you can do here
@@ -35,7 +51,7 @@ const HELP_TOPICS: HelpTopic[] = [
   {
     id: "getting-started",
     title: "Getting Started",
-    icon: "\u{1F680}",
+    icon: <LightningIcon size={20} />,
     content: `## Creating your first treatment guide
 
 1. **Navigate to Conditions** \u2014 Click **Conditions** in the sidebar
@@ -60,7 +76,7 @@ When you create a condition, the system provisions:
   {
     id: "conditions",
     title: "Conditions",
-    icon: "\u{1FA7A}",
+    icon: <BeakerIcon size={20} />,
     content: `## What is a condition?
 
 A condition represents a medical condition (disease, disorder, or health concern) and organizes all related treatment information.
@@ -100,7 +116,7 @@ If documents are out of sync, use **Repair** to re-publish all section documents
   {
     id: "sections",
     title: "Sections & Documents",
-    icon: "\u{1F4DD}",
+    icon: <DocumentIcon size={20} />,
     content: `## The six default sections
 
 | Section | What to write |
@@ -137,7 +153,7 @@ Always review and verify AI content before publishing.`,
   {
     id: "interventions",
     title: "Interventions & Care Domains",
-    icon: "\u{1F48A}",
+    icon: <ToolsIcon size={20} />,
     content: `## Care domains (NEWSTART+)
 
 | Domain | Focus area |
@@ -176,7 +192,7 @@ In the condition editor \u2192 Interventions tab \u2192 **Add Intervention**:
   {
     id: "evidence",
     title: "Evidence & References",
-    icon: "\u{1F4DA}",
+    icon: <BookmarkedIcon size={20} />,
     content: `## Evidence entries
 
 Research studies attached to conditions or interventions. Fields include title, PubMed ID, DOI, authors, journal, abstract, study type, quality rating, and sample size.
@@ -215,7 +231,7 @@ When editing any document, use the toolbar to:
   {
     id: "workflow",
     title: "Collaboration Workflow",
-    icon: "\u{1F504}",
+    icon: <ShuffleIcon size={20} />,
     content: `## The three stages
 
 \`\`\`
@@ -270,7 +286,7 @@ PUBLISHED <\u2500\u2500\u2500\u2500  DRAFT    (Unpublish)
   {
     id: "ai",
     title: "AI Features",
-    icon: "\u{1F916}",
+    icon: <SparklesIcon size={20} />,
     content: `## Available AI models
 
 | Model | Provider | Best for |
@@ -313,7 +329,7 @@ Click **AI Review** in the condition header to generate a comprehensive analysis
   {
     id: "admin",
     title: "Administration",
-    icon: "\u2699\uFE0F",
+    icon: <SettingsIcon size={20} />,
     content: `## Administrator capabilities
 
 Administrators have the **Admin** role and can manage team-wide settings.
@@ -360,7 +376,7 @@ Use **Repair** from the condition menu to re-sync documents with the collection 
   {
     id: "recipes",
     title: "Recipes",
-    icon: "\u{1F372}",
+    icon: <LeafIcon size={20} />,
     content: `## What is a recipe?
 
 A therapeutic recipe linked to conditions as part of lifestyle medicine treatment plans.
@@ -389,7 +405,7 @@ Recipes are linked to conditions through condition-recipe associations, specifyi
   {
     id: "fhir",
     title: "FHIR Export",
-    icon: "\u{1F4E4}",
+    icon: <ExportIcon size={20} />,
     content: `## What is FHIR?
 
 FHIR (Fast Healthcare Interoperability Resources) is the international standard for exchanging healthcare information electronically.
@@ -471,7 +487,8 @@ function HelpFAB() {
                 <BackButton onClick={handleBack}>
                   <BackIcon size={20} />
                 </BackButton>
-                <PanelTitle>{activeTopic.icon} {activeTopic.title}</PanelTitle>
+                <TopicHeaderIcon>{activeTopic.icon}</TopicHeaderIcon>
+                <PanelTitle>{activeTopic.title}</PanelTitle>
               </>
             ) : (
               <PanelTitle>{t("Help & Documentation")}</PanelTitle>
@@ -500,7 +517,7 @@ function HelpFAB() {
                   >
                     <TopicIcon>{topic.icon}</TopicIcon>
                     <TopicName>{topic.title}</TopicName>
-                    <TopicArrow>\u203A</TopicArrow>
+                    <TopicArrow>{"\u203A"}</TopicArrow>
                   </TopicItem>
                 ))}
                 {filteredTopics.length === 0 && (
@@ -654,9 +671,18 @@ const TopicItem = styled.div`
 `;
 
 const TopicIcon = styled.span`
-  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 28px;
-  text-align: center;
+  flex-shrink: 0;
+  color: ${s("textTertiary")};
+`;
+
+const TopicHeaderIcon = styled.span`
+  display: flex;
+  align-items: center;
+  color: ${s("textTertiary")};
   flex-shrink: 0;
 `;
 
