@@ -37,8 +37,7 @@ export default class OpenAIService {
       body: JSON.stringify({
         model: "gpt-5",
         messages: [{ role: "user", content: options.prompt }],
-        temperature: options.temperature ?? 0.7,
-        max_tokens: options.maxTokens ?? 4096,
+        max_completion_tokens: options.maxTokens ?? 4096,
       }),
     });
 
