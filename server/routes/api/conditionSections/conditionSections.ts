@@ -88,7 +88,7 @@ router.post(
     const document = await documentCreator(ctx, {
       title: `${condition!.name} \u2014 ${section.title}`,
       collectionId,
-      publish: true,
+      publish: condition!.status !== "draft",
     });
 
     // Link it to the section
