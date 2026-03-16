@@ -7,6 +7,7 @@ import styled from "styled-components";
 import breakpoint from "styled-components-breakpoint";
 import { s } from "@shared/styles";
 import Flex from "~/components/Flex";
+import HelpFAB from "~/components/HelpFAB";
 import { LoadingIndicatorBar } from "~/components/LoadingIndicator";
 import { useRightSidebarContent } from "~/components/RightSidebarContext";
 import SkipNavContent from "~/components/SkipNavContent";
@@ -64,6 +65,8 @@ const Layout = React.forwardRef(function Layout_(
 
         <AnimatePresence initial={false}>{sidebarRight}</AnimatePresence>
       </Container>
+
+      <HelpFAB />
     </Container>
   );
 });

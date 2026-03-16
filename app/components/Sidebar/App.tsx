@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { SearchIcon, HomeIcon, SidebarIcon, BeakerIcon, ToolsIcon, LeafIcon, BookmarkedIcon, GlobeIcon, SettingsIcon } from "outline-icons";
+import { SearchIcon, HomeIcon, SidebarIcon, BeakerIcon, ToolsIcon, LeafIcon, BookmarkedIcon, GlobeIcon, SettingsIcon, QuestionMarkIcon } from "outline-icons";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -38,6 +38,10 @@ import ToggleButton from "./components/ToggleButton";
 function AppSidebar() {
   const { t } = useTranslation();
   const { documents, ui, collections, conditions } = useStores();
+
+  const helpCollection = collections.orderedData.find(
+    (c) => c.name === "Help & Documentation"
+  );
   const team = useCurrentTeam();
   const user = useCurrentUser();
   const can = usePolicy(team);
@@ -162,6 +166,19 @@ function AppSidebar() {
             <Section>
               <Collections />
             </Section>
+            {helpCollection && (
+              <>
+                <Separator />
+                <Section>
+                  <SidebarLink
+                    to={helpCollection.path}
+                    icon={<QuestionMarkIcon />}
+                    label={t("Help & Documentation")}
+                    exact={false}
+                  />
+                </Section>
+              </>
+            )}
           </Scrollable>
         </DndProvider>
       )}
