@@ -29,7 +29,8 @@ export default class AnthropicService {
 
     const response = await fetch(`${ANTHROPIC_API_URL}/messages`, {
       method: "POST",
-      timeout: 60000,
+      timeout: 120000,
+      allowPrivateIPAddress: true,
       headers: {
         "Content-Type": "application/json",
         "x-api-key": apiKey,

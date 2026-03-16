@@ -36,7 +36,8 @@ export default class GeminiService {
 
     const response = await fetch(url, {
       method: "POST",
-      timeout: 60000,
+      timeout: 120000,
+      allowPrivateIPAddress: true,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: options.prompt }] }],
@@ -84,7 +85,8 @@ export default class GeminiService {
 
     const response = await fetch(url, {
       method: "POST",
-      timeout: 30000,
+      timeout: 120000,
+      allowPrivateIPAddress: true,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
@@ -144,7 +146,8 @@ If the query doesn't relate to a category, return an empty array for that field.
 
     const response = await fetch(url, {
       method: "POST",
-      timeout: 15000,
+      timeout: 120000,
+      allowPrivateIPAddress: true,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
@@ -210,7 +213,8 @@ Keep suggestions concise and actionable. Format as markdown bullet points.`;
 
     const response = await fetch(url, {
       method: "POST",
-      timeout: 20000,
+      timeout: 120000,
+      allowPrivateIPAddress: true,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
@@ -263,7 +267,8 @@ Keep the summary concise and actionable. Format as markdown.`;
 
     const response = await fetch(url, {
       method: "POST",
-      timeout: 20000,
+      timeout: 120000,
+      allowPrivateIPAddress: true,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
@@ -307,7 +312,8 @@ Keep the summary concise and actionable. Format as markdown.`;
 
     const response = await fetch(url, {
       method: "POST",
-      timeout: 30000,
+      timeout: 120000,
+      allowPrivateIPAddress: true,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],

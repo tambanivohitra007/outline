@@ -9,8 +9,8 @@ export const AI_MODELS = {
     label: "Gemini 2.0 Flash",
     provider: "gemini",
   },
-  "gpt-5": {
-    label: "GPT-5",
+  "gpt-5.2": {
+    label: "GPT-5.2",
     provider: "openai",
   },
   "claude-sonnet-4-6": {

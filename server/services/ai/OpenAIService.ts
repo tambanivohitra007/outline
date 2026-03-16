@@ -1,4 +1,5 @@
 import env from "@server/env";
+import Logger from "@server/logging/Logger";
 import fetch from "@server/utils/fetch";
 
 const OPENAI_API_URL = "https://api.openai.com/v1";
@@ -27,18 +28,24 @@ export default class OpenAIService {
       throw new Error("OPENAI_API_KEY is not configured");
     }
 
-    const response = await fetch(`${OPENAI_API_URL}/chat/completions`, {
+    const url = `${OPENAI_API_URL}/chat/completions`;
+    const payload = {
+      model: "gpt-5.2",
+      messages: [{ role: "user", content: options.prompt }],
+      max_completion_tokens: options.maxTokens ?? 4096,
+    };
+
+    Logger.debug("ai", `OpenAI request to ${url}`, { model: payload.model });
+
+    const response = await fetch(url, {
       method: "POST",
-      timeout: 60000,
+      timeout: 120000,
+      allowPrivateIPAddress: true,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model: "gpt-5",
-        messages: [{ role: "user", content: options.prompt }],
-        max_completion_tokens: options.maxTokens ?? 4096,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
