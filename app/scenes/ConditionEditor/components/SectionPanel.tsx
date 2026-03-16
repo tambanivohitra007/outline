@@ -1,5 +1,6 @@
 import { observer } from "mobx-react";
-import { useCallback, useState } from "react";
+import MarkdownIt from "markdown-it";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useHistory } from "react-router-dom";
@@ -10,19 +11,12 @@ import { client } from "~/utils/ApiClient";
 import styled from "styled-components";
 import { s } from "@shared/styles";
 
+const md = new MarkdownIt({ linkify: true, typographer: true });
+
 interface Props {
   section: ConditionSection;
   conditionName: string;
 }
-
-const SECTION_ICONS: Record<string, string> = {
-  risk_factors: "\u26a0\ufe0f",
-  physiology: "\ud83e\udde0",
-  complications: "\u2757",
-  solutions: "\u2705",
-  bible_sop: "\ud83d\udcd6",
-  research_ideas: "\ud83d\udd2c",
-};
 
 const SECTION_DESCRIPTIONS: Record<string, string> = {
   risk_factors: "Identify risk factors and predispositions for this condition.",
@@ -39,8 +33,10 @@ function SectionPanel({ section, conditionName }: Props) {
   const history = useHistory();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [aiContent, setAiContent] = useState("");
 
-  const icon = SECTION_ICONS[section.sectionType] ?? "";
+  const aiHtml = useMemo(() => (aiContent ? md.render(aiContent) : ""), [aiContent]);
+
   const description = SECTION_DESCRIPTIONS[section.sectionType] ?? "";
   const document = section.documentId
     ? documents.get(section.documentId)
@@ -75,7 +71,6 @@ function SectionPanel({ section, conditionName }: Props) {
     <Panel>
       <PanelHeader onClick={() => setIsExpanded(!isExpanded)}>
         <HeaderLeft>
-          <SectionIcon>{icon}</SectionIcon>
           <SectionTitle>{section.title}</SectionTitle>
           {document && (
             <DocumentStatus>
@@ -110,13 +105,33 @@ function SectionPanel({ section, conditionName }: Props) {
                 conditionName={conditionName}
                 sectionType={section.sectionType}
                 onGenerated={(content) => {
-                  if (document) {
-                    void navigator.clipboard.writeText(content);
-                    toast.success(t("Content copied to clipboard. Paste it in the editor."));
-                    history.push(document.path);
-                  }
+                  setAiContent(content);
                 }}
               />
+              {aiContent && (
+                <AIPreviewArea>
+                  <AIPreviewHeader>
+                    <AIPreviewTitle>{t("AI Generated Content")}</AIPreviewTitle>
+                    <AIPreviewActions>
+                      <AIActionButton
+                        onClick={() => {
+                          void navigator.clipboard.writeText(aiContent);
+                          toast.success(t("Copied to clipboard"));
+                          if (document) {
+                            history.push(document.path);
+                          }
+                        }}
+                      >
+                        {t("Copy & Edit")}
+                      </AIActionButton>
+                      <AIActionButtonSecondary onClick={() => setAiContent("")}>
+                        {t("Dismiss")}
+                      </AIActionButtonSecondary>
+                    </AIPreviewActions>
+                  </AIPreviewHeader>
+                  <AIPreviewContent dangerouslySetInnerHTML={{ __html: aiHtml }} />
+                </AIPreviewArea>
+              )}
             </EditorArea>
           ) : (
             <NoDocPlaceholder>
@@ -160,10 +175,6 @@ const HeaderLeft = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-`;
-
-const SectionIcon = styled.span`
-  font-size: 18px;
 `;
 
 const SectionTitle = styled.h3`
@@ -280,6 +291,119 @@ const CreateButton = styled.button`
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+`;
+
+const AIPreviewArea = styled.div`
+  margin-top: 12px;
+  border: 1px solid ${s("accent")};
+  border-radius: 6px;
+  overflow: hidden;
+`;
+
+const AIPreviewHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: ${s("accent")};
+`;
+
+const AIPreviewTitle = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const AIPreviewActions = styled.div`
+  display: flex;
+  gap: 6px;
+`;
+
+const AIActionButton = styled.button`
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid white;
+  border-radius: 4px;
+  background: white;
+  color: ${s("accent")};
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const AIActionButtonSecondary = styled.button`
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+`;
+
+const AIPreviewContent = styled.div`
+  padding: 12px 16px;
+  font-size: 13px;
+  color: ${s("text")};
+  line-height: 1.7;
+  max-height: 400px;
+  overflow-y: auto;
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 12px 0 6px;
+    font-weight: 600;
+    color: ${s("text")};
+  }
+
+  h1 { font-size: 1.3em; }
+  h2 { font-size: 1.15em; }
+  h3 { font-size: 1.05em; }
+
+  p {
+    margin: 0 0 8px;
+  }
+
+  ul, ol {
+    margin: 0 0 8px;
+    padding-left: 20px;
+  }
+
+  li {
+    margin-bottom: 4px;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  code {
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    background: ${s("codeBackground")};
+  }
+
+  blockquote {
+    margin: 8px 0;
+    padding: 4px 12px;
+    border-left: 3px solid ${s("accent")};
+    color: ${s("textSecondary")};
+  }
+
+  a {
+    color: ${s("accent")};
+    text-decoration: underline;
   }
 `;
 
