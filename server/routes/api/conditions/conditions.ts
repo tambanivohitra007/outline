@@ -1,5 +1,7 @@
 import Router from "koa-router";
+import { Transaction } from "sequelize";
 import slugify from "@shared/utils/slugify";
+import Logger from "@server/logging/Logger";
 import auth from "@server/middlewares/authentication";
 import { transaction } from "@server/middlewares/transaction";
 import validate from "@server/middlewares/validate";
@@ -344,6 +346,79 @@ router.post(
         interventions: interventionsData,
         evidence: evidence.map(presentEvidenceEntry),
         scriptures: scriptures.map(presentScripture),
+      },
+    };
+  }
+);
+
+router.post(
+  "conditions.repair",
+  auth(),
+  validate(T.ConditionsRepairSchema),
+  transaction(),
+  async (ctx: APIContext<T.ConditionsRepairReq>) => {
+    const { id } = ctx.input.body;
+    const { user } = ctx.state.auth;
+    const { transaction } = ctx.state;
+
+    const condition = await Condition.findByPk(id, { transaction });
+    if (!condition || condition.teamId !== user.teamId) {
+      return ctx.throw(404);
+    }
+    authorize(user, "update", condition);
+
+    if (!condition.collectionId) {
+      return ctx.throw(400, "Condition has no collection");
+    }
+
+    const collection = await Collection.findByPk(condition.collectionId, {
+      transaction,
+      lock: Transaction.LOCK.UPDATE,
+    });
+
+    if (!collection) {
+      return ctx.throw(404, "Collection not found");
+    }
+
+    const sections = await ConditionSection.findAll({
+      where: { conditionId: id },
+      include: [{ model: Document.unscoped(), as: "document" }],
+      transaction,
+    });
+
+    let repaired = 0;
+
+    for (const section of sections) {
+      if (!section.document) {
+        continue;
+      }
+
+      const doc = section.document;
+
+      // Publish draft documents
+      if (!doc.publishedAt) {
+        doc.publishedAt = new Date();
+        doc.collectionId = condition.collectionId;
+        await doc.save({ transaction });
+      }
+
+      // Ensure document is in the collection structure
+      await collection.addDocumentToStructure(doc, undefined, {
+        transaction,
+        save: false,
+      });
+      repaired++;
+    }
+
+    await collection.save({ transaction, silent: true });
+
+    Logger.info("conditions", `Repaired ${repaired} documents for condition ${condition.name}`);
+
+    ctx.body = {
+      data: {
+        repaired,
+        conditionName: condition.name,
+        collectionId: condition.collectionId,
       },
     };
   }
