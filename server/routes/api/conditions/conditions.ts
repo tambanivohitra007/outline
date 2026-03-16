@@ -290,7 +290,7 @@ router.post(
       await Promise.all([
         ConditionSection.findAll({
           where: { conditionId: id },
-          include: [{ model: Document, as: "document" }],
+          include: [{ model: Document.unscoped(), as: "document" }],
           order: [["sortOrder", "ASC"]],
         }),
         ConditionIntervention.findAll({
