@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Lifestyle Medicine 2&period;0 &mdash; Developer Reference</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="lifestyle-medicine-20--developer-reference">Lifestyle Medicine 2.0 — Developer Reference</h1>
+<blockquote>
+<p>Standalone reference for debugging and extending the medical knowledge platform.
+No AI assistance needed — everything you need is in this document.</p>
+</blockquote>
+<hr>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#what-this-project-is">What This Project Is</a></li>
+<li><a href="#how-data-flows">How Data Flows</a></li>
+<li><a href="#the-registration-checklist">The Registration Checklist</a></li>
+<li><a href="#custom-data-models">Custom Data Models</a></li>
+<li><a href="#api-endpoints">API Endpoints</a></li>
+<li><a href="#frontend-stores--models">Frontend Stores &amp; Models</a></li>
+<li><a href="#ui-scenes--components">UI Scenes &amp; Components</a></li>
+<li><a href="#ai-content-generation">AI Content Generation</a></li>
+<li><a href="#editor-blocks">Editor Blocks</a></li>
+<li><a href="#team-preferences-the-3-file-rule">Team Preferences (The 3-File Rule)</a></li>
+<li><a href="#settings-pages">Settings Pages</a></li>
+<li><a href="#common-debugging-scenarios">Common Debugging Scenarios</a></li>
+<li><a href="#file-index">File Index</a></li>
+</ol>
+<hr>
+<h2 id="what-this-project-is">What This Project Is</h2>
+<p>Outline (collaborative wiki) forked into a medical knowledge platform. Doctors
+collaboratively author structured treatment guides for 1000+ medical conditions.</p>
+<p>Each <strong>Condition</strong> (e.g. &quot;Type 2 Diabetes&quot;) has 6 <strong>Sections</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Section Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>risk_factors</code></td>
+<td>Risk factors and predispositions</td>
+</tr>
+<tr>
+<td><code>physiology</code></td>
+<td>Underlying physiology and pathophysiology</td>
+</tr>
+<tr>
+<td><code>complications</code></td>
+<td>Complications and comorbidities</td>
+</tr>
+<tr>
+<td><code>solutions</code></td>
+<td>Interventions organized by NEWSTART+ care domains</td>
+</tr>
+<tr>
+<td><code>bible_sop</code></td>
+<td>Scripture + Spirit of Prophecy references</td>
+</tr>
+<tr>
+<td><code>research_ideas</code></td>
+<td>Research gaps and study ideas</td>
+</tr>
+</tbody>
+</table>
+<p>Each section links to an <strong>Outline Document</strong> (<code>documentId</code>), so the
+collaborative rich-text editor (Y.js + Prosemirror) works per-section.</p>
+<p><strong>Brand colors:</strong> Crimson <code>#e63950</code>, Slate Blue <code>#486581</code> / <code>#102a43</code></p>
+<hr>
+<h2 id="how-data-flows">How Data Flows</h2>
+<h3 id="creating-a-condition">Creating a Condition</h3>
+<pre><code>User clicks &quot;Create Condition&quot;
+    │
+    ▼
+Frontend: ConditionsStore.create({ name, snomedCode, icdCode })
+    │  POST /api/conditions.create
+    ▼
+Server Route: server/routes/api/conditions/conditions.ts
+    │  Validates with Zod schema, checks policy
+    ▼
+Command: server/commands/conditionCreator.ts
+    │
+    ├─► Creates a Collection (if none provided)
+    │     name = condition name, icon = &quot;kit-medical&quot;
+    │
+    ├─► Creates the Condition record
+    │     status = &quot;draft&quot;, slug = slugify(name)
+    │
+    └─► Creates 6 ConditionSections, each with:
+          ├─► A backing Document (via documentCreator command)
+          └─► A ConditionSection record linking to that Document
+</code></pre>
+<h3 id="opening-a-section-for-editing">Opening a Section for Editing</h3>
+<pre><code>User clicks &quot;Open Editor&quot; on a SectionPanel
+    │
+    ▼
+SectionPanel reads section.documentId
+    │  history.push(document.path)
+    ▼
+Navigates to Outline's standard Document editor
+    │  Y.js collaborative editing, version history, comments
+    │  — all work automatically because it's a real Document
+    ▼
+User edits content collaboratively in real-time
+</code></pre>
+<h3 id="generating-ai-content">Generating AI Content</h3>
+<pre><code>User clicks &quot;Generate with AI&quot; on a SectionPanel
+    │
+    ▼
+AIGenerateButton: POST /api/ai.generateContent
+    │  { conditionName, sectionType, existingContent }
+    ▼
+Server Route: server/routes/api/ai/ai.ts
+    │  Reads team's preferred model from TeamPreference.AIModel
+    │  Builds prompt via GeminiService.buildPromptPublic()
+    ▼
+AIService.generate(modelId, { prompt })
+    │  Dispatches to correct provider:
+    ├─► GeminiService.generateRaw()    (gemini-2.0-flash)
+    ├─► OpenAIService.generate()       (gpt-5.2)
+    └─► AnthropicService.generate()    (claude-sonnet-4-6)
+    │
+    ▼
+Response: markdown string
+    │
+    ▼
+SectionPanel renders preview via MarkdownIt
+    │  User can &quot;Copy &amp; Edit&quot; (copies to clipboard, opens document)
+    │  or &quot;Dismiss&quot;
+</code></pre>
+<hr>
+<h2 id="the-registration-checklist">The Registration Checklist</h2>
+<p>When adding a new entity (e.g. a new model), you must register it in multiple
+places. Missing any one causes silent failures.</p>
+<h3 id="adding-a-new-server-model">Adding a New Server Model</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>What to Do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>server/migrations/</code></td>
+<td>Create migration file</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>server/models/YourModel.ts</code></td>
+<td>Create model class extending <code>IdModel</code> or <code>ParanoidModel</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>server/models/index.ts</code></td>
+<td>Add <code>export { default as YourModel } from &quot;./YourModel&quot;</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>server/policies/yourModel.ts</code></td>
+<td>Create policy file with <code>allow()</code> rules</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>server/policies/index.ts</code></td>
+<td>Add <code>import &quot;./yourModel&quot;</code> (side-effect import)</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>server/presenters/yourModel.ts</code></td>
+<td>Create presenter function</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>server/presenters/index.ts</code></td>
+<td>Import and re-export the presenter</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>server/routes/api/yourModels/</code></td>
+<td>Create route file + <code>schema.ts</code></td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>server/routes/api/index.ts</code></td>
+<td>Import and mount: <code>router.use(&quot;/&quot;, route.routes())</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="adding-a-new-frontend-store">Adding a New Frontend Store</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>What to Do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>app/models/YourModel.ts</code></td>
+<td>Create model with <code>@Field</code>, <code>@observable</code>, <code>@Relation</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>app/stores/YourModelsStore.ts</code></td>
+<td>Create store extending <code>Store&lt;YourModel&gt;</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>app/stores/RootStore.ts</code></td>
+<td>Import store, add property, call <code>registerStore()</code> in constructor</td>
+</tr>
+</tbody>
+</table>
+<h3 id="adding-a-new-routescene">Adding a New Route/Scene</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>What to Do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>app/scenes/YourScene/index.tsx</code></td>
+<td>Create the scene component</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>app/utils/routeHelpers.ts</code></td>
+<td>Add path helper function</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>app/routes/authenticated.tsx</code></td>
+<td>Add lazy import + <code>&lt;Route&gt;</code> entry</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="custom-data-models">Custom Data Models</h2>
+<h3 id="database-schema">Database Schema</h3>
+<pre><code>conditions
+├── id (UUID PK)
+├── name, slug
+├── snomedCode, icdCode (optional)
+├── status: &quot;draft&quot; | &quot;review&quot; | &quot;published&quot;
+├── overviewDocumentId → documents.id
+├── collectionId → collections.id
+├── teamId → teams.id
+├── createdById → users.id
+└── deletedAt (soft delete)
+
+condition_sections
+├── id (UUID PK)
+├── conditionId → conditions.id (CASCADE)
+├── sectionType: risk_factors|physiology|complications|solutions|bible_sop|research_ideas
+├── documentId → documents.id  ◄── THIS IS THE KEY LINK
+├── careDomainId → care_domains.id (optional)
+├── sortOrder
+└── title
+
+care_domains
+├── id (UUID PK)
+├── name, slug (UNIQUE)
+├── description, icon, color
+└── sortOrder
+
+interventions
+├── id (UUID PK)
+├── name, slug, category, description
+├── documentId → documents.id
+├── teamId, createdById
+└── deletedAt (soft delete)
+
+condition_interventions  (junction)
+├── conditionId → conditions.id
+├── interventionId → interventions.id
+├── careDomainId → care_domains.id
+├── evidenceLevel
+└── UNIQUE(conditionId, interventionId)
+
+evidence_entries
+├── id (UUID PK)
+├── conditionId, interventionId (optional FKs)
+├── pubmedId, doi, title, authors, journal
+├── publicationDate, abstract, url, evidenceLevel
+└── teamId, createdById
+
+scriptures
+├── id (UUID PK)
+├── reference, text, book, chapter, verseStart, verseEnd
+├── translation (default &quot;KJV&quot;)
+├── spiritOfProphecy (boolean)
+├── sopSource
+├── conditionId, interventionId (optional FKs)
+└── teamId
+
+recipes
+├── id (UUID PK)
+├── name, slug, description
+├── servings, prepTime, cookTime
+├── ingredients (JSONB), instructions (JSONB), nutritionData (JSONB)
+├── documentId → documents.id
+├── teamId, createdById
+└── deletedAt (soft delete)
+
+condition_recipes  (junction)
+├── conditionId → conditions.id
+├── recipeId → recipes.id
+├── careDomainId → care_domains.id
+└── UNIQUE(conditionId, recipeId)
+
+medical_references
+├── id (UUID PK)
+├── sourceType: snomed|icd|fhir|clinicaltrials
+├── sourceId, sourceData (JSONB)
+├── conditionId, interventionId (optional FKs)
+└── teamId
+</code></pre>
+<h3 id="model-files">Model Files</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>File</th>
+<th>Base Class</th>
+<th>Soft Delete?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CareDomain</td>
+<td><code>server/models/CareDomain.ts</code></td>
+<td>IdModel</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Condition</td>
+<td><code>server/models/Condition.ts</code></td>
+<td>ParanoidModel</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>ConditionSection</td>
+<td><code>server/models/ConditionSection.ts</code></td>
+<td>IdModel</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Intervention</td>
+<td><code>server/models/Intervention.ts</code></td>
+<td>ParanoidModel</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>ConditionIntervention</td>
+<td><code>server/models/ConditionIntervention.ts</code></td>
+<td>IdModel</td>
+<td>No</td>
+</tr>
+<tr>
+<td>EvidenceEntry</td>
+<td><code>server/models/EvidenceEntry.ts</code></td>
+<td>IdModel</td>
+<td>No</td>
+</tr>
+<tr>
+<td>MedicalReference</td>
+<td><code>server/models/MedicalReference.ts</code></td>
+<td>IdModel</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Scripture</td>
+<td><code>server/models/Scripture.ts</code></td>
+<td>IdModel</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Recipe</td>
+<td><code>server/models/Recipe.ts</code></td>
+<td>ParanoidModel</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>ConditionRecipe</td>
+<td><code>server/models/ConditionRecipe.ts</code></td>
+<td>IdModel</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="api-endpoints">API Endpoints</h2>
+<h3 id="conditions">Conditions</h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Input</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>conditions.list</code></td>
+<td>POST</td>
+<td><code>{ status?, offset, limit }</code></td>
+<td>Paginated list with optional status filter</td>
+</tr>
+<tr>
+<td><code>conditions.info</code></td>
+<td>POST</td>
+<td><code>{ id }</code></td>
+<td>Single condition with sections included</td>
+</tr>
+<tr>
+<td><code>conditions.create</code></td>
+<td>POST</td>
+<td><code>{ name, snomedCode?, icdCode?, collectionId? }</code></td>
+<td>Creates condition + 6 sections + documents</td>
+</tr>
+<tr>
+<td><code>conditions.update</code></td>
+<td>POST</td>
+<td><code>{ id, name?, snomedCode?, icdCode? }</code></td>
+<td>Update (auto-regenerates slug)</td>
+</tr>
+<tr>
+<td><code>conditions.status</code></td>
+<td>POST</td>
+<td><code>{ id, status }</code></td>
+<td>Change status (draft/review/published)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="condition-sections">Condition Sections</h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Input</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>conditionSections.list</code></td>
+<td>POST</td>
+<td><code>{ conditionId }</code></td>
+<td>List sections ordered by sortOrder</td>
+</tr>
+<tr>
+<td><code>conditionSections.createDocument</code></td>
+<td>POST</td>
+<td><code>{ id }</code></td>
+<td>Create backing document for a section</td>
+</tr>
+</tbody>
+</table>
+<h3 id="interventions">Interventions</h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Input</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>interventions.list</code></td>
+<td>POST</td>
+<td><code>{ offset, limit }</code></td>
+<td>Paginated list</td>
+</tr>
+<tr>
+<td><code>interventions.info</code></td>
+<td>POST</td>
+<td><code>{ id }</code></td>
+<td>Single intervention</td>
+</tr>
+<tr>
+<td><code>interventions.create</code></td>
+<td>POST</td>
+<td><code>{ name, category?, description? }</code></td>
+<td>Create intervention</td>
+</tr>
+<tr>
+<td><code>interventions.update</code></td>
+<td>POST</td>
+<td><code>{ id, name?, ... }</code></td>
+<td>Update intervention</td>
+</tr>
+<tr>
+<td><code>interventions.delete</code></td>
+<td>POST</td>
+<td><code>{ id }</code></td>
+<td>Soft delete</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ai">AI</h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Input</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ai.models</code></td>
+<td>POST</td>
+<td><code>{}</code></td>
+<td>Returns available AI models (based on configured API keys)</td>
+</tr>
+<tr>
+<td><code>ai.generateContent</code></td>
+<td>POST</td>
+<td><code>{ conditionName, sectionType, existingContent?, additionalContext? }</code></td>
+<td>Generate section content</td>
+</tr>
+<tr>
+<td><code>ai.suggest</code></td>
+<td>POST</td>
+<td><code>{ conditionName, sectionType, existingData }</code></td>
+<td>Suggest related content</td>
+</tr>
+<tr>
+<td><code>ai.explain</code></td>
+<td>POST</td>
+<td><code>{ topic, context? }</code></td>
+<td>General medical explanation</td>
+</tr>
+<tr>
+<td><code>ai.reviewSummary</code></td>
+<td>POST</td>
+<td><code>{ conditionName, sectionSummaries }</code></td>
+<td>Review condition completeness</td>
+</tr>
+<tr>
+<td><code>ai.search</code></td>
+<td>POST</td>
+<td><code>{ query }</code></td>
+<td>Search across all medical entities</td>
+</tr>
+</tbody>
+</table>
+<h3 id="other-medical-endpoints">Other Medical Endpoints</h3>
+<ul>
+<li><code>conditionInterventions.create/delete/update</code> — Link/unlink interventions</li>
+<li><code>evidenceEntries.list/create/update/delete</code> — Manage citations</li>
+<li><code>scriptures.list/create/update/delete</code> — Manage scripture references</li>
+<li><code>recipes.list/info/create/update/delete</code> — Manage recipes</li>
+<li><code>careDomains.list</code> — List NEWSTART+ care domains</li>
+<li><code>medical.snomed.search</code> — Search SNOMED CT codes</li>
+<li><code>medical.pubmed.search/import</code> — Search and import PubMed articles</li>
+<li><code>medical.clinicalTrials.search</code> — Search <a href="http://ClinicalTrials.gov">ClinicalTrials.gov</a></li>
+<li><code>medical.bible.search/lookup</code> — Search Bible references</li>
+</ul>
+<hr>
+<h2 id="frontend-stores--models">Frontend Stores &amp; Models</h2>
+<h3 id="store--model-mapping">Store → Model Mapping</h3>
+<table>
+<thead>
+<tr>
+<th>Store</th>
+<th>Model</th>
+<th>API Prefix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ConditionsStore</code></td>
+<td><code>Condition</code></td>
+<td><code>conditions.</code></td>
+</tr>
+<tr>
+<td><code>ConditionSectionsStore</code></td>
+<td><code>ConditionSection</code></td>
+<td><code>conditionSections.</code></td>
+</tr>
+<tr>
+<td><code>CareDomainsStore</code></td>
+<td><code>CareDomain</code></td>
+<td><code>careDomains.</code></td>
+</tr>
+<tr>
+<td><code>InterventionsStore</code></td>
+<td><code>Intervention</code></td>
+<td><code>interventions.</code></td>
+</tr>
+<tr>
+<td><code>EvidenceEntriesStore</code></td>
+<td><code>EvidenceEntry</code></td>
+<td><code>evidenceEntries.</code></td>
+</tr>
+<tr>
+<td><code>ScripturesStore</code></td>
+<td><code>Scripture</code></td>
+<td><code>scriptures.</code></td>
+</tr>
+<tr>
+<td><code>RecipesStore</code></td>
+<td><code>Recipe</code></td>
+<td><code>recipes.</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="accessing-stores-in-components">Accessing Stores in Components</h3>
+<pre><code class="language-typescript"><span class="hljs-keyword">import</span> useStores <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;~/hooks/useStores&quot;</span>;
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">MyComponent</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">const</span> { conditions, interventions, recipes } = <span class="hljs-title function_">useStores</span>();
+  <span class="hljs-comment">// conditions.data → Map of all loaded conditions</span>
+  <span class="hljs-comment">// conditions.fetch(id) → load single condition</span>
+  <span class="hljs-comment">// conditions.fetchPage({ offset, limit }) → paginated list</span>
+}
+</code></pre>
+<hr>
+<h2 id="ui-scenes--components">UI Scenes &amp; Components</h2>
+<h3 id="route-map">Route Map</h3>
+<table>
+<thead>
+<tr>
+<th>URL Path</th>
+<th>Scene</th>
+<th>File</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/conditions</code></td>
+<td>Conditions list</td>
+<td><code>app/scenes/Conditions/index.tsx</code></td>
+</tr>
+<tr>
+<td><code>/conditions/:id</code></td>
+<td>Condition editor</td>
+<td><code>app/scenes/ConditionEditor/index.tsx</code></td>
+</tr>
+<tr>
+<td><code>/conditions/:id/compiled</code></td>
+<td>Compiled view</td>
+<td><code>app/scenes/ConditionCompiled/index.tsx</code></td>
+</tr>
+<tr>
+<td><code>/interventions</code></td>
+<td>Interventions list</td>
+<td><code>app/scenes/Interventions/index.tsx</code></td>
+</tr>
+<tr>
+<td><code>/recipes</code></td>
+<td>Recipes grid</td>
+<td><code>app/scenes/Recipes/index.tsx</code></td>
+</tr>
+<tr>
+<td><code>/knowledge-graph</code></td>
+<td>Knowledge graph</td>
+<td><code>app/scenes/KnowledgeGraph/index.tsx</code></td>
+</tr>
+<tr>
+<td><code>/analytics</code></td>
+<td>Analytics dashboard</td>
+<td><code>app/scenes/Analytics/index.tsx</code></td>
+</tr>
+<tr>
+<td><code>/search</code></td>
+<td>Medical search</td>
+<td><code>app/scenes/Search/Search.tsx</code></td>
+</tr>
+</tbody>
+</table>
+<p>Path helpers defined in <code>app/utils/routeHelpers.ts</code>.</p>
+<h3 id="condition-editor-component-tree">Condition Editor Component Tree</h3>
+<pre><code>ConditionEditor/index.tsx
+├── ConditionHeader.tsx        — Title, SNOMED badge, status badge
+├── SectionPanel.tsx (×6)      — One per section type
+│   ├── Document preview       — Shows linked document title
+│   ├── &quot;Open Editor&quot; button   — Navigates to document's collaborative editor
+│   ├── AIGenerateButton       — Triggers AI content generation
+│   └── AI Preview Area        — MarkdownIt-rendered preview with Copy/Dismiss
+└── MetadataPanel.tsx          — Right sidebar: interventions, scriptures, recipes
+</code></pre>
+<h3 id="key-components">Key Components</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SectionPanel</code></td>
+<td><code>app/scenes/ConditionEditor/components/SectionPanel.tsx</code></td>
+<td>Collapsible section with doc preview + AI</td>
+</tr>
+<tr>
+<td><code>AIGenerateButton</code></td>
+<td><code>app/components/medical/AIGenerateButton.tsx</code></td>
+<td>Triggers AI generation for a section</td>
+</tr>
+<tr>
+<td><code>CareDomainBadge</code></td>
+<td><code>app/components/CareDomainBadge.tsx</code></td>
+<td>Colored badge for care domains</td>
+</tr>
+<tr>
+<td><code>StatusBadge</code></td>
+<td><code>app/components/StatusBadge.tsx</code></td>
+<td>Draft/review/published indicator</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="ai-content-generation">AI Content Generation</h2>
+<h3 id="architecture">Architecture</h3>
+<pre><code>AIService (dispatcher)
+├── GeminiService    — env.GEMINI_API_KEY    → Gemini 2.0 Flash
+├── OpenAIService    — env.OPENAI_API_KEY    → GPT-5.2
+└── AnthropicService — env.ANTHROPIC_API_KEY → Claude Sonnet 4.6
+</code></pre>
+<h3 id="files">Files</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>server/services/ai/AIService.ts</code></td>
+<td>Dispatcher: routes to provider by model ID</td>
+</tr>
+<tr>
+<td><code>server/services/ai/GeminiService.ts</code></td>
+<td>Gemini API + all prompt builder methods</td>
+</tr>
+<tr>
+<td><code>server/services/ai/OpenAIService.ts</code></td>
+<td>OpenAI chat completions API</td>
+</tr>
+<tr>
+<td><code>server/services/ai/AnthropicService.ts</code></td>
+<td>Anthropic messages API</td>
+</tr>
+<tr>
+<td><code>server/routes/api/ai/ai.ts</code></td>
+<td>AI route handlers</td>
+</tr>
+</tbody>
+</table>
+<h3 id="model-selection">Model Selection</h3>
+<p>The team's preferred model is stored in <code>TeamPreference.AIModel</code>.
+Default: <code>&quot;gemini-2.0-flash&quot;</code>. Configurable in Settings &gt; Features.</p>
+<p>Only models with configured API keys appear in the dropdown.
+<code>AIService.getAvailableModels()</code> checks which env vars are set.</p>
+<h3 id="prompt-builders">Prompt Builders</h3>
+<p>All prompts are static methods on <code>GeminiService</code> (reused across providers):</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Used By</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>buildPromptPublic(opts)</code></td>
+<td><code>ai.generateContent</code> endpoint</td>
+</tr>
+<tr>
+<td><code>buildSuggestPrompt(condition, section, data)</code></td>
+<td><code>ai.suggest</code> endpoint</td>
+</tr>
+<tr>
+<td><code>buildExplainPrompt(topic, context?)</code></td>
+<td><code>ai.explain</code> endpoint</td>
+</tr>
+<tr>
+<td><code>buildReviewPrompt(condition, summaries)</code></td>
+<td><code>ai.reviewSummary</code> endpoint</td>
+</tr>
+</tbody>
+</table>
+<h3 id="environment-variables">Environment Variables</h3>
+<pre><code class="language-env">GEMINI_API_KEY=your-key       # Required for Gemini provider
+OPENAI_API_KEY=your-key       # Optional, enables OpenAI provider
+ANTHROPIC_API_KEY=your-key    # Optional, enables Anthropic provider
+</code></pre>
+<p>Defined in <code>server/env.ts</code>.</p>
+<hr>
+<h2 id="editor-blocks">Editor Blocks</h2>
+<h3 id="custom-medical-blocks">Custom Medical Blocks</h3>
+<p>Three custom blocks added to the slash command (<code>/</code>) menu:</p>
+<table>
+<thead>
+<tr>
+<th>Block ID</th>
+<th>Label</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bible</code></td>
+<td>Bible verse</td>
+<td>Insert Bible verse reference</td>
+</tr>
+<tr>
+<td><code>egw</code></td>
+<td>Spirit of Prophecy</td>
+<td>Insert Ellen G. White quotation</td>
+</tr>
+<tr>
+<td><code>ai</code></td>
+<td>AI explanation</td>
+<td>Insert AI-generated explanation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-block-toggle-works">How Block Toggle Works</h3>
+<ol>
+<li>Block items defined in <code>app/editor/menus/block.tsx</code></li>
+<li>Stable IDs exported from <code>app/editor/components/BlockMenu.tsx</code> as <code>MEDICAL_BLOCK_ITEMS</code></li>
+<li>Disabled block IDs stored in <code>TeamPreference.DisabledMedicalBlocks</code> (string array)</li>
+<li><code>BlockMenu.tsx</code> reads the preference and filters out disabled items</li>
+<li>Toggle UI in Settings &gt; Embeds (<code>app/scenes/Settings/Embeds.tsx</code>)</li>
+</ol>
+<h3 id="adding-a-new-medical-block">Adding a New Medical Block</h3>
+<ol>
+<li>Add the block definition to <code>app/editor/menus/block.tsx</code></li>
+<li>Add its stable ID to <code>MEDICAL_BLOCK_ITEMS</code> in <code>app/editor/components/BlockMenu.tsx</code></li>
+<li>No other registration needed — the toggle will appear automatically in Settings</li>
+</ol>
+<hr>
+<h2 id="team-preferences-the-3-file-rule">Team Preferences (The 3-File Rule)</h2>
+<p><strong>This is the #1 source of bugs.</strong> Adding a team preference requires changes
+in ALL THREE files, or the value gets silently stripped during save.</p>
+<h3 id="the-three-files">The Three Files</h3>
+<p><strong>File 1: <code>shared/types.ts</code></strong> — Enum + Type</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// Add to TeamPreference enum:</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">enum</span> <span class="hljs-title class_">TeamPreference</span> {
+  <span class="hljs-comment">// ... existing ...</span>
+  <span class="hljs-title class_">YourPref</span> = <span class="hljs-string">&quot;yourPref&quot;</span>,
+}
+
+<span class="hljs-comment">// Add to TeamPreferences type:</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">TeamPreferences</span> = {
+  <span class="hljs-comment">// ... existing ...</span>
+  [<span class="hljs-title class_">TeamPreference</span>.<span class="hljs-property">YourPref</span>]?: <span class="hljs-built_in">boolean</span>; <span class="hljs-comment">// or string, string[], etc.</span>
+};
+</code></pre>
+<p><strong>File 2: <code>shared/constants.ts</code></strong> — Default value</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-title class_">TeamPreferenceDefaults</span>: <span class="hljs-title class_">TeamPreferences</span> = {
+  <span class="hljs-comment">// ... existing ...</span>
+  [<span class="hljs-title class_">TeamPreference</span>.<span class="hljs-property">YourPref</span>]: <span class="hljs-literal">false</span>, <span class="hljs-comment">// your default</span>
+};
+</code></pre>
+<p><strong>File 3: <code>server/routes/api/teams/schema.ts</code></strong> — Zod validation</p>
+<pre><code class="language-typescript"><span class="hljs-attr">preferences</span>: z.<span class="hljs-title function_">object</span>({
+  <span class="hljs-comment">// ... existing ...</span>
+  <span class="hljs-attr">yourPref</span>: z.<span class="hljs-title function_">boolean</span>().<span class="hljs-title function_">optional</span>(),  <span class="hljs-comment">// MUST match the key name exactly</span>
+}).<span class="hljs-title function_">optional</span>(),
+</code></pre>
+<h3 id="current-custom-preferences">Current Custom Preferences</h3>
+<table>
+<thead>
+<tr>
+<th>Preference</th>
+<th>Key</th>
+<th>Type</th>
+<th>Default</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DisabledMedicalBlocks</td>
+<td><code>disabledMedicalBlocks</code></td>
+<td><code>string[]</code></td>
+<td><code>[]</code></td>
+<td>IDs of disabled editor blocks</td>
+</tr>
+<tr>
+<td>AIModel</td>
+<td><code>aiModel</code></td>
+<td><code>string</code></td>
+<td><code>&quot;gemini-2.0-flash&quot;</code></td>
+<td>Team's preferred AI model</td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-preferences-save">How Preferences Save</h3>
+<pre><code>Frontend: team.setPreference(key, value)
+    │  team.save({ preferences: {...team.preferences} })
+    ▼
+POST /api/teams.update  { preferences: { ... } }
+    │
+    ▼
+Zod schema validation (server/routes/api/teams/schema.ts)
+    │  ⚠️  Unknown keys are STRIPPED here!
+    │  If your key isn't in the schema, the value disappears.
+    ▼
+Saved to teams.preferences (JSONB column)
+</code></pre>
+<hr>
+<h2 id="settings-pages">Settings Pages</h2>
+<h3 id="how-settings-work">How Settings Work</h3>
+<p>All settings pages are declared in <code>app/hooks/useSettingsConfig.ts</code>.
+The sidebar and routes are auto-generated from this config.</p>
+<h3 id="adding-a-new-settings-page">Adding a New Settings Page</h3>
+<pre><code class="language-typescript"><span class="hljs-comment">// In useSettingsConfig.ts:</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">YourPage</span> = <span class="hljs-title function_">lazy</span>(<span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">import</span>(<span class="hljs-string">&quot;~/scenes/Settings/YourPage&quot;</span>));
+
+<span class="hljs-comment">// Add to the config array:</span>
+{
+  <span class="hljs-attr">name</span>: <span class="hljs-title function_">t</span>(<span class="hljs-string">&quot;Your Page&quot;</span>),
+  <span class="hljs-attr">path</span>: <span class="hljs-title function_">settingsPath</span>(<span class="hljs-string">&quot;your-page&quot;</span>),
+  <span class="hljs-attr">component</span>: <span class="hljs-title class_">YourPage</span>.<span class="hljs-property">Component</span>,
+  <span class="hljs-attr">preload</span>: <span class="hljs-title class_">YourPage</span>.<span class="hljs-property">preload</span>,
+  <span class="hljs-attr">enabled</span>: can.<span class="hljs-property">update</span>,       <span class="hljs-comment">// policy check</span>
+  <span class="hljs-attr">group</span>: <span class="hljs-title function_">t</span>(<span class="hljs-string">&quot;Workspace&quot;</span>),     <span class="hljs-comment">// sidebar section</span>
+  <span class="hljs-attr">icon</span>: <span class="hljs-title class_">YourIcon</span>,
+},
+</code></pre>
+<h3 id="current-custom-settings-pages">Current Custom Settings Pages</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Path</th>
+<th>Group</th>
+<th>File</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AI</td>
+<td><code>/settings/ai</code></td>
+<td>Workspace</td>
+<td><code>app/scenes/Settings/Features.tsx</code></td>
+</tr>
+<tr>
+<td>Embeds</td>
+<td><code>/settings/embeds</code></td>
+<td>Workspace</td>
+<td><code>app/scenes/Settings/Embeds.tsx</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="common-debugging-scenarios">Common Debugging Scenarios</h2>
+<h3 id="my-new-preference-isnt-saving">&quot;My new preference isn't saving&quot;</h3>
+<ol>
+<li>Check <code>server/routes/api/teams/schema.ts</code> — is the key in the Zod schema?</li>
+<li>Check <code>shared/types.ts</code> — is it in the <code>TeamPreference</code> enum and <code>TeamPreferences</code> type?</li>
+<li>Check <code>shared/constants.ts</code> — does it have a default in <code>TeamPreferenceDefaults</code>?</li>
+<li>All three must match. See <a href="#team-preferences-the-3-file-rule">The 3-File Rule</a>.</li>
+</ol>
+<h3 id="my-new-api-endpoint-returns-404">&quot;My new API endpoint returns 404&quot;</h3>
+<ol>
+<li>Check <code>server/routes/api/index.ts</code> — is the route file imported and mounted?</li>
+<li>Check the route file — is the handler exported correctly?</li>
+<li>Check Zod schema — does validation pass? Invalid input returns 400, not 404.</li>
+</ol>
+<h3 id="my-new-model-isnt-available-in-routes">&quot;My new model isn't available in routes&quot;</h3>
+<ol>
+<li>Check <code>server/models/index.ts</code> — is it exported?</li>
+<li>Check the migration — has it been run? (<code>yarn db:migrate</code>)</li>
+<li>Check associations — are <code>BelongsTo</code>/<code>HasMany</code> decorators correct?</li>
+</ol>
+<h3 id="my-new-store-is-undefined-in-components">&quot;My new store is undefined in components&quot;</h3>
+<ol>
+<li>Check <code>app/stores/RootStore.ts</code>:
+<ul>
+<li>Is the store imported?</li>
+<li>Is the property declared on the class?</li>
+<li>Is <code>registerStore()</code> called in the constructor?</li>
+</ul>
+</li>
+<li>Check <code>useStores()</code> destructuring — does the key match the property name?</li>
+</ol>
+<h3 id="condition-sections-have-no-document--editor-doesnt-open">&quot;Condition sections have no document / editor doesn't open&quot;</h3>
+<p>The section's <code>documentId</code> is null. This means the backing document hasn't been
+created yet. The user needs to click &quot;Create Document&quot; in the SectionPanel,
+which calls <code>conditionSections.createDocument</code>.</p>
+<p>Alternatively, check <code>server/commands/conditionCreator.ts</code> — new conditions
+should auto-create backing documents for all 6 sections.</p>
+<h3 id="ai-generation-fails">&quot;AI generation fails&quot;</h3>
+<ol>
+<li>Check the API key env var (<code>GEMINI_API_KEY</code>, <code>OPENAI_API_KEY</code>, <code>ANTHROPIC_API_KEY</code>)</li>
+<li>Check the team's <code>aiModel</code> preference matches a configured provider</li>
+<li>Check <code>server/routes/api/ai/ai.ts</code> for error handling — failures return 502</li>
+<li>Check <code>server/services/ai/AIService.ts</code> — is the model ID in <code>AI_MODELS</code>?</li>
+</ol>
+<h3 id="new-editor-block-doesnt-show-in-slash-menu">&quot;New editor block doesn't show in slash menu&quot;</h3>
+<ol>
+<li>Check <code>app/editor/menus/block.tsx</code> — is the item in the array?</li>
+<li>Check <code>app/editor/components/BlockMenu.tsx</code> — is it being filtered out by <code>DisabledMedicalBlocks</code>?</li>
+<li>Check team preferences — is the block ID in the disabled list?</li>
+</ol>
+<h3 id="settings-page-doesnt-appear-in-sidebar">&quot;Settings page doesn't appear in sidebar&quot;</h3>
+<ol>
+<li>Check <code>app/hooks/useSettingsConfig.ts</code> — is the config entry present?</li>
+<li>Check <code>enabled</code> — does the policy check pass for the current user?</li>
+<li>Check the lazy import — does the component file exist and export default?</li>
+</ol>
+<hr>
+<h2 id="file-index">File Index</h2>
+<h3 id="server--models">Server — Models</h3>
+<pre><code>server/models/CareDomain.ts
+server/models/Condition.ts
+server/models/ConditionSection.ts
+server/models/Intervention.ts
+server/models/ConditionIntervention.ts
+server/models/EvidenceEntry.ts
+server/models/MedicalReference.ts
+server/models/Scripture.ts
+server/models/Recipe.ts
+server/models/ConditionRecipe.ts
+server/models/index.ts                    ◄ Registration
+</code></pre>
+<h3 id="server--commands">Server — Commands</h3>
+<pre><code>server/commands/conditionCreator.ts       ◄ Creates condition + sections + documents
+server/commands/conditionSectionCreator.ts
+</code></pre>
+<h3 id="server--routes">Server — Routes</h3>
+<pre><code>server/routes/api/conditions/conditions.ts
+server/routes/api/conditions/schema.ts
+server/routes/api/conditionSections/conditionSections.ts
+server/routes/api/conditionSections/schema.ts
+server/routes/api/interventions/interventions.ts
+server/routes/api/conditionInterventions/conditionInterventions.ts
+server/routes/api/evidenceEntries/evidenceEntries.ts
+server/routes/api/scriptures/scriptures.ts
+server/routes/api/recipes/recipes.ts
+server/routes/api/careDomains/careDomains.ts
+server/routes/api/ai/ai.ts
+server/routes/api/ai/schema.ts
+server/routes/api/medical/medical.ts
+server/routes/api/analytics/analytics.ts
+server/routes/api/fhir/fhir.ts
+server/routes/api/index.ts                ◄ Registration
+</code></pre>
+<h3 id="server--policies--presenters">Server — Policies &amp; Presenters</h3>
+<pre><code>server/policies/condition.ts
+server/policies/intervention.ts
+server/policies/evidenceEntry.ts
+server/policies/scripture.ts
+server/policies/recipe.ts
+server/policies/careDomain.ts
+server/policies/index.ts                   ◄ Registration
+
+server/presenters/condition.ts
+server/presenters/conditionSection.ts
+server/presenters/intervention.ts
+server/presenters/conditionIntervention.ts
+server/presenters/evidenceEntry.ts
+server/presenters/scripture.ts
+server/presenters/recipe.ts
+server/presenters/careDomain.ts
+server/presenters/index.ts                 ◄ Registration
+</code></pre>
+<h3 id="server--ai-services">Server — AI Services</h3>
+<pre><code>server/services/ai/AIService.ts            ◄ Dispatcher
+server/services/ai/GeminiService.ts        ◄ Gemini + prompt builders
+server/services/ai/OpenAIService.ts
+server/services/ai/AnthropicService.ts
+</code></pre>
+<h3 id="server--medical-services">Server — Medical Services</h3>
+<pre><code>server/services/medical/SnomedService.ts
+server/services/medical/PubMedService.ts
+server/services/medical/ClinicalTrialsService.ts
+server/services/medical/BibleService.ts
+</code></pre>
+<h3 id="frontend--models--stores">Frontend — Models &amp; Stores</h3>
+<pre><code>app/models/Condition.ts
+app/models/ConditionSection.ts
+app/models/CareDomain.ts
+app/models/Intervention.ts
+app/models/EvidenceEntry.ts
+app/models/Scripture.ts
+app/models/Recipe.ts
+
+app/stores/ConditionsStore.ts
+app/stores/ConditionSectionsStore.ts
+app/stores/CareDomainsStore.ts
+app/stores/InterventionsStore.ts
+app/stores/EvidenceEntriesStore.ts
+app/stores/ScripturesStore.ts
+app/stores/RecipesStore.ts
+app/stores/RootStore.ts                    ◄ Registration
+</code></pre>
+<h3 id="frontend--scenes">Frontend — Scenes</h3>
+<pre><code>app/scenes/ConditionEditor/index.tsx
+app/scenes/ConditionEditor/components/ConditionHeader.tsx
+app/scenes/ConditionEditor/components/SectionPanel.tsx
+app/scenes/ConditionEditor/components/MetadataPanel.tsx
+app/scenes/Conditions/index.tsx
+app/scenes/ConditionCompiled/index.tsx
+app/scenes/Interventions/index.tsx
+app/scenes/Recipes/index.tsx
+app/scenes/KnowledgeGraph/index.tsx
+app/scenes/Analytics/index.tsx
+app/scenes/Search/Search.tsx
+app/scenes/Settings/Features.tsx           ◄ AI model selector
+app/scenes/Settings/Embeds.tsx             ◄ Block toggles
+</code></pre>
+<h3 id="frontend--routing--config">Frontend — Routing &amp; Config</h3>
+<pre><code>app/routes/authenticated.tsx               ◄ Route registration
+app/utils/routeHelpers.ts                  ◄ Path helper functions
+app/hooks/useSettingsConfig.ts             ◄ Settings page registration
+</code></pre>
+<h3 id="frontend--medical-components">Frontend — Medical Components</h3>
+<pre><code>app/components/medical/AIGenerateButton.tsx
+app/editor/menus/block.tsx                 ◄ Block menu items
+app/editor/components/BlockMenu.tsx        ◄ MEDICAL_BLOCK_ITEMS + filtering
+</code></pre>
+<h3 id="shared">Shared</h3>
+<pre><code>shared/types.ts                            ◄ TeamPreference enum
+shared/constants.ts                        ◄ TeamPreferenceDefaults
+server/routes/api/teams/schema.ts          ◄ Zod preference validation
+server/env.ts                              ◄ Environment variable definitions
+</code></pre>
+
+            
+            
+        </body>
+        </html>
