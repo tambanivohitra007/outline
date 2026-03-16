@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useHistory } from "react-router-dom";
 import type ConditionSection from "~/models/ConditionSection";
+import { ProsemirrorHelper } from "~/models/helpers/ProsemirrorHelper";
 import AIGenerateButton from "~/components/medical/AIGenerateButton";
 import useStores from "~/hooks/useStores";
 import { client } from "~/utils/ApiClient";
@@ -41,6 +42,18 @@ function SectionPanel({ section, conditionName }: Props) {
   const document = section.documentId
     ? documents.get(section.documentId)
     : null;
+
+  const contentHtml = useMemo(() => {
+    if (!document?.data) {
+      return "";
+    }
+    try {
+      const markdown = ProsemirrorHelper.toMarkdown(document);
+      return markdown.trim() ? md.render(markdown) : "";
+    } catch {
+      return "";
+    }
+  }, [document?.data]);
 
   const handleOpenEditor = () => {
     if (document) {
@@ -87,20 +100,21 @@ function SectionPanel({ section, conditionName }: Props) {
 
           {section.documentId ? (
             <EditorArea>
-              <DocumentPreview onClick={handleOpenEditor}>
-                <PreviewContent>
-                  {document?.title ? (
-                    <PreviewText>
-                      {document.title}
-                    </PreviewText>
-                  ) : (
-                    <PreviewEmpty>
-                      {t("Click to start writing content for this section.")}
-                    </PreviewEmpty>
-                  )}
-                </PreviewContent>
-                <OpenButton>{t("Open Editor")}</OpenButton>
-              </DocumentPreview>
+              {contentHtml ? (
+                <DocumentPreview>
+                  <ContentRendered dangerouslySetInnerHTML={{ __html: contentHtml }} />
+                  <PreviewFooter>
+                    <OpenButton onClick={handleOpenEditor}>{t("Open Editor")}</OpenButton>
+                  </PreviewFooter>
+                </DocumentPreview>
+              ) : (
+                <DocumentPreview onClick={handleOpenEditor}>
+                  <PreviewEmpty>
+                    {t("Click to start writing content for this section.")}
+                  </PreviewEmpty>
+                  <OpenButton>{t("Open Editor")}</OpenButton>
+                </DocumentPreview>
+              )}
               <AIGenerateButton
                 conditionName={conditionName}
                 sectionType={section.sectionType}
@@ -216,27 +230,98 @@ const SectionDescription = styled.p`
 const EditorArea = styled.div``;
 
 const DocumentPreview = styled.div`
-  padding: 16px;
   border: 1px solid ${s("divider")};
   border-radius: 6px;
-  cursor: pointer;
-  transition: border-color 200ms ease, box-shadow 200ms ease;
+  overflow: hidden;
+  transition: border-color 200ms ease;
 
   &:hover {
-    border-color: ${s("accent")};
-    box-shadow: 0 0 0 1px ${s("accent")};
+    border-color: ${s("textTertiary")};
   }
 `;
 
-const PreviewContent = styled.div`
-  margin-bottom: 12px;
+const ContentRendered = styled.div`
+  padding: 16px;
+  font-size: 13px;
+  color: ${s("text")};
+  line-height: 1.7;
+  max-height: 500px;
+  overflow-y: auto;
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 12px 0 6px;
+    font-weight: 600;
+    color: ${s("text")};
+  }
+
+  h1 { font-size: 1.3em; }
+  h2 { font-size: 1.15em; }
+  h3 { font-size: 1.05em; }
+
+  p {
+    margin: 0 0 8px;
+  }
+
+  ul, ol {
+    margin: 0 0 8px;
+    padding-left: 20px;
+  }
+
+  li {
+    margin-bottom: 4px;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  code {
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    background: ${s("codeBackground")};
+  }
+
+  blockquote {
+    margin: 8px 0;
+    padding: 4px 12px;
+    border-left: 3px solid ${s("accent")};
+    color: ${s("textSecondary")};
+  }
+
+  a {
+    color: ${s("accent")};
+    text-decoration: underline;
+  }
+
+  img {
+    max-width: 100%;
+    border-radius: 4px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 12px;
+  }
+
+  th, td {
+    border: 1px solid ${s("divider")};
+    padding: 6px 8px;
+    text-align: left;
+  }
+
+  th {
+    background: ${s("backgroundSecondary")};
+    font-weight: 600;
+  }
 `;
 
-const PreviewText = styled.div`
-  font-size: 13px;
-  color: ${s("textSecondary")};
-  line-height: 1.6;
-  white-space: pre-wrap;
+const PreviewFooter = styled.div`
+  padding: 8px 16px;
+  border-top: 1px solid ${s("divider")};
+  background: ${s("backgroundSecondary")};
 `;
 
 const PreviewEmpty = styled.div`
@@ -244,7 +329,8 @@ const PreviewEmpty = styled.div`
   color: ${s("textTertiary")};
   font-style: italic;
   text-align: center;
-  padding: 16px 0;
+  padding: 16px;
+  cursor: pointer;
 `;
 
 const OpenButton = styled.div`
@@ -255,6 +341,7 @@ const OpenButton = styled.div`
   border-radius: 4px;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 
   &:hover {
     opacity: 0.9;
